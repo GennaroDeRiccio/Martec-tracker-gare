@@ -25,7 +25,7 @@ body{font-family:'Barlow',sans-serif;background:var(--gray6);color:var(--gray1);
 /* SIDEBAR */
 #sb{width:var(--sb);background:var(--navy);display:flex;flex-direction:column;height:100vh;overflow-y:auto;flex-shrink:0}
 .sb-logo{padding:16px;border-bottom:1px solid rgba(255,255,255,.08)}
-.sb-logo img{width:172px;display:block}
+.sb-logo img{width:172px;display:block;border-radius:14px}
 .sb-tagline{font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.3);text-transform:uppercase;margin-top:5px}
 .sb-sec{font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.25);text-transform:uppercase;padding:16px 16px 5px}
 .nav{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;border-left:3px solid transparent;transition:all .15s;user-select:none}
@@ -172,7 +172,7 @@ textarea{resize:vertical;min-height:65px}
 
 /* LOADING */
 #loading{position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:18px}
-#loading img{width:220px;display:block}
+#loading img{width:220px;display:block;border-radius:18px}
 #loading p{color:rgba(255,255,255,.6);font-size:14px;letter-spacing:1px}
 .spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.15);border-top-color:#4FC3F7;border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -503,12 +503,12 @@ thead th{position:sticky;top:0;z-index:2}
     <div class="mb">
       <div class="fg">
         <div class="fi"><label>Stato *</label><select id="xg-stato" class="upper">
-          <option>AGGIUDICATA</option><option selected>DA LAVORARE</option><option>PRESENTATA</option><option>PERSA</option><option>SCARTATA</option>
+          <option value="">—</option><option>AGGIUDICATA</option><option>DA LAVORARE</option><option>PRESENTATA</option><option>PERSA</option><option>SCARTATA</option>
         </select></div>
         <div class="fi"><label>Portale *</label><select id="xg-port" class="upper"></select></div>
         <div class="fi"><label>N° RDO</label><input id="xg-rdo" class="upper" placeholder="es. 14061-7947"></div>
         <div class="fi"><label>Tipologia</label><select id="xg-tipo">
-          <option>INDAGINE DI MERCATO</option><option>OFFERTA</option><option>PREVENTIVO</option><option>RDO APERTA</option>
+          <option value="">—</option><option>INDAGINE DI MERCATO</option><option>OFFERTA</option><option>PREVENTIVO</option><option>RDO APERTA</option>
           <option>RDO SEMPLICE</option><option>PROCEDURA APERTA</option><option>INVITO</option>
           <option>CONFRONTO PREVENTIVI</option><option>MANIFESTAZIONE D'INTERESSE</option><option>TRATTATIVA DIRETTA</option>
         </select></div>
@@ -519,7 +519,8 @@ thead th{position:sticky;top:0;z-index:2}
           <option value="">—</option><option>ASSIA</option><option>GENNI</option><option>ANNAMARIA</option>
         </select></div>
         <div class="fi"><label>Data Creazione</label><input type="date" id="xg-crea"></div>
-        <div class="fi"><label>Scadenza e Ora</label><input type="datetime-local" id="xg-scad"></div>
+        <div class="fi"><label>Data Scadenza</label><input type="date" id="xg-scad-date"></div>
+        <div class="fi"><label>Orario Scadenza</label><input type="time" id="xg-scad-time"></div>
         <div class="fi full"><label>Note</label><textarea id="xg-note" class="upper" placeholder="Note aggiuntive..."></textarea></div>
       </div>
     </div>
@@ -540,7 +541,7 @@ thead th{position:sticky;top:0;z-index:2}
         <div class="fi"><label>Base d'Asta (€)</label><input type="number" id="xa-asta" step="0.01"></div>
         <div class="fi"><label>Valore Offerto (€)</label><input type="number" id="xa-val" step="0.01"></div>
         <div class="fi"><label>Tipologia</label><select id="xa-tipo">
-          <option>INDAGINE DI MERCATO</option><option>OFFERTA</option><option>PREVENTIVO</option><option>RDO APERTA</option>
+          <option value="">—</option><option>INDAGINE DI MERCATO</option><option>OFFERTA</option><option>PREVENTIVO</option><option>RDO APERTA</option>
           <option>RDO SEMPLICE</option><option>PROCEDURA APERTA</option><option>INVITO</option>
           <option>CONFRONTO PREVENTIVI</option><option>MANIFESTAZIONE D'INTERESSE</option><option>TRATTATIVA DIRETTA</option>
         </select></div>
@@ -1053,6 +1054,35 @@ function toDateTimeLocalValue(value) {
   return raw.length === 10 ? raw + 'T00:00' : raw;
 }
 
+function splitScadenzaValue(value) {
+  if(!value) return { date: '', time: '' };
+  const raw = String(value).trim();
+  if(!raw) return { date: '', time: '' };
+  if(raw.includes('T')) {
+    const [datePart='', timePart=''] = raw.split('T');
+    const [hh='00', mm='00'] = timePart.split(':');
+    return { date: datePart, time: hh+':'+mm };
+  }
+  return { date: raw, time: '' };
+}
+
+function buildScadenzaValue(dateValue, timeValue) {
+  const date = (dateValue || '').trim();
+  const time = (timeValue || '').trim();
+  if(!date) return '';
+  return time ? date + 'T' + time : date;
+}
+
+function getNextOffertaNum() {
+  const latest = [...state.offerte].sort((a,b) => {
+    const dateA = a.data || '0000-00-00';
+    const dateB = b.data || '0000-00-00';
+    if(dateA !== dateB) return dateB.localeCompare(dateA);
+    return (parseInt(b.num, 10) || 0) - (parseInt(a.num, 10) || 0);
+  })[0];
+  return String((parseInt(latest && latest.num, 10) || 0) + 1);
+}
+
 function bdSt(s) {
   const m={AGGIUDICATA:'AG',PRESENTATA:'PR','DA LAVORARE':'DL',PERSA:'PE',SCARTATA:'SC'};
   return '<span class="bd bd-'+(m[s]||'SC')+'">'+s+'</span>';
@@ -1520,7 +1550,7 @@ function drawAgg() {
     return true;
   });
   fl = sortByMode(fl, uiPrefs.aggSort, 'agg');
-  const tot=fl.length, page=fl.slice((pa.cur-1)*PS,pa.cur*PS);
+  const tot=fl.length, page=fl;
   document.getElementById('tb-a').innerHTML=page.length?page.map(a=>
     '<tr class="row-click" data-type="agg" data-id="'+a.id+'" style="cursor:pointer">'
     +'<td style="font-weight:700;color:var(--teal)">'+a.portale+'</td>'
@@ -1537,7 +1567,7 @@ function drawAgg() {
     +'</tr>'
   ).join(''):'<tr><td colspan="11"><div class="empty"><div class="ei">✅</div><h4>Nessuna gara</h4></div></td></tr>';
   document.getElementById('cnt-a').textContent=tot+' gare';
-  document.getElementById('pag-a').innerHTML=pagHTML(pa,tot,'setAggPage');
+  document.getElementById('pag-a').innerHTML='';
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1553,6 +1583,12 @@ function drawOff() {
     if(year && (o.data || '').slice(0,4) !== year) return false;
     if(q&&!(o.oggetto+o.ente+o.num).toLowerCase().includes(q)) return false;
     return true;
+  });
+  fl.sort((a,b) => {
+    const numA = parseInt(a.num, 10);
+    const numB = parseInt(b.num, 10);
+    if(!Number.isNaN(numA) && !Number.isNaN(numB) && numA !== numB) return numA - numB;
+    return String(a.num || '').localeCompare(String(b.num || ''), 'it', { numeric: true });
   });
   const tot=fl.length, page=fl.slice((po.cur-1)*PS,po.cur*PS);
   document.getElementById('tb-o').innerHTML=page.length?page.map(o=>
@@ -1658,12 +1694,15 @@ function openM(type) {
     document.getElementById('m-gara-ttl').textContent=ev?'✏️ Modifica Gara':'📋 Nuova Gara';
     if(!ev){
       ['xg-rdo','xg-desc','xg-ente','xg-note'].forEach(i=>document.getElementById(i).value='');
-      document.getElementById('xg-stato').value='DA LAVORARE';
+      document.getElementById('xg-stato').value='';
       document.getElementById('xg-asta').value='';
       document.getElementById('xg-op').value='';
+      document.getElementById('xg-tipo').value='';
       document.getElementById('xg-crea').value=new Date().toISOString().slice(0,10);
-      document.getElementById('xg-scad').value='';
+      document.getElementById('xg-scad-date').value='';
+      document.getElementById('xg-scad-time').value='';
     } else {
+      const scadenza = splitScadenzaValue(ev.scadenza);
       document.getElementById('xg-stato').value=ev.stato||'';
       document.getElementById('xg-rdo').value=ev.num_rdo||'';
       document.getElementById('xg-tipo').value=ev.tipologia||'';
@@ -1672,7 +1711,8 @@ function openM(type) {
       document.getElementById('xg-asta').value=ev.base_asta||'';
       document.getElementById('xg-op').value=ev.operatore||'';
       document.getElementById('xg-crea').value=ev.data_creazione||'';
-      document.getElementById('xg-scad').value=toDateTimeLocalValue(ev.scadenza);
+      document.getElementById('xg-scad-date').value=scadenza.date;
+      document.getElementById('xg-scad-time').value=scadenza.time;
       document.getElementById('xg-note').value=ev.note||'';
     }
   }
@@ -1681,7 +1721,7 @@ function openM(type) {
     document.getElementById('m-agg-ttl').textContent=ev?'✏️ Modifica':'✅ Nuova Gara Aggiudicata';
     if(!ev){
       ['xa-rdo','xa-desc','xa-ente','xa-asta','xa-val','xa-nord','xa-forn','xa-cons','xa-note'].forEach(i=>document.getElementById(i).value='');
-      document.getElementById('xa-stp').value='';document.getElementById('xa-stip').value='';document.getElementById('xa-scad').value='';document.getElementById('xa-dstip').value='';
+      document.getElementById('xa-tipo').value='';document.getElementById('xa-stp').value='';document.getElementById('xa-stip').value='';document.getElementById('xa-scad').value='';document.getElementById('xa-dstip').value='';
     } else {
       document.getElementById('xa-rdo').value=ev.num_rdo||'';document.getElementById('xa-desc').value=ev.descrizione||'';
       document.getElementById('xa-ente').value=ev.ente||'';document.getElementById('xa-asta').value=ev.base_asta||'';
@@ -1695,7 +1735,7 @@ function openM(type) {
   if(type==='off') {
     document.getElementById('m-off-ttl').textContent=ev?'✏️ Modifica':'📬 Nuova Offerta';
     if(!ev){
-      document.getElementById('xo-num').value=(state.offerte.length+1).toString();
+      document.getElementById('xo-num').value=getNextOffertaNum();
       document.getElementById('xo-data').value=new Date().toISOString().slice(0,10);
       ['xo-ogg','xo-ente'].forEach(i=>document.getElementById(i).value='');
       document.getElementById('xo-op').value='';
@@ -1709,7 +1749,7 @@ function openM(type) {
     document.getElementById('m-port-ttl').textContent=ev?'✏️ Modifica Portale':'🌐 Nuovo Portale';
     if(!ev){
       ['xp-nome','xp-url','xp-user','xp-pass','xp-note'].forEach(i=>document.getElementById(i).value='');
-      document.getElementById('xp-op').value='';document.getElementById('xp-stato').value='ATTIVO';document.getElementById('xp-fav').checked=false;
+      document.getElementById('xp-op').value='';document.getElementById('xp-stato').value='';document.getElementById('xp-fav').checked=false;
     } else {
       document.getElementById('xp-nome').value=ev.nome||'';document.getElementById('xp-url').value=ev.url||'';
       document.getElementById('xp-user').value=ev.username||'';document.getElementById('xp-pass').value=ev.password||'';
@@ -1733,7 +1773,7 @@ function editPort(id){editId.port=state.portali.find(x=>x.id===id);openM('port')
 function saveGara(){
   const desc=document.getElementById('xg-desc').value.trim();
   if(!desc){toast('Inserisci la descrizione','err');return;}
-  const obj={id:editId.gara?editId.gara.id:uid('g'),stato:document.getElementById('xg-stato').value,portale:up(document.getElementById('xg-port').value),num_rdo:up(document.getElementById('xg-rdo').value),tipologia:document.getElementById('xg-tipo').value,descrizione:up(desc),ente:up(document.getElementById('xg-ente').value),base_asta:parseFloat(document.getElementById('xg-asta').value)||0,operatore:up(document.getElementById('xg-op').value),data_creazione:document.getElementById('xg-crea').value,scadenza:document.getElementById('xg-scad').value,note:up(document.getElementById('xg-note').value)};
+  const obj={id:editId.gara?editId.gara.id:uid('g'),stato:document.getElementById('xg-stato').value,portale:up(document.getElementById('xg-port').value),num_rdo:up(document.getElementById('xg-rdo').value),tipologia:document.getElementById('xg-tipo').value,descrizione:up(desc),ente:up(document.getElementById('xg-ente').value),base_asta:parseFloat(document.getElementById('xg-asta').value)||0,operatore:up(document.getElementById('xg-op').value),data_creazione:document.getElementById('xg-crea').value,scadenza:buildScadenzaValue(document.getElementById('xg-scad-date').value, document.getElementById('xg-scad-time').value),note:up(document.getElementById('xg-note').value)};
   if(editId.gara){const i=state.gare.findIndex(x=>x.id===obj.id);state.gare[i]=obj;}else state.gare.unshift(obj);
   save('gare');closeM('gara');updateBadges();drawGare();toast('Gara salvata','ok');
 }
