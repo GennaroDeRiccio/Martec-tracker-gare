@@ -519,7 +519,7 @@ thead th{position:sticky;top:0;z-index:2}
           <option value="">—</option><option>ASSIA</option><option>GENNI</option><option>ANNAMARIA</option>
         </select></div>
         <div class="fi"><label>Data Creazione</label><input type="date" id="xg-crea"></div>
-        <div class="fi"><label>Scadenza</label><input type="date" id="xg-scad"></div>
+        <div class="fi"><label>Scadenza e Ora</label><input type="datetime-local" id="xg-scad"></div>
         <div class="fi full"><label>Note</label><textarea id="xg-note" class="upper" placeholder="Note aggiuntive..."></textarea></div>
       </div>
     </div>
@@ -1031,10 +1031,27 @@ const tblFilters = {gare:{}, agg:{}, off:{}, port:{}, scad:{}};
 // UTILS
 // ═══════════════════════════════════════════════════════
 const eur = n => n ? new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',minimumFractionDigits:0}).format(n) : '—';
-const fmtD = s => { if(!s) return '—'; const [y,m,g]=s.split('-'); return g+'/'+m+'/'+y; };
+const fmtD = s => {
+  if(!s) return '—';
+  const [datePart='', timePart=''] = String(s).split('T');
+  const [y,m,g] = datePart.split('-');
+  if(!y || !m || !g) return s;
+  const base = g+'/'+m+'/'+y;
+  if(!timePart) return base;
+  const [hh='00', mm='00'] = timePart.split(':');
+  return base+' '+hh+':'+mm;
+};
 const uid  = p => p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 const daysTo = s => { if(!s) return null; return Math.ceil((new Date(s)-new Date())/(864e5)); };
 const up = s => s ? String(s).toUpperCase().trim() : '';
+
+function toDateTimeLocalValue(value) {
+  if(!value) return '';
+  const raw = String(value).trim();
+  if(!raw) return '';
+  if(raw.includes('T')) return raw.slice(0,16);
+  return raw.length === 10 ? raw + 'T00:00' : raw;
+}
 
 function bdSt(s) {
   const m={AGGIUDICATA:'AG',PRESENTATA:'PR','DA LAVORARE':'DL',PERSA:'PE',SCARTATA:'SC'};
@@ -1655,7 +1672,7 @@ function openM(type) {
       document.getElementById('xg-asta').value=ev.base_asta||'';
       document.getElementById('xg-op').value=ev.operatore||'';
       document.getElementById('xg-crea').value=ev.data_creazione||'';
-      document.getElementById('xg-scad').value=ev.scadenza||'';
+      document.getElementById('xg-scad').value=toDateTimeLocalValue(ev.scadenza);
       document.getElementById('xg-note').value=ev.note||'';
     }
   }
