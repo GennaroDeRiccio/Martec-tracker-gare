@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Martec — Tracker Gare Pubbliche</title>
+<link rel="icon" type="image/png" href="./logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0D1B3E;--navy2:#152550;--blue:#1565C0;--blue2:#1976D2;
+  --teal:#00838F;--green:#2E7D32;--green2:#388E3C;
+  --red:#C62828;--orange:#E65100;--gold:#F9A825;--purple:#6A1B9A;
+  --gray1:#263238;--gray2:#455A64;--gray3:#78909C;--gray4:#B0BEC5;
+  --gray5:#ECEFF1;--gray6:#F5F7FA;--white:#FFFFFF;
+  --sb:220px;--hh:58px;--r:10px;
+  --sh:0 2px 12px rgba(13,27,62,.09);--sh2:0 6px 28px rgba(13,27,62,.14);
+}
+body{font-family:'Barlow',sans-serif;background:var(--gray6);color:var(--gray1);display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+#sb{width:var(--sb);background:var(--navy);display:flex;flex-direction:column;height:100vh;overflow-y:auto;flex-shrink:0}
+.sb-logo{padding:16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sb-logo img{width:172px;display:block}
+.sb-tagline{font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.3);text-transform:uppercase;margin-top:5px}
+.sb-sec{font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.25);text-transform:uppercase;padding:16px 16px 5px}
+.nav{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;border-left:3px solid transparent;transition:all .15s;user-select:none}
+.nav:hover{background:rgba(255,255,255,.05);color:#fff}
+.nav.on{background:rgba(21,101,192,.22);color:#fff;border-left-color:#4FC3F7}
+.nav .ic{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nb{margin-left:auto;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;font-family:'JetBrains Mono',monospace}
+.nb.red{background:var(--red)}
+.sb-footer{margin-top:auto;padding:12px 16px;border-top:1px solid rgba(255,255,255,.06);font-size:9px;color:rgba(255,255,255,.2);text-align:center}
+.sync-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4CAF50;margin-right:4px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#topbar{min-height:var(--hh);background:var(--white);border-bottom:1px solid #E3E8EF;display:flex;align-items:center;padding:10px 18px;gap:14px;flex-shrink:0;box-shadow:0 1px 3px rgba(13,27,62,.06);flex-wrap:wrap;position:sticky;top:0;z-index:80}
+.tb-title{font-family:'Barlow Condensed',sans-serif;font-size:21px;font-weight:800;color:var(--navy);letter-spacing:.3px}
+.tb-sub{font-size:11px;color:var(--gray3)}
+.tb-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+#sync-status{font-size:11px;color:var(--gray3);display:flex;align-items:center;gap:4px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 15px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:'Barlow',sans-serif;white-space:nowrap}
+.btn-p{background:var(--blue);color:#fff}.btn-p:hover{background:var(--blue2)}
+.btn-g{background:var(--green);color:#fff}.btn-g:hover{background:var(--green2)}
+.btn-t{background:var(--teal);color:#fff}.btn-t:hover{filter:brightness(1.1)}
+.btn-o{background:transparent;color:var(--gray1);border:1.5px solid #D0D8E4}.btn-o:hover{border-color:var(--blue);color:var(--blue)}
+.btn-r{background:var(--red);color:#fff}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-ic{padding:5px 9px}
+.btn-del{background:#FFEBEE;color:var(--red);border:none;border-radius:7px;padding:5px 9px;cursor:pointer;font-size:13px;transition:background .15s}.btn-del:hover{background:#FFCDD2}
+
+/* CONTENT */
+#content{flex:1;overflow-y:auto;padding:14px}
+.view{display:none}.view.on{display:block}
+
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--white);border-radius:var(--r);padding:13px 14px;box-shadow:var(--sh);border-left:4px solid var(--blue)}
+.kpi.g{border-left-color:var(--green)}.kpi.r{border-left-color:var(--red)}.kpi.o{border-left-color:var(--orange)}.kpi.t{border-left-color:var(--teal)}.kpi.pu{border-left-color:var(--purple)}.kpi.go{border-left-color:var(--gold)}
+.kpi-lbl{font-size:9px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--gray3);margin-bottom:4px}
+.kpi-val{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;color:var(--navy);line-height:1}
+.kpi-sub{font-size:10px;color:var(--gray3);margin-top:3px}
+
+/* CHARTS */
+.ch-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.ch-grid.t3{grid-template-columns:1fr 1fr 1fr}
+.ch-card{background:var(--white);border-radius:var(--r);padding:14px;box-shadow:var(--sh)}
+.ch-card.full{grid-column:1/-1}
+.ch-ttl{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px}
+.ch-wrap{position:relative;height:190px}.ch-wrap.lg{height:230px}
+
+/* TABLE CARD */
+.tc{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.tc-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #EEF2F7;flex-wrap:wrap}
+#v-gare .tc-hdr{position:sticky;top:0;z-index:6;background:#fff}
+.tc-hdr h3{font-size:15px;font-weight:700;color:var(--navy)}
+.srch{display:flex;align-items:center;gap:7px;background:var(--gray6);border-radius:7px;padding:6px 11px;border:1.5px solid transparent;transition:border .15s}
+.srch:focus-within{border-color:var(--blue);background:#fff}
+.srch input{border:none;background:transparent;outline:none;font-size:13px;font-family:'Barlow',sans-serif;color:var(--gray1);width:180px}
+.flt{border:1.5px solid #D0D8E4;border-radius:7px;padding:6px 10px;font-size:12px;font-family:'Barlow',sans-serif;color:var(--gray1);background:var(--white);outline:none;cursor:pointer}
+.flt:focus{border-color:var(--blue)}
+.sortbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.sortbar-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--gray3);margin-right:2px}
+.sortchip{border:1.5px solid #D0D8E4;background:#fff;color:var(--gray2);border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.sortchip:hover{border-color:#90CAF9;color:var(--blue)}
+.sortchip.on{background:#EDF4FF;border-color:#BBDEFB;color:var(--blue)}
+.sortdir{border:1.5px solid #D0D8E4;background:#fff;color:var(--gray1);border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.sortdir:hover{border-color:var(--blue);color:var(--blue)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--navy);color:#fff;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:10px 13px;text-align:left;white-space:nowrap}
+tbody tr{border-bottom:1px solid #F0F4F8;transition:background .1s}
+tbody tr:hover{background:#EBF3FF!important}
+tbody td{padding:11px 11px;vertical-align:middle}
+.tc-ftr{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #EEF2F7;font-size:12px;color:var(--gray3)}
+.pag{display:flex;gap:5px}
+.pb{width:30px;height:30px;border-radius:6px;border:1.5px solid #D0D8E4;background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:var(--gray1);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.pb:hover{border-color:var(--blue);color:var(--blue)}
+.pb.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* ROW COLORS */
+.rAG{background:#F0FBF0!important}.rPR{background:#EDF4FF!important}.rDL{background:#FFF8F0!important}.rPE{background:#FFF0F0!important}.rSC{background:#F5F7FA!important}
+
+/* BADGES */
+.bd{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+.bd-AG{background:#2E7D32;color:#fff}.bd-PR{background:#1565C0;color:#fff}.bd-DL{background:#E65100;color:#fff}.bd-PE{background:#C62828;color:#fff}.bd-SC{background:#546E7A;color:#fff}
+.bd-CONCLUSA{background:#E8F5E9;color:#1B5E20;border:1px solid #A5D6A7}.bd-INCORSO{background:#E3F2FD;color:#0D47A1;border:1px solid #90CAF9}.bd-ATTESA{background:#FFFDE7;color:#F57F17;border:1px solid #FFF176}
+.bd-ATTIVO{background:#E8F5E9;color:#1B5E20;border:1px solid #A5D6A7}.bd-SCADUTO{background:#FFEBEE;color:#B71C1C;border:1px solid #FFCDD2}.bd-SOSPESO{background:#FFF3E0;color:#BF360C;border:1px solid #FFCC80}
+.bd-euro{background:#E3F2FD;color:#0D47A1;font-family:'JetBrains Mono',monospace;font-size:11px}
+.scad-urg{background:#FFEBEE;color:#B71C1C;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700}
+.scad-att{background:#FFF3E0;color:#BF360C;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700}
+.scad-ok{background:#E8F5E9;color:#2E7D32;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700}
+.scad-past{background:#ECEFF1;color:#546E7A;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700}
+
+/* MODAL */
+.ovl{display:none;position:fixed;inset:0;background:rgba(13,27,62,.5);backdrop-filter:blur(3px);z-index:500;align-items:center;justify-content:center}
+.ovl.on{display:flex}
+.mdl{background:#fff;border-radius:14px;width:92%;max-width:660px;max-height:92vh;overflow-y:auto;box-shadow:var(--sh2);animation:mIn .2s ease}
+@keyframes mIn{from{transform:translateY(18px);opacity:0}to{transform:none;opacity:1}}
+.mh{padding:18px 22px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #EEF2F7}
+.mh h3{font-size:17px;font-weight:700;color:var(--navy)}
+.mcl{background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray3);line-height:1;padding:0}
+.mb{padding:18px 22px}
+.mf{padding:14px 22px;border-top:1px solid #EEF2F7;display:flex;gap:9px;justify-content:flex-end}
+
+/* FORM */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.fg3{grid-template-columns:1fr 1fr 1fr}
+.fi{display:flex;flex-direction:column;gap:4px}
+.fi.full{grid-column:1/-1}
+label{font-size:10px;font-weight:700;color:var(--gray3);text-transform:uppercase;letter-spacing:.8px}
+input,select,textarea{border:1.5px solid #D0D8E4;border-radius:7px;padding:8px 11px;font-size:13px;font-family:'Barlow',sans-serif;color:var(--gray1);outline:none;transition:border .15s;background:#fff;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+textarea{resize:vertical;min-height:65px}
+.upper{text-transform:uppercase}
+
+/* PORTALI */
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.pc{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:16px;border-left:4px solid #D0D8E4;position:relative;transition:box-shadow .15s}
+.pc:hover{box-shadow:var(--sh2)}
+.pc.fav{border-left-color:var(--gold);background:linear-gradient(135deg,#FFFDE7 0%,#fff 55%)}
+.pc-star{position:absolute;top:12px;right:12px;font-size:18px;cursor:pointer;background:none;border:none;line-height:1;transition:transform .15s}
+.pc-star:hover{transform:scale(1.2)}
+.pc-name{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;color:var(--navy);margin-bottom:4px}
+.pc-url{font-size:11px;color:var(--blue);text-decoration:none;display:block;margin-bottom:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-cred{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:9px}
+.pf{background:var(--gray6);border-radius:6px;padding:6px 9px}
+.pf .pl{font-size:9px;font-weight:700;color:var(--gray3);text-transform:uppercase;letter-spacing:.7px}
+.pf .pv{font-size:12px;font-family:'JetBrains Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eye{background:none;border:none;cursor:pointer;font-size:12px;padding:0 2px;vertical-align:middle}
+.pc-note{font-size:11px;color:var(--gray3);margin-bottom:7px;font-style:italic}
+.pc-acts{display:flex;gap:7px;margin-top:8px}
+
+/* EMPTY */
+.empty{text-align:center;padding:50px 20px;color:var(--gray3)}
+.empty .ei{font-size:44px;margin-bottom:10px}
+.empty h4{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:5px}
+
+/* TOAST */
+#toasts{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--navy);color:#fff;padding:11px 16px;border-radius:9px;font-size:13px;font-weight:500;box-shadow:var(--sh2);animation:tIn .2s ease;display:flex;align-items:center;gap:7px}
+.toast.ok{background:var(--green)}.toast.err{background:var(--red)}
+@keyframes tIn{from{transform:translateX(18px);opacity:0}to{transform:none;opacity:1}}
+
+/* LOADING */
+#loading{position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:18px}
+#loading img{width:220px;display:block}
+#loading p{color:rgba(255,255,255,.6);font-size:14px;letter-spacing:1px}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.15);border-top-color:#4FC3F7;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:#C5CFD6;border-radius:3px}
+
+/* CLICKABLE HEADER */
+.th-click{cursor:pointer;user-select:none;white-space:nowrap}
+.th-click:hover{background:#1a2f5a}
+.th-click.active-filter{background:#1565C0;position:relative}
+
+/* FILTER DROPDOWN */
+.col-filter-wrap{position:relative;display:inline-block}
+.col-dropdown{position:fixed;background:#fff;border:1.5px solid #D0D8E4;border-radius:10px;box-shadow:0 8px 32px rgba(13,27,62,.18);z-index:300;min-width:180px;padding:6px 0;animation:mIn .15s ease}
+.col-dropdown-item{padding:8px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--gray1);transition:background .1s}
+.col-dropdown-item:hover{background:#EDF4FF;color:var(--blue)}
+.col-dropdown-item.selected{color:var(--blue);font-weight:700}
+.col-dropdown-item .ck{margin-left:auto;color:var(--green);font-weight:700}
+.col-dropdown-clear{padding:8px 16px;cursor:pointer;font-size:12px;color:var(--red);border-top:1px solid #EEF2F7;margin-top:4px}
+.col-dropdown-clear:hover{background:#FFF0F0}
+
+/* GARA DETAIL MODAL */
+.gara-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.gd-field{padding:12px 16px;border-bottom:1px solid #EEF2F7}
+.gd-field:nth-child(odd){border-right:1px solid #EEF2F7}
+.gd-field.full{grid-column:1/-1}
+.gd-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--gray3);margin-bottom:3px}
+.gd-val{font-size:14px;font-weight:600;color:var(--gray1)}
+.gd-val.big{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blue)}
+.gd-header{padding:16px 22px;display:flex;align-items:center;gap:12px;margin-bottom:0;border-bottom:1px solid #EEF2F7}
+
+/* PORTALI TABLE */
+.pwd-cell{display:flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:12px}
+.star-cell{text-align:center;font-size:16px;cursor:pointer;padding:8px 6px!important}
+tbody tr.port-fav{background:linear-gradient(90deg,#FFFDE7 0%,#fff 40%)!important}
+
+/* GARE TABLE ROWS CLICKABLE */
+tbody .row-click{cursor:pointer}
+
+/* BASE ASTA */
+.asta-val{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--blue);letter-spacing:.3px}
+
+/* ACTIVE FILTER CHIPS */
+.filter-chip {
+  display:inline-flex;align-items:center;gap:5px;
+  background:#EDF4FF;color:var(--blue);border:1.5px solid #BBDEFB;
+  border-radius:20px;padding:3px 10px 3px 12px;font-size:12px;font-weight:700;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.filter-chip:hover{background:#BBDEFB}
+.filter-chip .chip-x{font-size:14px;line-height:1;margin-left:2px;opacity:.7}
+.filter-chip:hover .chip-x{opacity:1}
+.filter-chip.chip-stato{background:#E8F5E9;color:#1B5E20;border-color:#A5D6A7}
+.filter-chip.chip-portale{background:#E3F2FD;color:#0D47A1;border-color:#90CAF9}
+.filter-chip.chip-tipologia{background:#FFF3E0;color:#BF360C;border-color:#FFCC80}
+.filter-chip.chip-operatore{background:#F3E5F5;color:#6A1B9A;border-color:#CE93D8}
+
+/* CLICKABLE ROW */
+.row-click{cursor:pointer;transition:background .1s}
+.row-click:hover td{background:#E3F2FD!important;transition:background .1s}
+.gara-row td{padding-top:15px;padding-bottom:15px}
+.gara-portale{font-weight:800;color:var(--teal);font-size:13px}
+.gara-rdo{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gray3)}
+.gara-desc{display:flex;flex-direction:column;gap:5px;min-width:220px}
+.gara-desc-main{font-size:14px;font-weight:700;color:var(--navy);line-height:1.3}
+.gara-desc-sub{font-size:11px;color:var(--gray3);line-height:1.35}
+.gara-ente{font-size:12px;color:var(--gray2);line-height:1.35}
+.gara-scad{font-size:12px;white-space:nowrap;font-weight:700}
+.gara-note{font-size:11px;color:var(--gray2);line-height:1.4;min-width:180px;max-width:280px}
+.gara-asta{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;background:#EDF4FF;color:var(--blue);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;letter-spacing:.2px}
+
+/* GARA DETAIL */
+#m-detail .mdl{max-width:none;width:min(86vw,1500px);max-height:min(95vh,1320px);display:flex;flex-direction:column}
+.gd-header{
+  background:linear-gradient(135deg,var(--navy) 0%,#1a3a6e 100%);
+  padding:28px 32px 22px;border-radius:14px 14px 0 0;
+}
+.gd-header-title{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:800;color:#fff;line-height:1.12;margin-bottom:10px;max-width:900px}
+.gd-header-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.gd-body{display:grid;grid-template-columns:1fr 1fr;background:#fff;overflow:auto}
+.gd-cell{padding:18px 22px;border-bottom:1px solid #F0F4F8}
+.gd-cell:nth-child(odd){border-right:1px solid #F0F4F8}
+.gd-cell.full{grid-column:1/-1}
+.gd-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.85px;color:var(--gray3);margin-bottom:6px}
+.gd-val{font-size:15px;font-weight:600;color:var(--gray1);line-height:1.45}
+.gd-val.hero{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--blue)}
+.gd-val.mono{font-family:'JetBrains Mono',monospace;font-size:13px}
+.gd-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:18px 22px;background:#F8FAFD;border-bottom:1px solid #EEF2F7}
+.gd-summary-card{background:#fff;border:1px solid #E6EDF5;border-radius:12px;padding:12px 14px;box-shadow:0 1px 4px rgba(13,27,62,.04)}
+.gd-summary-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--gray3);margin-bottom:5px}
+.gd-summary-value{font-size:14px;font-weight:700;color:var(--navy);line-height:1.35}
+.gd-footer{padding:18px 24px;border-top:1px solid #EEF2F7;display:flex;align-items:center;gap:10px;background:#FAFBFC;border-radius:0 0 14px 14px}
+
+/* TH sticky */
+thead th{position:sticky;top:0;z-index:2}
+.th-click{cursor:pointer;user-select:none}
+.th-click:hover{background:#1a3060}
+.th-click.active-filter{background:#1565C0}
+
+/* COL DROPDOWN improved */
+.col-dropdown{position:fixed;background:#fff;border:1.5px solid #D0D8E4;border-radius:10px;
+  box-shadow:0 8px 32px rgba(13,27,62,.18);z-index:400;min-width:200px;padding:6px 0;
+  animation:mIn .15s ease;max-height:320px;overflow-y:auto}
+.col-dd-search{padding:8px 12px;border-bottom:1px solid #EEF2F7}
+.col-dd-search input{width:100%;border:1.5px solid #D0D8E4;border-radius:6px;padding:5px 9px;font-size:12px;outline:none}
+.col-dd-search input:focus{border-color:var(--blue)}
+.col-dropdown-item{padding:8px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--gray1);transition:background .1s;white-space:nowrap}
+.col-dropdown-item:hover{background:#EDF4FF;color:var(--blue)}
+.col-dropdown-item.on{color:var(--blue);font-weight:700}
+.col-dropdown-item .ck{margin-left:auto;color:var(--green)}
+.col-dd-clear{padding:8px 16px;cursor:pointer;font-size:12px;color:var(--red);border-top:1px solid #EEF2F7;display:flex;align-items:center;gap:6px}
+.col-dd-clear:hover{background:#FFF0F0}
+
+@media (max-width: 900px){
+  body{flex-direction:column;height:auto;overflow:auto}
+  #sb{width:100%;height:auto;min-height:auto}
+  .sb-logo{padding:12px 14px}
+  .sb-logo svg{width:132px}
+  .sb-sec{display:none}
+  #sb{overflow:visible}
+  #main{min-height:0}
+  .nav{padding:10px 14px;border-left:none;border-bottom:3px solid transparent}
+  .nav.on{border-left-color:transparent;border-bottom-color:#4FC3F7}
+  #topbar{padding:10px 14px;gap:10px}
+  .tb-title{font-size:18px}
+  .tb-right{margin-left:0;width:100%;justify-content:space-between;flex-wrap:wrap}
+  #content{padding:10px}
+  .ch-grid{grid-template-columns:1fr}
+  .ch-card.full{grid-column:auto}
+  .fg,.fg3,.gd-body,.gara-detail-grid{grid-template-columns:1fr}
+  .gd-summary{grid-template-columns:1fr 1fr}
+  .gd-cell:nth-child(odd),.gd-field:nth-child(odd){border-right:none}
+}
+
+@media (max-width: 640px){
+  .kpi-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .kpi{padding:11px 12px}
+  .kpi-val{font-size:24px}
+  .ch-wrap{height:170px}
+  .ch-wrap.lg{height:200px}
+  .srch{width:100%}
+  .srch input{width:100%}
+  .flt{width:100%}
+  .sortbar{width:100%}
+  .tc-hdr h3{width:100%}
+  .tc-ftr{flex-direction:column;align-items:flex-start;gap:8px}
+  .gara-row td{padding-top:13px;padding-bottom:13px}
+  .gara-desc-main{font-size:13px}
+  .gd-summary{grid-template-columns:1fr}
+  #toasts{left:12px;right:12px;bottom:12px}
+  .toast{width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loading">
+  <img src="./logo.png" alt="Martec Distribuzione">
+  <div class="spinner"></div>
+  <p>Caricamento dati in corso...</p>
+</div>
+
+<!-- SIDEBAR -->
+<nav id="sb">
+  <div class="sb-logo">
+    <img src="./logo.png" alt="Martec Distribuzione">
+    <div class="sb-tagline">TRACKER GARE PUBBLICHE</div>
+  </div>
+  <div class="sb-sec">Principale</div>
+  <div class="nav on" data-v="dashboard"><span class="ic">📊</span>Dashboard</div>
+  <div class="nav" data-v="gare"><span class="ic">📋</span>Lista Gare<span class="nb" id="nb-g">—</span></div>
+  <div class="nav" data-v="aggiudicate"><span class="ic">✅</span>Aggiudicate<span class="nb" id="nb-a">—</span></div>
+  <div class="nav" data-v="offerte"><span class="ic">📬</span>Offerte<span class="nb" id="nb-o">—</span></div>
+  <div class="sb-sec">Gestione</div>
+  <div class="nav" data-v="portali"><span class="ic">🌐</span>Portali</div>
+  <div class="nav" data-v="scadenze"><span class="ic">⏰</span>Scadenze<span class="nb red" id="nb-s">0</span></div>
+  <div class="sb-footer"><span class="sync-dot"></span>Sincronizzato · v3.0</div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <span class="tb-title" id="tb-ttl">Dashboard</span>
+    <span class="tb-sub" id="tb-sub"></span>
+    <div class="tb-right">
+      <span id="sync-status">🔄 Connessione...</span>
+      <button class="btn btn-p" id="btn-add" style="display:none" onclick="openAdd()"></button>
+    </div>
+  </div>
+
+  <div id="content">
+    <!-- DASHBOARD -->
+    <div class="view on" id="v-dashboard">
+      <div class="kpi-row" id="kpi-row"></div>
+      <div class="ch-grid">
+        <div class="ch-card"><div class="ch-ttl">🏷️ Distribuzione per Stato</div><div class="ch-wrap"><canvas id="c-stati"></canvas></div></div>
+        <div class="ch-card"><div class="ch-ttl">🌐 Gare per Portale (top 8)</div><div class="ch-wrap"><canvas id="c-portali"></canvas></div></div>
+        <div class="ch-card full"><div class="ch-ttl">📈 Trend Mensile</div><div class="ch-wrap lg"><canvas id="c-trend"></canvas></div></div>
+        <div class="ch-card"><div class="ch-ttl">📁 Tipologie Gara</div><div class="ch-wrap"><canvas id="c-tipo"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- LISTA GARE -->
+    <div class="view" id="v-gare">
+      <div class="tc">
+        <div class="tc-hdr">
+          <h3>📋 Lista Gare</h3>
+          <div class="srch"><span>🔍</span><input id="sg" placeholder="Cerca per descrizione, ente, RDO..." oninput="pg.cur=1;drawGare()"></div>
+          <div class="sortbar" id="g-sortbar">
+            <span class="sortbar-label">Ordina per</span>
+            <button type="button" class="sortchip" data-sort-field="scadenza" onclick="setGareSortField('scadenza')">Scadenza</button>
+            <button type="button" class="sortdir" id="g-sortdir" onclick="toggleGareSortDirection()">↑ Crescente</button>
+          </div>
+          <div id="active-filters-bar" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"></div>
+
+        </div>
+        <!-- hidden selects kept for JS compatibility -->
+        <select id="fg-stato" style="display:none"></select>
+        <select id="fg-port" style="display:none"></select>
+        <select id="fg-op" style="display:none"></select>
+        <div class="tw"><table id="table-gare"><thead><tr>
+          <th class="th-click" data-tbl="gare" data-col="stato">Stato ▾</th>
+          <th class="th-click" data-tbl="gare" data-col="portale">Portale ▾</th>
+          <th>N° RDO</th><th>Descrizione</th>
+          <th>Base d'Asta</th>
+          <th class="th-click" data-tbl="gare" data-col="tipologia">Tipologia ▾</th>
+          <th>Ente</th><th>Note</th><th>Scadenza</th>
+          <th class="th-click" data-tbl="gare" data-col="operatore">Operatore ▾</th>
+        </tr></thead><tbody id="tb-g"></tbody></table></div>
+        <div class="tc-ftr"><span id="cnt-g"></span><div class="pag" id="pag-g"></div></div>
+      </div>
+    </div>
+
+    <!-- AGGIUDICATE -->
+    <div class="view" id="v-aggiudicate">
+      <div class="tc">
+        <div class="tc-hdr">
+          <h3>✅ Gare Aggiudicate</h3>
+          <div class="srch"><span>🔍</span><input id="sa" placeholder="Cerca..." oninput="pa.cur=1;drawAgg()"></div>
+          <div class="sortbar" id="a-sortbar">
+            <button type="button" class="sortchip" data-sort-field="scadenza" onclick="setAggSortField('scadenza')">Scadenza</button>
+            <button type="button" class="sortdir" id="a-sortdir" onclick="toggleAggSortDirection()">↑ Crescente</button>
+          </div>
+        </div>
+        <div class="tw"><table><thead><tr>
+          <th class="th-click" data-tbl="agg" data-tbl="gare" data-col="portale">Portale ▾</th>
+          <th>N° RDO</th><th>Descrizione</th>
+          <th>Base Asta</th><th>Valore Offerto</th>
+          <th class="th-click" data-tbl="agg" data-col="stato_proc">Stato ▾</th>
+          <th>Scadenza</th><th class="th-click" data-tbl="agg" data-col="stipula">Stipula ▾</th>
+          <th>Data Stipula</th><th>N° Ordine</th>
+          <th class="th-click" data-tbl="agg" data-col="fornitore">Fornitore ▾</th>
+          <th></th>
+        </tr></thead><tbody id="tb-a"></tbody></table></div>
+        <div class="tc-ftr"><span id="cnt-a"></span><div class="pag" id="pag-a"></div></div>
+      </div>
+    </div>
+
+    <!-- OFFERTE -->
+    <div class="view" id="v-offerte">
+      <div class="tc">
+        <div class="tc-hdr">
+          <h3>📬 Offerte Presentate</h3>
+          <div class="srch"><span>🔍</span><input id="so" placeholder="Cerca..." oninput="po.cur=1;drawOff()"></div>
+          <div class="sortbar" id="o-yearbar"></div>
+        </div>
+        <div class="tw"><table><thead><tr>
+          <th>N°</th><th>Data</th><th>Oggetto</th>
+          <th class="th-click" data-tbl="off" data-col="ente">Ente ▾</th>
+          <th class="th-click" data-tbl="off" data-tbl="gare" data-col="operatore">Operatore ▾</th>
+          <th></th>
+        </tr></thead><tbody id="tb-o"></tbody></table></div>
+        <div class="tc-ftr"><span id="cnt-o"></span><div class="pag" id="pag-o"></div></div>
+      </div>
+    </div>
+
+    <!-- PORTALI -->
+    <div class="view" id="v-portali">
+      <div class="tc">
+        <div class="tc-hdr">
+          <h3>🌐 Portali</h3>
+          <div class="srch"><span>🔍</span><input id="sp" placeholder="Cerca portale..." oninput="drawPortali()"></div>
+          <div style="font-size:11px;color:var(--gray3);margin-left:auto">
+            Username e password restano salvati solo nel browser locale.
+          </div>
+        </div>
+        <div class="tw">
+          <table id="table-portali">
+            <thead><tr>
+              <th style="width:36px">⭐</th>
+              <th class="th-click" data-tbl="port" data-col="nome">Portale ▾</th>
+              <th>URL</th><th>Username</th><th>Password</th>
+              <th class="th-click" data-tbl="port" data-tbl="gare" data-col="operatore">Operatore ▾</th>
+              <th class="th-click" data-tbl="port" data-tbl="gare" data-col="stato">Stato ▾</th>
+              <th>Note</th><th></th>
+            </tr></thead>
+            <tbody id="tb-portali"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCADENZE -->
+    <div class="view" id="v-scadenze">
+      <div class="tc">
+        <div class="tc-hdr">
+          <h3>⏰ Scadenze Imminenti</h3>
+        </div>
+        <div class="tw"><table><thead><tr>
+          <th class="th-click" data-tbl="scad" data-tbl="gare" data-col="stato">Stato ▾</th>
+          <th class="th-click" data-tbl="scad" data-tbl="gare" data-col="portale">Portale ▾</th>
+          <th>N° RDO</th><th>Descrizione</th>
+          <th class="th-click" data-tbl="scad" data-col="ente">Ente ▾</th>
+          <th>Scadenza</th><th>Giorni</th>
+          <th class="th-click" data-tbl="scad" data-tbl="gare" data-col="operatore">Operatore ▾</th>
+        </tr></thead><tbody id="tb-sc"></tbody></table></div>
+        <div class="tc-ftr"><span id="cnt-sc"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GARA -->
+<div class="ovl" id="m-gara">
+  <div class="mdl">
+    <div class="mh"><h3 id="m-gara-ttl">📋 Nuova Gara</h3><button class="mcl" onclick="closeM('gara')">✕</button></div>
+    <div class="mb">
+      <div class="fg">
+        <div class="fi"><label>Stato *</label><select id="xg-stato" class="upper">
+          <option>AGGIUDICATA</option><option selected>DA LAVORARE</option><option>PRESENTATA</option><option>PERSA</option><option>SCARTATA</option>
+        </select></div>
+        <div class="fi"><label>Portale *</label><select id="xg-port" class="upper"></select></div>
+        <div class="fi"><label>N° RDO</label><input id="xg-rdo" class="upper" placeholder="es. 14061-7947"></div>
+        <div class="fi"><label>Tipologia</label><select id="xg-tipo">
+          <option>INDAGINE DI MERCATO</option><option>OFFERTA</option><option>PREVENTIVO</option><option>RDO APERTA</option>
+          <option>RDO SEMPLICE</option><option>PROCEDURA APERTA</option><option>INVITO</option>
+          <option>CONFRONTO PREVENTIVI</option><option>MANIFESTAZIONE D'INTERESSE</option><option>TRATTATIVA DIRETTA</option>
+        </select></div>
+        <div class="fi full"><label>Descrizione *</label><input id="xg-desc" class="upper" placeholder="Descrizione gara"></div>
+        <div class="fi full"><label>Ente Appaltante</label><input id="xg-ente" class="upper" placeholder="Nome ente"></div>
+        <div class="fi"><label>Base d'Asta (€)</label><input type="number" id="xg-asta" step="0.01" placeholder="0.00"></div>
+        <div class="fi"><label>Operatore</label><select id="xg-op">
+          <option value="">—</option><option>ASSIA</option><option>GENNI</option><option>ANNAMARIA</option>
+        </select></div>
+        <div class="fi"><label>Data Creazione</label><input type="date" id="xg-crea"></div>
+        <div class="fi"><label>Scadenza</label><input type="date" id="xg-scad"></div>
+        <div class="fi full"><label>Note</label><textarea id="xg-note" class="upper" placeholder="Note aggiuntive..."></textarea></div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn btn-o" onclick="closeM('gara')">Annulla</button><button class="btn btn-p" onclick="saveGara()">💾 Salva</button></div>
+  </div>
+</div>
+
+<!-- MODAL AGGIUDICATA -->
+<div class="ovl" id="m-agg">
+  <div class="mdl">
+    <div class="mh"><h3 id="m-agg-ttl">✅ Gara Aggiudicata</h3><button class="mcl" onclick="closeM('agg')">✕</button></div>
+    <div class="mb">
+      <div class="fg">
+        <div class="fi"><label>Portale</label><select id="xa-port" class="upper"></select></div>
+        <div class="fi"><label>N° RDO</label><input id="xa-rdo" class="upper"></div>
+        <div class="fi full"><label>Descrizione *</label><input id="xa-desc" class="upper"></div>
+        <div class="fi full"><label>Ente Appaltante</label><input id="xa-ente" class="upper"></div>
+        <div class="fi"><label>Base d'Asta (€)</label><input type="number" id="xa-asta" step="0.01"></div>
+        <div class="fi"><label>Valore Offerto (€)</label><input type="number" id="xa-val" step="0.01"></div>
+        <div class="fi"><label>Tipologia</label><select id="xa-tipo">
+          <option>INDAGINE DI MERCATO</option><option>OFFERTA</option><option>PREVENTIVO</option><option>RDO APERTA</option>
+          <option>RDO SEMPLICE</option><option>PROCEDURA APERTA</option><option>INVITO</option>
+          <option>CONFRONTO PREVENTIVI</option><option>MANIFESTAZIONE D'INTERESSE</option><option>TRATTATIVA DIRETTA</option>
+        </select></div>
+        <div class="fi"><label>Stato Procedura</label><select id="xa-stp">
+          <option value="">—</option><option>CONCLUSA</option><option>IN CORSO</option><option>IN ATTESA DI STIPULA</option>
+        </select></div>
+        <div class="fi"><label>Scadenza</label><input type="date" id="xa-scad"></div>
+        <div class="fi"><label>Stipula</label><select id="xa-stip"><option value="">—</option><option>SI</option><option>NO</option></select></div>
+        <div class="fi"><label>Data Stipula</label><input type="date" id="xa-dstip"></div>
+        <div class="fi"><label>N° Ordine</label><input id="xa-nord" class="upper"></div>
+        <div class="fi"><label>Fornitore</label><input id="xa-forn" class="upper"></div>
+        <div class="fi"><label>Consegna Entro</label><input id="xa-cons" class="upper"></div>
+        <div class="fi full"><label>Note</label><textarea id="xa-note" class="upper"></textarea></div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn btn-o" onclick="closeM('agg')">Annulla</button><button class="btn btn-g" onclick="saveAgg()">💾 Salva</button></div>
+  </div>
+</div>
+
+<!-- MODAL OFFERTA -->
+<div class="ovl" id="m-off">
+  <div class="mdl" style="max-width:480px">
+    <div class="mh"><h3 id="m-off-ttl">📬 Nuova Offerta</h3><button class="mcl" onclick="closeM('off')">✕</button></div>
+    <div class="mb">
+      <div class="fg">
+        <div class="fi"><label>N° Offerta</label><input id="xo-num"></div>
+        <div class="fi"><label>Data</label><input type="date" id="xo-data"></div>
+        <div class="fi full"><label>Oggetto *</label><input id="xo-ogg" class="upper"></div>
+        <div class="fi full"><label>Ente</label><input id="xo-ente" class="upper"></div>
+        <div class="fi full"><label>Operatore</label><select id="xo-op">
+          <option value="">—</option><option>ASSIA</option><option>GENNI</option><option>ANNAMARIA</option>
+        </select></div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn btn-o" onclick="closeM('off')">Annulla</button><button class="btn btn-t" onclick="saveOff()">💾 Salva</button></div>
+  </div>
+</div>
+
+<!-- MODAL PORTALE -->
+<div class="ovl" id="m-port">
+  <div class="mdl" style="max-width:500px">
+    <div class="mh"><h3 id="m-port-ttl">🌐 Portale</h3><button class="mcl" onclick="closeM('port')">✕</button></div>
+    <div class="mb">
+      <div class="fg">
+        <div class="fi full"><label>Nome Portale *</label><input id="xp-nome" class="upper"></div>
+        <div class="fi full"><label>URL</label><input id="xp-url" type="url" placeholder="https://..."></div>
+        <div class="fi"><label>Username</label><input id="xp-user" class="upper"></div>
+        <div class="fi"><label>Password</label><input id="xp-pass" type="password"></div>
+        <div class="fi"><label>Operatore</label><select id="xp-op">
+          <option value="">—</option><option>ASSIA</option><option>GENNI</option><option>ANNAMARIA</option>
+        </select></div>
+        <div class="fi"><label>Stato Account</label><select id="xp-stato">
+          <option value="">—</option><option>ATTIVO</option><option>SCADUTO</option><option>SOSPESO</option>
+        </select></div>
+        <div class="fi full"><label>Note</label><textarea id="xp-note"></textarea></div>
+        <div class="fi full" style="flex-direction:row;align-items:center;gap:10px">
+          <input type="checkbox" id="xp-fav" style="width:18px;height:18px;flex-shrink:0">
+          <label for="xp-fav" style="font-size:13px;text-transform:none;letter-spacing:0;font-weight:600;color:var(--gold)">⭐ Segna come preferito</label>
+        </div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn btn-o" onclick="closeM('port')">Annulla</button><button class="btn btn-p" onclick="savePort()">💾 Salva</button></div>
+  </div>
+</div>
+
+
+<!-- MODAL GARA DETAIL -->
+<div class="ovl" id="m-detail">
+  <div class="mdl">
+    <div class="gd-header">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5)">DETTAGLIO GARA</div>
+        <button class="mcl" onclick="closeM('detail')" style="color:rgba(255,255,255,.6);font-size:20px">✕</button>
+      </div>
+      <div class="gd-header-title" id="gd-title">—</div>
+      <div class="gd-header-meta">
+        <div id="gd-stato-badge"></div>
+        <div id="gd-portale-badge" style="background:rgba(255,255,255,.12);color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700"></div>
+        <div id="gd-asta-badge" style="background:rgba(79,195,247,.2);color:#4FC3F7;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:800;font-family:'Barlow Condensed',sans-serif"></div>
+      </div>
+    </div>
+    <div class="gd-body" id="gd-body"></div>
+    <div class="gd-footer">
+      <button class="btn btn-r btn-sm" id="gd-btn-del">🗑️ Elimina Gara</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-o btn-sm" onclick="closeM('detail')">Chiudi</button>
+      <button class="btn btn-p btn-sm" id="gd-btn-edit">✏️ Modifica Gara</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// SEED DATA (importato da Excel)
+// ═══════════════════════════════════════════════════════
+const SEED = {"gare": [{"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": "14061-7947", "descrizione": "MULINO CRIOGENICO", "base_asta": 21300.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR", "data_creazione": "2024-08-29", "scadenza": "2024-09-12", "note": "INVIATA TRAMITE PEC", "operatore": "ASSIA", "id": "g1"}, {"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": "15021-3762", "descrizione": "RIDUTTORI DI PRESSIONE", "base_asta": 8000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "ISTITUTO DI SCIENZE E TECNOLOGIE PER L'ENERGIA E LA MOBILITA' SOSTENIBILI", "data_creazione": "2024-10-21", "scadenza": "2024-10-16", "note": "INVIATA TRAMITE PEC", "operatore": "ASSIA", "id": "g2"}, {"stato": "PERSA", "portale": "EMAIL", "num_rdo": "", "descrizione": "DISPOSITIVI ELETTRONICI (EMANUELE DALLE VEDOVE)", "base_asta": 4820.0, "tipologia": "OFFERTA", "ente": "UNIVERSITA' DEGLI STUDI DI CAGLIARI", "data_creazione": "", "scadenza": "2024-12-03", "note": "", "operatore": "GENNI", "id": "g3"}, {"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": "15074-1025", "descrizione": "INCUBATORE A CIRCOLAZIONE D'ARIA", "base_asta": 10000.0, "tipologia": "MANIFESTAZIONE D'INTERESSE", "ente": "UNIVERSITA' DEGLI STUDI DI FERRARA", "data_creazione": "2024-11-21", "scadenza": "2024-12-03", "note": "INVIATA TRAMITE PEC", "operatore": "ASSIA", "id": "g4"}, {"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": "15073-9468", "descrizione": "N. 47 FRIGORIFERI DA LABORATORIO", "base_asta": 163000.0, "tipologia": "MANIFESTAZIONE D'INTERESSE", "ente": "ISTITUTO ZOOPROFILATTICO SPERIMENTALE DEL LAZIO E DELLA TOSCANA", "data_creazione": "2024-11-28", "scadenza": "2024-12-13", "note": "RICEVUTO INVITO  A PRESENTARE OFFERTA IL 12/05/2025", "operatore": "ASSIA", "id": "g5"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "4914164", "descrizione": "ARMADI ASPIRANTI", "base_asta": 20000.0, "tipologia": "RDO SEMPLICE", "ente": "ASREM", "data_creazione": "2024-12-05", "scadenza": "2024-12-16", "note": "GARA ANCORA IN ESAME. TERMINE ULTIMO STIPULA 16/07/2025", "operatore": "ASSIA", "id": "g6"}, {"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": "16006-5484", "descrizione": "BANCHI DA LABORATORIO", "base_asta": 11000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR", "data_creazione": "2024-12-05", "scadenza": "2024-12-18", "note": "", "operatore": "ASSIA", "id": "g7"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "4941666", "descrizione": "CONGELATORE VERTICALE PER CAMPIONI EMATICI", "base_asta": 4500.0, "tipologia": "PROCEDURA APERTA", "ente": "AZIENDA SANITARIA PROVINCIALE DI SIRACUSA", "data_creazione": "2024-12-12", "scadenza": "2024-12-20", "note": "RISULTA IN ESAME MA IL TERMINE ULTIMO DI STIPULA È 30/04/2025", "operatore": "ASSIA", "id": "g8"}, {"stato": "PERSA", "portale": "EMAIL", "num_rdo": "", "descrizione": "MATERIALE ELETTRONICO", "base_asta": 5000.0, "tipologia": "PREVENTIVO", "ente": "CNR", "data_creazione": "2025-01-08", "scadenza": "2025-01-09", "note": "", "operatore": "ASSIA", "id": "g9"}, {"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": "16017-7147", "descrizione": "STRUMENTO PER PLASMA", "base_asta": 98000.0, "tipologia": "MANIFESTAZIONE D'INTERESSE", "ente": "POLITECNICO DI BARI", "data_creazione": "2024-12-18", "scadenza": "2025-01-09", "note": "", "operatore": "ASSIA", "id": "g10"}, {"stato": "PERSA", "portale": "EMAIL", "num_rdo": "", "descrizione": "SOFTWARE: PROGETTO INSETTI", "base_asta": 20400.0, "tipologia": "OFFERTA", "ente": "UNIVERSITA' DI SALERNO", "data_creazione": "2025-01-21", "scadenza": "2025-01-21", "note": "", "operatore": "GENNI", "id": "g11"}, {"stato": "PERSA", "portale": "UBUY", "num_rdo": "G04440", "descrizione": "LETTORE DI MICROPIASTRE PER I LABORATORI DIDATTICI", "base_asta": 21000.0, "tipologia": "MANIFESTAZIONE D'INTERESSE", "ente": "UNIVERSITA' DEGLI STUDI DI FERRARA", "data_creazione": "2025-01-14", "scadenza": "2025-01-27", "note": "", "operatore": "ASSIA", "id": "g12"}, {"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": "17009-6435", "descrizione": "SPIN-COATER", "base_asta": 12000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "UNIVERSITA' DEGLI STUDI DI FERRARA", "data_creazione": "2025-01-15", "scadenza": "2025-01-27", "note": "", "operatore": "ASSIA", "id": "g13"}, {"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": "17029-4877", "descrizione": "CAPPA CHIMICA PER LABORATORIO OMICHE", "base_asta": 0, "tipologia": "MANIFESTAZIONE D'INTERESSE", "ente": "FONDAZIONE I.R.C.C.S. POLICLINICO SAN MATTEO", "data_creazione": "2025-02-06", "scadenza": "2025-02-13", "note": "", "operatore": "ASSIA", "id": "g14"}, {"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": "17012-6647", "descrizione": "STRUMENTAZIONE GEOFISICA  PER MISURARE SONDAGGI ELETTROMAGNETICI  NEL DOMINIO DEL TEMPO", "base_asta": 84000.0, "tipologia": "MANIFESTAZIONE D'INTERESSE", "ente": "ISTITUTO PER LA BIOECONOMIA", "data_creazione": "2025-01-28", "scadenza": "2025-02-13", "note": "", "operatore": "ASSIA", "id": "g15"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5098921", "descrizione": "N.2 - FRIGORIFERI DA BANCO PER LA CONSERVAZIONE DEI FARMACI", "base_asta": 5000.0, "tipologia": "RDO APERTA", "ente": "AZIENDA OSPEDALIERA COSENZA", "data_creazione": "2025-02-17", "scadenza": "2025-02-26", "note": "RISULTA IN ESAME, ANCHE SE IL TERMINE ULTIMO DI STIPULA È 6/05/2025", "operatore": "ASSIA", "id": "g16"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5113744", "descrizione": "FORNITURA POMPA PERISTATICA E ACCESSORI", "base_asta": 1300.0, "tipologia": "CONFRONTO PREVENTIVI", "ente": "UNIVERSITA' DEGLI STUDI DI CAGLIARI", "data_creazione": "2025-02-19", "scadenza": "2025-02-27", "note": "RISULTA IN ESAME, ANCHE SE IL TERMINE ULTIMO DI STIPULA È 21/03/2025", "operatore": "ASSIA", "id": "g17"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5118180", "descrizione": "N. 28 - ANTENNE OMNIDIREZIONALI", "base_asta": 5000.0, "tipologia": "CONFRONTO PREVENTIVI", "ente": "POLITECNICO DI MILANO", "data_creazione": "2025-02-19", "scadenza": "2025-03-03", "note": "", "operatore": "ASSIA", "id": "g18"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5096012", "descrizione": "STUMENTAZIONE SCINETIFICA E SENSORI", "base_asta": 90000.0, "tipologia": "RDO APERTA", "ente": "UNIVERSITA' DEGLI STUDI DI PALERMO", "data_creazione": "2025-02-27", "scadenza": "2025-03-10", "note": "RISULTA ANCORA IN ESAME, ANCHE SE LA STIPULA RISULTA ESSERE FISSATA PER IL 24/03/2025", "operatore": "ASSIA", "id": "g19"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5152086", "descrizione": "ROBOT BUNKER PRO", "base_asta": 19000.0, "tipologia": "RDO APERTA", "ente": "POLITECNICO DI MILANO", "data_creazione": "2025-03-02", "scadenza": "2025-03-12", "note": "", "operatore": "GENNI", "id": "g20"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5174522", "descrizione": "ACCESSORI PER MULTISTATION LEICA MS60", "base_asta": 10000.0, "tipologia": "CONFRONTO PREVENTIVI", "ente": "POLITECNICO DI MILANO", "data_creazione": "", "scadenza": "2025-03-18", "note": "", "operatore": "ASSIA", "id": "g21"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5171842", "descrizione": "ACQUISTO SENSORE DI FORZA/COPPIA", "base_asta": 4800.0, "tipologia": "CONFRONTO PREVENTIVI", "ente": "POLITECNICO DI MILANO", "data_creazione": "2025-03-10", "scadenza": "2025-03-19", "note": "FORNITORE CINESE", "operatore": "ASSIA", "id": "g22"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5210225", "descrizione": "MATERIALE LABORATORIO: CAVI", "base_asta": 4000.0, "tipologia": "CONFRONTO PREVENTIVI", "ente": "POLITECNICO DI MILANO", "data_creazione": "2025-03-21", "scadenza": "2025-03-26", "note": "", "operatore": "ASSIA", "id": "g23"}, {"stato": "PRESENTATA", "portale": "EMAIL", "num_rdo": "", "descrizione": "CONSULENZA PER ALLESTIMENTO DI LABORATORIO", "base_asta": 5600.0, "tipologia": "OFFERTA", "ente": "PHOTON TECHNOLOGY SRL", "data_creazione": "2025-03-28", "scadenza": "2025-03-28", "note": "", "operatore": "GENNI", "id": "g24"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5223967", "descrizione": "BRACCIO ROBOTICO", "base_asta": 8500.0, "tipologia": "CONFRONTO PREVENTIVI", "ente": "POLITECNICO DI MILANO", "data_creazione": "2025-03-26", "scadenza": "2025-04-04", "note": "", "operatore": "ASSIA", "id": "g25"}, {"stato": "PERSA", "portale": "UBUY", "num_rdo": "", "descrizione": "FORNITURA COMPONENTI", "base_asta": 18000.0, "tipologia": "MANIFESTAZIONE D'INTERESSE", "ente": "UNIVERSITA' DEGLI STUDI DI FERRARA", "data_creazione": "2025-03-31", "scadenza": "2025-04-07", "note": "", "operatore": "ASSIA", "id": "g26"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5205921", "descrizione": "LASER IN FIBRA", "base_asta": 16000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "UNIVERSITA' VAVITELLI", "data_creazione": "2025-03-25", "scadenza": "2025-04-11", "note": "", "operatore": "GENNI", "id": "g27"}, {"stato": "PRESENTATA", "portale": "MEPA", "num_rdo": "5265132", "descrizione": "THYRATRON TUBES - GIULIA BAZZANO", "base_asta": 3400.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "ENEA", "data_creazione": "2025-04-08", "scadenza": "2025-04-15", "note": "MOMENTANEAMENTE SOSPESA PER MANCANZA DI PRODOTTO", "operatore": "ASSIA", "id": "g28"}, {"stato": "PERSA", "portale": "SINTEL", "num_rdo": "199730842", "descrizione": "ANALIZZATORE RETE VETTORIALE", "base_asta": 17000.0, "tipologia": "INVITO", "ente": "POLITECNICO DI MILANO", "data_creazione": "2025-04-09", "scadenza": "2025-04-15", "note": "", "operatore": "GENNI", "id": "g29"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5276480", "descrizione": "OTTICHE THORLABS", "base_asta": 2100.0, "tipologia": "INVITO", "ente": "C.N.R. CONSIGLIO NAZIONALE DELLE RICERCHE", "data_creazione": "2025-04-14", "scadenza": "2025-04-23", "note": "CHIESTO A THORLABS: CODICE IN MENO NELLA QUOTAZIONE", "operatore": "ASSIA", "id": "g30"}, {"stato": "PERSA", "portale": "UBUY", "num_rdo": "", "descrizione": "FORNITURA COMPONENTI", "base_asta": 18000.0, "tipologia": "MANIFESTAZIONE D'INTERESSE", "ente": "UNIVERSITA' DEGLI STUDI DI FERRARA", "data_creazione": "2025-03-18", "scadenza": "2025-04-26", "note": "", "operatore": "ASSIA", "id": "g31"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5304337", "descrizione": "SORGENTE OMNIDIREZIONALE", "base_asta": 2700.0, "tipologia": "CONFRONTO PREVENTIVI", "ente": "POLITECNICO DI MILANO", "data_creazione": "2025-04-23", "scadenza": "2025-04-30", "note": "LIMITE STIPULA ENTRO IL 30 GIUGNO", "operatore": "ASSIA", "id": "g32"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5338796", "descrizione": "DIGITAL TWIN", "base_asta": 12129.85, "tipologia": "TRATTATIVA DIRETTA", "ente": "ENEA", "data_creazione": "2025-05-07", "scadenza": "2025-05-14", "note": "", "operatore": "GENNI", "id": "g33"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5330872", "descrizione": "ACQUISTO DI N. 6 CONTAINER + SMONTAGGIO E RICOVERO DEI MACCHINARI", "base_asta": 32504.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "MINISTERO DELLA GIUSTIZIA", "data_creazione": "2025-05-05", "scadenza": "2025-05-14", "note": "FIRMATA DOPO CHE STEFANO HA DATO L'OK", "operatore": "ASSIA", "id": "g34"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5340739", "descrizione": "TELECAMERE E UNITA' DI CALCOLO", "base_asta": 19000.0, "tipologia": "RDO APERTA", "ente": "POLITECNICO DI MILANO", "data_creazione": "2025-05-08", "scadenza": "2025-05-15", "note": "CHIESTO A OMTEC - CONTATTI CON EDDY LU  \nCONTATTI ANCHE CON IL FORNITORE ITALIANO FABRIZIO    MEPA: LIMITE STIPULA 15/07/2025\n\n\n\nI", "operatore": "ASSIA", "id": "g35"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5329790", "descrizione": "STAMPANTI ZEBRA", "base_asta": 66000.0, "tipologia": "RDO APERTA", "ente": "ASL BT", "data_creazione": "2025-05-06", "scadenza": "2025-05-19", "note": "GARA PRESENTATA TRAMITE PEC A CAUSA DI PROBLEMI AVUTI CON IL MEPA", "operatore": "GENNI", "id": "g36"}, {"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": "18089-1409", "descrizione": "NASO ELETTRONICO", "base_asta": 40000.0, "tipologia": "PREVENTIVO", "ente": "UNIVERSITA' DI PARMA", "data_creazione": "2025-05-19", "scadenza": "2025-05-26", "note": "CHIESTO A OLFASENSE STO VALUTANDO LA QUOLTAZIONE", "operatore": "ASSIA", "id": "g37"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5377842", "descrizione": "COMPONENTISTICA ELETTRONICA ED UTENSILERIA", "base_asta": 22863.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "C.N.R. CONSIGLIO NAZIONALE DELLE RICERCHE", "data_creazione": "2025-05-20", "scadenza": "2025-05-26", "note": "OFFERTA GESTITA PER SALVATORE - MATERIALE CONSEGNATO IL 22/05/2025", "operatore": "ASSIA", "id": "g38"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5388148", "descrizione": "SCHEDE CON FPGA E SCHEDE DI SVILUPPO", "base_asta": 6500.0, "tipologia": "CONFRONTO PREVENTIVI", "ente": "POLITECNICO DI MILANO", "data_creazione": "2025-05-23", "scadenza": "2025-06-03", "note": "AVUTA QUOTAZIONE OPALL KELLY  ABBIAMO PERSO PER 1 € - SUCCESSIVAMNETE CI HANNO INVITATO IN TRATTATIVA DIRETTA  - MATERIALE CONSEGNATO 30/07/2025", "operatore": "ASSIA", "id": "g39"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5408190", "descrizione": "RIPARAZIONE 2 MOTORI ARMADIO ESSICATORE", "base_asta": 1080.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "ISTITUTO NAZIONALE FISICA NUCLEARE", "data_creazione": "2025-06-03", "scadenza": "2025-06-05", "note": "TRATTATIVA DIRETTA GESTITA PER SALVATORE   - CONCLUSO 09/07/2025", "operatore": "ASSIA", "id": "g40"}, {"stato": "PERSA", "portale": "GOV. CITTA' VATICANO", "num_rdo": "STV2024-0063-FL91091", "descrizione": "STRUMENTAZIONE MICRORAD", "base_asta": 10000.0, "tipologia": "RDO APERTA", "ente": "GOVERNATORATO CITTA' DEL VATICANO", "data_creazione": "2025-05-27", "scadenza": "2025-06-16", "note": "PREVENTIVO RICHIESTO A LEPACOM", "operatore": "GENNI", "id": "g41"}, {"stato": "PERSA", "portale": "SINTEL", "num_rdo": "203110437", "descrizione": "4 CONGELATORI -80 °", "base_asta": 0, "tipologia": "MANIFESTAZIONE D'INTERESSE", "ente": "FONDAZIONE I.R.C.C.S. POLICLINICO SAN MATTEO", "data_creazione": "2025-06-18", "scadenza": "2025-06-23", "note": "CHIESTO A LIEBHERR", "operatore": "ASSIA", "id": "g42"}, {"stato": "PERSA", "portale": "START", "num_rdo": "022893/2025", "descrizione": "12 FRIGORIFERI DA LABORATORIO AD UN ANTA", "base_asta": 19850.0, "tipologia": "INDAGINE DI MERCATO", "ente": "REGIONE TOSCANA", "data_creazione": "2025-06-11", "scadenza": "2025-06-24", "note": "CHIESTO A FULGAZZI DI LIEBHERR - LA STAZIONE APPALTANTE CI HA CONTATTATO PER UN CHIARIMENTO", "operatore": "ASSIA", "id": "g43"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5422711", "descrizione": "2 FLUKE DSX2- 8000 + ACCESSORI", "base_asta": 43970.0, "tipologia": "RDO SEMPLICE", "ente": "MINISTERO DELLA DIFESA", "data_creazione": "2025-06-19", "scadenza": "2025-06-27", "note": "PRODOTTO SPECIFICO, NON VOGLIONO L'EQUIVALENTE. CHIESTO A FRANCESCA DI FIORE SRL RICEVUOTA QUOTAZIONE. TUTTO PRONTO CARICATA GARANZIA PROVVISORIA + TERMINE ULTIMO STIPULA 30 SETTEMBRE", "operatore": "ASSIA", "id": "g44"}, {"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": "20007-0393", "descrizione": "1 FRIGO-EMOTECA", "base_asta": 12000.0, "tipologia": "MANIFESTAZIONE D'INTERESSE", "ente": "AZIENDA OSPEDALIERA UNIVERSITARIA POLICLINICO G.RODOLICO - SAN MARCO", "data_creazione": "2025-06-20", "scadenza": "2025-06-30", "note": "CHIESTO A FULGAZZI DI LIEBHERR (PRODOTTO NON DISPONIBILE) -  CHIESTO A FIOCCHETTI .", "operatore": "ASSIA", "id": "g45"}, {"stato": "PERSA", "portale": "EMAIL", "num_rdo": "STV-2025-0104-FL63705", "descrizione": "PREVENTIVO - MEDIA PLAYER", "base_asta": 8548.0, "tipologia": "PREVENTIVO", "ente": "GOVERNATORATO CITTA' DEL VATICANO", "data_creazione": "", "scadenza": "2025-07-03", "note": "MATERIALE ROCHEISTO A ZONAPRO SRL", "operatore": "GENNI", "id": "g46"}, {"stato": "PERSA", "portale": "EMAIL", "num_rdo": "STV-2025-0097-FL91092", "descrizione": "PREVENTIVO - PRODOTTI MULTIBOOST", "base_asta": 5034.0, "tipologia": "PREVENTIVO", "ente": "GOVERNATORATO CITTA' DEL VATICANO", "data_creazione": "", "scadenza": "2025-07-04", "note": "MATERIALE RICHIESTO A UNITRON", "operatore": "GENNI", "id": "g47"}, {"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": "20005-2000", "descrizione": "OSCILLOSCOPIO 3 GHZ, 12-BIT; 4 CANALI; 20 GSA/S, A5.5", "base_asta": 18500.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CONSIGLIO NAZIONALE DELL RICERCHE - ISTITUTO NAZIONALE DI OTTICA  - FIRENZE", "data_creazione": "2025-06-23", "scadenza": "2025-07-08", "note": "CHIESTO A ALLDATA - CHIESTO A PIETRO DI INVIARE PEC GIORNO 7/07/2025", "operatore": "ASSIA", "id": "g48"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5467927", "descrizione": "LASER CUTTER", "base_asta": 8000.0, "tipologia": "RDO APERTA", "ente": "ISTITUTO DI SCIENZE APPLICATE E SISTEMI INTELLIGENTI AEDUARDO CAIANIELLO - NAPOLI", "data_creazione": "2025-06-26", "scadenza": "2025-07-09", "note": "CHIESTO A CIANO SHAPES - CHIESTO A   3 DI-TALY - INVIATA  RICHIESTA DI CHIARIMENTI SUL MEPA", "operatore": "ASSIA", "id": "g49"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5507745", "descrizione": "SCHEDE CON GPGA E SCHEDE DI SVILUPPO", "base_asta": 5131.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "POLITECNICO DI MILANO", "data_creazione": "2025-07-10", "scadenza": "2025-07-10", "note": "CONFRONTO DI PREVENTIVI TRASFORMATO IN TRATTATIVA DIRETTA - GARA RISEGNATA PERCHÈ CAMBIATO RDO-  STIPULA CONSEGNA 30/07/2025", "operatore": "ASSIA", "id": "g50"}, {"stato": "AGGIUDICATA", "portale": "EMAIL", "num_rdo": "", "descrizione": "MODULI HARDWARE DEDICATI", "base_asta": 23985.0, "tipologia": "PREVENTIVO", "ente": "GSSI - GRAN SASSO SCIENCE INSTITUTE", "data_creazione": "2025-06-16", "scadenza": "2025-07-11", "note": "OFFERTA GESTITA PER SALVATORE. COMPILATI DOCUMENTI CHIESTO IN DATA 16/06/2025 A PIETRO DI INVIARE PEC- ARRIVATO ORDINE", "operatore": "", "id": "g51"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5505754", "descrizione": "FORNITURA DI RIDUTTORI E SISTEMI DI CONTROLLO", "base_asta": 3000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.A.F. ISTITUTO NAZIONALE DI ASTROFISICA -", "data_creazione": "2025-07-10", "scadenza": "2025-07-14", "note": "TRATTATIVA  GESTITA PER SALVATORE. STIPULA FIRMATA IL 23/07 - CONSEGNATO", "operatore": "ASSIA", "id": "g52"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5485216", "descrizione": "MATERIALE DA LABORATORIO", "base_asta": 18000.0, "tipologia": "PROCEDURA APERTA", "ente": "UNIVERSITA' DEGLI STUDI DI MESSINA", "data_creazione": "2025-07-10", "scadenza": "2025-07-17", "note": "MATERIALE VOLTERA .  - LA STAZIONE APPALTANTE HA VOLUTO DEI CHIARIMENTI", "operatore": "ASSIA", "id": "g53"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5514072", "descrizione": "SEDUTE OPERATIVE", "base_asta": 4800.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "UNIVERSITA' DEGLI STUDI DI SALERNO", "data_creazione": "2025-07-15", "scadenza": "2025-07-21", "note": "TRATTATIVA DI STEFANO - CONCLUSO ORDINE CON CODICE SEDIE E CODICE MATERIALE", "operatore": "ASSIA", "id": "g54"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5530248", "descrizione": "MATERIALE PROF. STAFFA", "base_asta": 4871.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "UNIVERSITA' PARTHENOPE NAPOLI", "data_creazione": "2025-07-22", "scadenza": "2025-07-23", "note": "LISTA DI VARI DISPOSITIVI + STAMPANTE 3D + MONITOR CON SUPPORTO", "operatore": "GENNI", "id": "g55"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "A00197", "descrizione": "ACCESSORI HARDWARE - CRESCO", "base_asta": 40000.0, "tipologia": "MANIFESTAZIONE D'INTERESSE", "ente": "ENEA", "data_creazione": "2025-07-15", "scadenza": "2025-07-29", "note": "CHIESTO A PIETRO IN DATA 18/07 DI INVIARE PEC  PER LA RICHIESTA DI PARTECIPAZIONE", "operatore": "ASSIA", "id": "g56"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5532590", "descrizione": "FORNITURA COMPONENTISTICA ELETTRICA ED ELETTRONICA", "base_asta": 7233.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "C.N.R. CONSIGLIO NAZIONALE DELLE RICERCHE SESTO FIORENTINO", "data_creazione": "2025-07-23", "scadenza": "2025-07-29", "note": "MATERIALE RS. ORDINE IN LAVORAZIONE", "operatore": "ASSIA", "id": "g57"}, {"stato": "PERSA", "portale": "CNR", "num_rdo": "id-20250718-103222", "descrizione": "LASER DRIVER INTEGRATO", "base_asta": 3000.0, "tipologia": "CONFRONTO PREVENTIVI", "ente": "CNR - POZZUOLI", "data_creazione": "2025-07-17", "scadenza": "2025-08-04", "note": "CHIESTO A THORLABS - PIETRO HA INVIATO PEC IL 22/07/2025", "operatore": "ASSIA", "id": "g58"}, {"stato": "AGGIUDICATA", "portale": "GOV. CITTA' VATICANO", "num_rdo": "M012-25", "descrizione": "TELECAMERA RIFLETTOGRAFICA", "base_asta": 30000.0, "tipologia": "PROCEDURA APERTA", "ente": "MUSEI VATICANI", "data_creazione": "2025-07-24", "scadenza": "2025-08-06", "note": "11/08/2025: PROVVEDIMENTO DI AGGIUDICAZIONE PROVVISORIA, VALORE 27.775€", "operatore": "ANNAMARIA", "id": "g59"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5540162", "descrizione": "TRANSPALLET ELETTRICO", "base_asta": 2500.0, "tipologia": "RDO SEMPLICE", "ente": "AZIENDA SANITARIA PROVINCIALE DI SIRACUSA", "data_creazione": "2025-07-28", "scadenza": "2025-08-07", "note": "RICEVUTA QUOTAZIONE DA INDOR", "operatore": "ASSIA", "id": "g60"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5562233", "descrizione": "FORNITURA DI COMPONENTI DI CIRCUTERIA RF", "base_asta": 22600.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.F.N. - ISTITUTO NAZIONALE DI FISICA NUCLEARE", "data_creazione": "2025-08-05", "scadenza": "2025-08-07", "note": "GARA GESTITA PER SALVATORE", "operatore": "ASSIA", "id": "g61"}, {"stato": "AGGIUDICATA", "portale": "CNR", "num_rdo": "id-20250723-090418", "descrizione": "MATERIALE ELETTRONICO", "base_asta": 7000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR - SESTO FIORENTINO", "data_creazione": "2025-07-22", "scadenza": "2025-08-07", "note": "CHIESTO A RS - PIETRO HA INVIATO PEC IL 23/07/2025 - TRASFORMATA IN TRATTATIVA DIRETTA", "operatore": "ASSIA", "id": "g62"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5503430", "descrizione": "ARMADIO DEUMIDIFICATORE", "base_asta": 8000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.F.N. - ISTITUTO NAZIONALE DI FISICA NUCLEARE -LECCE", "data_creazione": "2025-07-28", "scadenza": "2025-08-08", "note": "TRATTATIVA GESTITA PER SALVATORE TERMINE ULTIMO DI STIPULA 15 SETTEMBRE", "operatore": "ASSIA", "id": "g63"}, {"stato": "PERSA", "portale": "CNR", "num_rdo": "id-20250730-092508", "descrizione": "SISTEMI OTTICI PER LA\nPRODUZIONE DI TRAPPOLE DI DIPOLO", "base_asta": 20000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR SESTO-FIORENTINO", "data_creazione": "2025-08-01", "scadenza": "2025-08-14", "note": "THORLABS PEC INVIATA DA PIETRO IN DATA 04/08/2025", "operatore": "ASSIA", "id": "g64"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5660566", "descrizione": "SENSORI DI CONTROLLO E MONITORAGGIO DEI FLUSSI", "base_asta": 19000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "CNR NAPOLI - STEMS", "data_creazione": "2025-08-01", "scadenza": "2025-09-04", "note": "CHIESTO A FITAVA (INVIATA RICHIESTA CHIARIMENTI ) E ASCON TECNOLOGY", "operatore": "ASSIA", "id": "g65"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5594081", "descrizione": "FORNITURA DI SERVER DI ELABORAZIONE", "base_asta": 10000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.A.F. - ISTITUTO NAZIONALE DI ASTROFISICA", "data_creazione": "2025-09-01", "scadenza": "2025-09-05", "note": "TRATTATIVA GESTITA PER SALVATORE", "operatore": "ASSIA", "id": "g66"}, {"stato": "AGGIUDICATA", "portale": "EMAIL", "num_rdo": "2025-UNA2CLE-0157219", "descrizione": "G09137 LETTERA INVITO CAPITOLATO PROCEDURA ACQUISTO MATERIALE DI RICERCA", "base_asta": 10433.0, "tipologia": "MANIFESTAZIONE D'INTERESSE", "ente": "UNIVERSITA' DEGLI STUDI DELLA CAMPANIA - LUIGI VANVITELLI - INVIATA RICHIESTA A FEHLING", "data_creazione": "2025-08-26", "scadenza": "2025-09-10", "note": "RICEVUTA QUOTAZIONE DA EPPENDOLF PER LA CENTRIFUGA DA VINCENZO CASERTANO", "operatore": "ASSIA", "id": "g67"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5588131", "descrizione": "MATERIALE ELETTRONICO - LAB QDN - PRIN2022 QUASAR", "base_asta": 7000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "CNR SESTO-FIORENTINO", "data_creazione": "2025-08-29", "scadenza": "2025-09-10", "note": "MATERIALE RS", "operatore": "ASSIA", "id": "g68"}, {"stato": "PERSA", "portale": "EMPULIA", "num_rdo": "PE308714-25", "descrizione": "ATTREZZATURE INFORMATICHE", "base_asta": 7200.0, "tipologia": "INVITO", "ente": "ASL TA", "data_creazione": "", "scadenza": "2025-09-11", "note": "OFFERTA PRESENTATA CON PRODOTTI DA ESPRINET", "operatore": "GENNI", "id": "g69"}, {"stato": "PERSA", "portale": "CNR", "num_rdo": "id-20250828-083330", "descrizione": "FILTRI OTTICI", "base_asta": 1700.0, "tipologia": "MANIFESTAZIONE D'INTERESSE", "ente": "CNR SESTO-FIORENTINO", "data_creazione": "2025-08-27", "scadenza": "2025-09-15", "note": "RICEVUTO QUOTAZIONE DA OPTOPRIM  INVIATA PEC DA PIETRO IL 04/09/2025", "operatore": "ASSIA", "id": "g70"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5615986", "descrizione": "THINKPAD X 1 CARBON GEN 11", "base_asta": 3500.0, "tipologia": "CONFRONTO PREVENTIVI", "ente": "POLITECNICO DI MILANO", "data_creazione": "2025-09-10", "scadenza": "2025-09-15", "note": "INVIATA RICHIESTA A ERON", "operatore": "ASSIA", "id": "g71"}, {"stato": "PERSA", "portale": "MEPA", "num_rdo": "5619433", "descrizione": "SENSORI E VALVOLE", "base_asta": 17000.0, "tipologia": "CONFRONTO PREVENTIVI", "ente": "POLITECNICO DI MILANO", "data_creazione": "2025-09-11", "scadenza": "2025-09-18", "note": "", "operatore": "ASSIA", "id": "g72"}, {"stato": "PRESENTATA", "portale": "CNR", "num_rdo": "id-20250904-082944", "descrizione": "SCHEDE PCIE", "base_asta": 15000.0, "tipologia": "MANIFESTAZIONE D'INTERESSE", "ente": "STEMS-NAPOLI", "data_creazione": "2025-09-03", "scadenza": "2025-09-19", "note": "OFFERTA DI FARNELL - CHIESTO A PIETRO DI INVIARE OFFERTA IL 10/09/2025", "operatore": "ASSIA", "id": "g73"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5625451", "descrizione": "DORATURA PIATTI RAME", "base_asta": 15800.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.F.N.ISTITUTO NAZIONALE DI FISICA NUCLEARE", "data_creazione": "2025-09-15", "scadenza": "2025-09-22", "note": "TRATTATIVA LAURA CARDANI", "operatore": "ASSIA", "id": "g74"}, {"stato": "PERSA", "portale": "EMAIL", "num_rdo": "STV-2025-0162-FL91105", "descrizione": "N.1 - CISCO C9200L-24P-4X-E", "base_asta": 2128.0, "tipologia": "PREVENTIVO", "ente": "GOV. CITTA' DEL VATICANO", "data_creazione": "2025-09-26", "scadenza": "2025-10-01", "note": "QUOTAZIONE RICHIESTA A IT PLANET", "operatore": "GENNI", "id": "g75"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5660717", "descrizione": "FORNITURA, POSA IN OPERA E MANUTENZIONE ARREDI PER UFFICIO E ARREDI VARI", "base_asta": 130000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "UNIVERSITA' DEGLI STUDI DI SALERNO", "data_creazione": "", "scadenza": "2025-10-02", "note": "TRATTATIVA GESTITA DA STEFANO", "operatore": "ANNAMARIA", "id": "g76"}, {"stato": "PRESENTATA", "portale": "CNR", "num_rdo": "id-20250917-091718", "descrizione": "KIT ELISA", "base_asta": 4500.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR - AVELLINO", "data_creazione": "2025-09-16", "scadenza": "2025-10-06", "note": "CHIESTO A BIOPHARM", "operatore": "ASSIA", "id": "g77"}, {"stato": "PRESENTATA", "portale": "CNR", "num_rdo": "id-20250924-100227", "descrizione": "FORNITURA DI MATERIALE INFORMATICO", "base_asta": 12000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "STEMS DI NAPOLI", "data_creazione": "2025-09-23", "scadenza": "2025-10-07", "note": "AMAZON/ESPRINET/ERON", "operatore": "ANNAMARIA", "id": "g78"}, {"stato": "PRESENTATA", "portale": "CNR", "num_rdo": "id-20250926-123140", "descrizione": "EVAPORATORE ROTANTE", "base_asta": 10000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "ISTITUTO DI SCIENZE E TECNOLOGIE PER L’ENERGIA E LA MOBILITÀ\nSOSTENIBILI (STEMS) NAPOLI", "data_creazione": "2025-09-25", "scadenza": "2025-10-10", "note": "RICHIESTA QUOTAZIONE A EPPENDORF E IKA (SENECO) - PREVENTIVO IKA - DA GESTIRE", "operatore": "ANNAMARIA", "id": "g79"}, {"stato": "SCARTATA", "portale": "CNR", "num_rdo": "id-20250924-100345", "descrizione": "FORNITURA DI STRUMENTAZIONE INVENTARIABILE DI LABORATORIO", "base_asta": 24145.0, "tipologia": "INDAGINE DI MERCATO", "ente": "ISTITUTO DI SCIENZE DELLE PRODUZIONI ALIMENTARI, SEDE SECONDARIA DI TORINO", "data_creazione": "2025-09-23", "scadenza": "2025-10-10", "note": "PREZZI ALTI - SEMBRA UN PREVENTIVO", "operatore": "ANNAMARIA", "id": "g80"}, {"stato": "PRESENTATA", "portale": "CNR", "num_rdo": "id-20250926-123023", "descrizione": "CODICI THORLABS", "base_asta": 10000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR-INO: SEDE SECONDARIA DI SESTO FIORENTINO", "data_creazione": "2025-09-25", "scadenza": "2025-10-13", "note": "IN LAVORAZIONE/ IN ATTESA DEI TEMPI DI 2 CODICI", "operatore": "ANNAMARIA", "id": "g81"}, {"stato": "PRESENTATA", "portale": "MEPA", "num_rdo": "5679414", "descrizione": "MATERIALE BIBLIOTECA COMUNALE", "base_asta": 4100.0, "tipologia": "RDO APERTA", "ente": "COMUNE DI CASORIA", "data_creazione": "2025-10-06", "scadenza": "2025-10-13", "note": "GARA DI POCO VALORE, MA ABBIAMO PARTECIPATO PERCHÉ L'ENTE È IL COMUNE DI CASORIA", "operatore": "GENNI", "id": "g82"}, {"stato": "SCARTATA", "portale": "", "num_rdo": "STV-2025-0161", "descrizione": "APPARATI ATTIVI PER L'APPARTAMENTO APOSTOLICO", "base_asta": 8700.0, "tipologia": "INVITO", "ente": "GOV. CITTA' DEL VATICANO", "data_creazione": "", "scadenza": "2025-10-14", "note": "PREVENTIVO PER APPARATI CISCO OTTENUTO DA IT-PLANET. SCARTATA PERCHÈ HANNO GIÀ DEI DISTRIBUTORI CISCO CHE FORNISCE LORO LA STRUMENTAZIONE.", "operatore": "GENNI", "id": "g83"}, {"stato": "SCARTATA", "portale": "CNR", "num_rdo": "id-20251001-091338", "descrizione": "SISTEMA DI MISURA PXI", "base_asta": 20000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "ITC-CNR, SEDE SECONDARIA DI NAPOLI SAN GIOVANNI A TEDUCCIO", "data_creazione": "2025-09-30", "scadenza": "2025-10-14", "note": "RICHIESTA A MEASUREIT - CONTATTO DIRETTO DELL'ENTE CON IL FORNITORE", "operatore": "ANNAMARIA", "id": "g84"}, {"stato": "PERSA", "portale": "EMAIL", "num_rdo": "", "descrizione": "MATERIALE ELETTRONICO", "base_asta": 435.0, "tipologia": "PREVENTIVO", "ente": "I.I.S. VITTORIO VENETO-SALVEMINI", "data_creazione": "2025-10-13", "scadenza": "2025-10-14", "note": "RICHIESTA ARRIVATA TRAMITE MAIL PER DEL MATERIALE ELETTRONICO DI POCO VALORE", "operatore": "GENNI", "id": "g85"}, {"stato": "SCARTATA", "portale": "CNR", "num_rdo": "id-20251001-091508", "descrizione": "SISTEMA DI SENSORI MEMS", "base_asta": 51080.0, "tipologia": "INDAGINE DI MERCATO", "ente": "ITC-CNR, SEDE SECONDARIA DI NAPOLI, C/O POLO TECNOLOGICO DI SAN GIOVANNI A TEDUCCIO", "data_creazione": "2025-09-30", "scadenza": "2025-10-14", "note": "RICHIESTA A DEWESOFT - PREVENTIVO PARI ALLA BASE D'ASTA", "operatore": "ANNAMARIA", "id": "g86"}, {"stato": "SCARTATA", "portale": "CNR", "num_rdo": "id-20251003-095107", "descrizione": "SISTEMI DI MISURA/REGOLAZIONE PORTATE GAS E LIQUID", "base_asta": 60000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "STEMS DI NAPOLI", "data_creazione": "2025-10-02", "scadenza": "2025-10-16", "note": "RICHIESTO A FITAVA - NON RIENTRIAMO NEI COSTI E NON HANNO QUEL MARCHIO. RICHIESTO A PRECISION (RIVENDITORI IN ITALIA DEL MARCHIO INDICATO)", "operatore": "ANNAMARIA", "id": "g87"}, {"stato": "SCARTATA", "portale": "CNR", "num_rdo": "id-20251003-094950", "descrizione": "DIODO LASER", "base_asta": 16900.0, "tipologia": "INDAGINE DI MERCATO", "ente": "STEMS DI NAPOLI", "data_creazione": "2025-10-02", "scadenza": "2025-10-17", "note": "RICHIESTO A CRISEL INSTRUMENTS - PRODOTTO UN PO' SOTTO MA PREZZI ALTI. RICHIESTO A LASER OPTRONICS (NON CORRISPONDONO LE SPECIFICHE) E ALPHALAS (NON È ARRIVATO IL PREVENTIVO IN TEMPO)", "operatore": "ANNAMARIA", "id": "g88"}, {"stato": "PRESENTATA", "portale": "CNR", "num_rdo": "id-20251001-093026", "descrizione": "CODICI THORLABS", "base_asta": 2600.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR- INO: SEDE POZZUOLI", "data_creazione": "2025-09-30", "scadenza": "2025-10-20", "note": "IN LAVORAZIONE", "operatore": "ANNAMARIA", "id": "g89"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5707442", "descrizione": "MATERIALI CONDUTTORI\nPER MICROELETTRONICA", "base_asta": 1800.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "CNR BRESCIA", "data_creazione": "2025-10-14", "scadenza": "2025-10-21", "note": "QUOTAZIONE DYCOTEC  E LEVANCHIMICA  -  CHIESTO A PIETRO DI INVIARE PEC IN GIORNO 08/09/2025 - INDAGINE DI MERCATO TRASFORMATA IN TRATTATIVA", "operatore": "ASSIA", "id": "g90"}, {"stato": "AGGIUDICATA", "portale": "UBUY", "num_rdo": "G03599", "descrizione": "GARA PROF. VASCA", "base_asta": 100000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "UNIVERSITA' DEL SANNIO -BENEVENTO", "data_creazione": "2025-10-08", "scadenza": "2025-10-21", "note": "GARA CARICATA IL 10/10/2025 SI ATTENDE L'AGGIUDICAZIONE PER PROCEDERE CON IMPOSTA DI BOLLO 40€ E GARANZIA DEFINITIVA", "operatore": "GENNI", "id": "g91"}, {"stato": "SCARTATA", "portale": "CNR", "num_rdo": "id-20251007-123500", "descrizione": "SISTEMA DI ALIMENTAZIONE, TEST E CONTROLLO DI MACCHINE ELETTRICHE AC TRIFASE", "base_asta": 90000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "STEMS DI NAPOLI", "data_creazione": "2025-10-06", "scadenza": "2025-10-21", "note": "GIRATA ALL'UFFICIO TECNICO/PIETRO (PROTA) - GIÀ SANNO A CHI DARLA", "operatore": "ANNAMARIA", "id": "g92"}, {"stato": "SCARTATA", "portale": "CNR", "num_rdo": "id-20251009-103913", "descrizione": "QCMOS CAMERA E FILTRI", "base_asta": 71000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR-INO: SEDE SECONDARIA DI SESTO FIORENTINO (CONSEGNA A TRIESTE)", "data_creazione": "2025-10-08", "scadenza": "2025-10-26", "note": "RICHIESTO A TKH, MA NON POSSONO AIUTARCI. RICHIESTO AD ONOPTICS, NON HANNO IL PRODOTTO. CHIESTO A HAMAMATSU ITALIA - PARTECIPANO LORO", "operatore": "ANNAMARIA", "id": "g93"}, {"stato": "SCARTATA", "portale": "CNR", "num_rdo": "id-20251016-102815", "descrizione": "MATERIALE DA OFFICINA", "base_asta": 15000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "STEMS DI NAPOLI", "data_creazione": "2025-10-15", "scadenza": "2025-10-30", "note": "MATERIALE TROPPO SPECIFICO DI OFFICINA", "operatore": "ANNAMARIA", "id": "g94"}, {"stato": "PRESENTATA", "portale": "MEPA", "num_rdo": "5711073", "descrizione": "ROBOT + SISTEMA DI TRASPORTO", "base_asta": 145000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "UNIVERSITA' FEDERICO II NAPOLI", "data_creazione": "2025-10-15", "scadenza": "2025-10-30", "note": "INDAGINE DI MERCATO PRESENTATA IL 30/10/2025.STIAMO LAVORANDO IO E ROBERTO CON L'ING. ALDO CAPONE DI TND ELETTRONICA..", "operatore": "GENNI", "id": "g95"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5740809", "descrizione": "WAFER DI SILICIO - LAURA CARDANI", "base_asta": 4950.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.F.N. - ISTITUTO NAZIONALE DI FISICA NUCLEARE", "data_creazione": "2025-10-23", "scadenza": "2025-10-31", "note": "TRATTATIVA GESTITA DA SALVATORE", "operatore": "GENNI", "id": "g96"}, {"stato": "PRESENTATA", "portale": "CNR", "num_rdo": "id-20251016-102247", "descrizione": "MATERIALE OTTICO THORLABS", "base_asta": 5600.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR-INO: SEDE SECONDARIA DI SESTO FIORENTINO", "data_creazione": "2025-10-15", "scadenza": "2025-11-02", "note": "MATERIALE THORLABS - FATTA RICHIESTA CHIARIMENTI ALL'ENTE, AVUTA RISPOSTA - FARE RICHIESTA QUOTAZIONE CON I CODICI CORRETTI", "operatore": "GENNI", "id": "g97"}, {"stato": "SCARTATA", "portale": "CNR", "num_rdo": "id-20251015-091808", "descrizione": "DICROICI PER\nMANIPOLAZIONE OTTICA", "base_asta": 18000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR-INO: SEDE SECONDARIA DI SESTO FIORENTINO", "data_creazione": "2025-10-14", "scadenza": "2025-11-03", "note": "RICHIESTO A OPTOPRIM (DISTRIBUTORE DI SEMROCK) - CI SONO LORO SULLA GARA", "operatore": "ANNAMARIA", "id": "g98"}, {"stato": "PERSA", "portale": "CITTA' DELLA SCIENZA", "num_rdo": "", "descrizione": "N.3 - ROBOT INTERATTIVI PER MUSEO", "base_asta": 122950.0, "tipologia": "INVITO", "ente": "CITTA' DELLA SCIENZA", "data_creazione": "2025-09-24", "scadenza": "2025-11-04", "note": "GARA AFFIDATA A PREDICT SPA", "operatore": "GENNI", "id": "g99"}, {"stato": "PRESENTATA", "portale": "CNR", "num_rdo": "", "descrizione": "MATERIALE LAB. SESTO FIORENTINO", "base_asta": 10000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR - SESTO FIORENTINO", "data_creazione": "2025-10-23", "scadenza": "2025-11-04", "note": "PRODOTTI RS", "operatore": "GENNI", "id": "g100"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5770280", "descrizione": "GO2 EDU LASER", "base_asta": 24250.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "UNIVERSITA' DEGLI STUDI DELL'ACQUILA", "data_creazione": "2025-10-31", "scadenza": "2025-11-08", "note": "PROF. ANDREA PELLICCIONE", "operatore": "GENNI", "id": "g101"}, {"stato": "PRESENTATA", "portale": "EMAIL", "num_rdo": "", "descrizione": "SISTEMA GANTRY PER ISPEZIONE LAMIERE", "base_asta": 90000.0, "tipologia": "OFFERTA", "ente": "UNIVERSITA' DEGLI STUDI DI SALERNO", "data_creazione": "2025-11-12", "scadenza": "2025-11-12", "note": "GESTITA CON ROBERTO. OFFERTA E SCHEDA TECNICA INVIATA A MIRKO, PER GIUSEPPE DI LEO.", "operatore": "GENNI", "id": "g102"}, {"stato": "AGGIUDICATA", "portale": "UBUY", "num_rdo": "G09769", "descrizione": "NOLEGGIO STRUMENTAZIONE YOKOGAWA", "base_asta": 18900.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "UNIVERSITA' VANVITELLI", "data_creazione": "2025-11-05", "scadenza": "2025-11-12", "note": "GESTITA CON ROBERTO. PREZZO DI USCITA 21.550,00€ (NOLGEGGIO + RISCATTO FINALE)", "operatore": "GENNI", "id": "g103"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5793455", "descrizione": "MATERIALE PER COLTURE CELLULARI PRIN QUASAR", "base_asta": 8000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "CNR-INO: SEDE SECONDARIA DI SESTO FIORENTINO", "data_creazione": "2025-11-07", "scadenza": "2025-11-14", "note": "FORNITORE LEVANCHIMICA. TRATTATIVA DIRETTA CARICATA DA GENNI, GARA GESTITA DA ANNAMARIA.", "operatore": "ANNAMARIA", "id": "g104"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "5838516", "descrizione": "WP4-A3-008-ELETTRONICA", "base_asta": 11000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "CNR - ISTITUTO PER LA SCIENZA E TECNOLOGIA DEI PLASMI", "data_creazione": "2025-12-03", "scadenza": "2025-12-18", "note": "GESTITA DA SALVATORE.", "operatore": "GENNI", "id": "g105"}, {"stato": "SCARTATA", "portale": "MEPA", "num_rdo": "5870540", "descrizione": "FORNITURA COBOT + ACCESSORI", "base_asta": 16500.0, "tipologia": "INDAGINE DI MERCATO", "ente": "UNIVERSITA' DI GENOVA", "data_creazione": "2025-12-04", "scadenza": "2025-12-19", "note": "PREVENTIVO RICEVUTO DA INLUX ROBOTICS (DISTRIBUTORE EU). PRESENTATA MANIFESTAZIONE DI INTERESSE IN DATA 08/10/2025. TRATTATIVA SCARTATA PER TEMPI DI CONSEGNA TROPPO LUNGHI.", "operatore": "GENNI", "id": "g106"}, {"stato": "SCARTATA", "portale": "GOV. CITTA' VATICANO", "num_rdo": "", "descrizione": "TELECAMERE I-PRO EMEA", "base_asta": 16386.0, "tipologia": "RDO APERTA", "ente": "GOV. CITTA' DEL VATICANO", "data_creazione": "", "scadenza": "2026-01-12", "note": "CHIESTO A PANAMED, CHE FORNISCE QUESTO TIPO DI TELECAMERE. ABBIAMO AVUTO DIVERSI COLLOQUI TELEFONICI PER POI ESSERE LORO SULLA TRATTATIVA.", "operatore": "GENNI", "id": "g107"}, {"stato": "SCARTATA", "portale": "MEPA", "num_rdo": "5953359", "descrizione": "POTENZIOSTATO PER ELETTROCHIMICA MOD. ZENNIUM PRO", "base_asta": 30000.0, "tipologia": "RDO APERTA", "ente": "UNIVERSITA' DEGLI STUDI DI PALERMO", "data_creazione": "2025-12-30", "scadenza": "2026-01-12", "note": "STAZIONE DI LAVORO ELETTROCHIMICA CHE PERMETTE STUDI SU BATTERIE, CELLE A CMOBUSTIBILE PERMETTENDO DI MISURARE LE PROPRIETÀ CHIMICHE. CHIESTO A ZAHNER, CI SONO LORO SULLA GARA.", "operatore": "GENNI", "id": "g108"}, {"stato": "SCARTATA", "portale": "CNR", "num_rdo": "", "descrizione": "COMPONENTISTICA OTTICA", "base_asta": 9060.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR ISASI - POZZUOLI", "data_creazione": "2026-01-07", "scadenza": "2026-01-20", "note": "PRODOTTI THORLABS E 3 TELECAMERE CHIESTE A VISIONLINK. THORLABS QUOTAZIONE CON PREZZI UGUALI A QUELLI DEL SITO E NON SONO RIUSCITO A RIENTRARE NELLA BASE D'ASTA.", "operatore": "GENNI", "id": "g109"}, {"stato": "SCARTATA", "portale": "CNR", "num_rdo": "id-20260112-094353", "descrizione": "SISTEMA ANALOGICO DIGITALE", "base_asta": 55000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR NAPOLI - STEMS", "data_creazione": "", "scadenza": "2026-01-23", "note": "RICHIESTA INVIATA A MEASURE IT CHE AVEVANO I PRODOTTI RICHIESTI, MA LA QUOTAZIONE ARRIVATA ERA DELLO STESSO VALORE DELLA BASE D'ASTA.", "operatore": "GENNI", "id": "g110"}, {"stato": "SCARTATA", "portale": "MEPA", "num_rdo": "5956546", "descrizione": "SISTEMA LASER", "base_asta": 170000.0, "tipologia": "RDO APERTA", "ente": "INAIL", "data_creazione": "2026-01-07", "scadenza": "2026-01-23", "note": "PRODOTTI LPKF, HO CHIESTO A DUE DISTRIBUTORI IN ITALIA: ATG ELECTRONICS SRL SB E NITZ ENGINEERING S.R.L. HANNO SBAGLIATO A CARICARE LA GARA CON BASE D'ASTA TROPPO BASSA PER QUELLO CHE RICHIEDEVANO.", "operatore": "GENNI", "id": "g111"}, {"stato": "SCARTATA", "portale": "CNR", "num_rdo": "id-20260112-094225", "descrizione": "COMPONENTI DI COLLEGAMNTO E ALIMENTAZIONE", "base_asta": 18000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR NAPOLI - STEMS", "data_creazione": "", "scadenza": "2026-01-26", "note": "PRODOTTI RIVENDUTI DA METROHM E CI SONO LORO SULLA TRATTATIVA.", "operatore": "GENNI", "id": "g112"}, {"stato": "SCARTATA", "portale": "MEPA", "num_rdo": "5977802", "descrizione": "FORNITURA CAPPA A FLUSSO LAMINARE", "base_asta": 15000.0, "tipologia": "RDO APERTA", "ente": "IRCCS PASCALE NAPOLI", "data_creazione": "", "scadenza": "2026-01-26", "note": "PRODOTTO RICHIESTO A NUOVA F.I.M.S. E MOMOLINE. NUOVA FIMS AVEVA UN PRODOTTO SIMILE MA NON CONFORME DEL TUTTO MA LA SPECIFICA CHE ERA OBBLIGATORIA E CHE NON RIUSCIVANO A INTEGRARE ERA LA GARANZIA FULL RISK DI 3 ANNI.", "operatore": "GENNI", "id": "g113"}, {"stato": "SCARTATA", "portale": "MEPA", "num_rdo": "5984198", "descrizione": "LASER IMPULSATO", "base_asta": 21500.0, "tipologia": "INDAGINE DI MERCATO", "ente": "POLITECNICO DI MILANO", "data_creazione": "", "scadenza": "2026-01-26", "note": "LASER RICHIESTO PRODOTTO DA PICOQUANT, CHE HO CONTATTATO E MI HANNO DETTO CHE IL LORO DISTRIBUTORE ITALIANO CRISEL INSTRUMENTS SRL È GIÀ SULLA TRATTATIVA.", "operatore": "GENNI", "id": "g114"}, {"stato": "SCARTATA", "portale": "CNR", "num_rdo": "id-20260114-093812", "descrizione": "FORNITURA NIR SPECTR", "base_asta": 12512.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR", "data_creazione": "", "scadenza": "2026-01-30", "note": "MANCA LA QUOTAZIONE DI 2 CODICI SU 4, PERCHÉ I DISTRIBUTORI DI QUESTI CODICI SONO GIÀ LORO IN PRIMA PERSONA SULLA TRATTATIVA.", "operatore": "GENNI", "id": "g115"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "1445203", "descrizione": "02473-RA", "base_asta": 295.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.A.F. - ISTITUTO NAZIONALE DI ASTROFISICA", "data_creazione": "", "scadenza": "2026-02-02", "note": "PRODOTTO VEDUTO A CATALOGO", "operatore": "GENNI", "id": "g116"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "6016082", "descrizione": "FORNITURA PIASTRINE SEMICONDUTTRICI TIPO TEC E CONTROLLER DIODI PER TERMALIZZAZIONE DEL PIANO FOCALE DELLE CAMERE ASTRI", "base_asta": 60000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.A.F. - ISTITUTO NAZIONALE DI ASTROFISICA", "data_creazione": "2026-01-29", "scadenza": "2026-02-03", "note": "GARA GESTISTA DA SALVATORE.", "operatore": "GENNI", "id": "g117"}, {"stato": "PRESENTATA", "portale": "MEPA", "num_rdo": "6027692", "descrizione": "ARREDI PASCALE", "base_asta": 15000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "IRCCS ISTITUTO NAZIONALE TUMORI PASCALE NAPOLI", "data_creazione": "2026-02-03", "scadenza": "2026-02-10", "note": "QUOTAZIONE RICEVUTA DA BULLONGAMMA", "operatore": "GENNI", "id": "g118"}, {"stato": "SCARTATA", "portale": "CNR", "num_rdo": "id-20260128-094612", "descrizione": "FORNITURA MATERIALI DI CONSUMO", "base_asta": 16000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "STEMS DI NAPOLI", "data_creazione": "", "scadenza": "2026-02-11", "note": "PRODOTTI RICHIESTI A FARNELL MA NON DISPONGONO DEL MATERIALE RICHIESTO.", "operatore": "GENNI", "id": "g119"}, {"stato": "SCARTATA", "portale": "MEPA", "num_rdo": "6084632", "descrizione": "SCHEDE FPGA", "base_asta": 9500.0, "tipologia": "INDAGINE DI MERCATO", "ente": "POLITECNICO DI MILANO", "data_creazione": "", "scadenza": "2026-02-25", "note": "GARA SCARTATA PERCHÉ NON RIENTRIAMO NEL BUDGET.", "operatore": "GENNI", "id": "g120"}, {"stato": "AGGIUDICATA", "portale": "MEPA", "num_rdo": "", "descrizione": "SENSORE ARFT/M-I/S TITEC", "base_asta": 240.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.A.F. - ISTITUTO NAZIONALE DI ASTROFISICA", "data_creazione": "", "scadenza": "2026-02-27", "note": "PRODOTTO CARICATO A CATALOGO", "operatore": "GENNI", "id": "g121"}, {"stato": "PRESENTATA", "portale": "", "num_rdo": "", "descrizione": "DRONE LIDAR DJI", "base_asta": 52000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "ANAS S.P.A", "data_creazione": "", "scadenza": "2026-03-03", "note": "QUESTIONE 3D TARGET - LORENZO CONCA CHE HANNO PARTECIPATO ANCHE LORO ALLA GARA.", "operatore": "GENNI", "id": "g122"}, {"stato": "PRESENTATA", "portale": "CNR", "num_rdo": "id-20260218-094321", "descrizione": "MATERIALE ELETTRONICO", "base_asta": 28000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR - SESTO FIORENTINO", "data_creazione": "", "scadenza": "2026-03-06", "note": "PRODOTTI MOUSER, MARGINE DI 4.000€", "operatore": "GENNI", "id": "g123"}, {"stato": "PRESENTATA", "portale": "CNR", "num_rdo": "id-20260226-104656", "descrizione": "MATERIALE ELETTRONICO RS", "base_asta": 16000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR - SESTO FIORENTINO", "data_creazione": "", "scadenza": "2026-03-16", "note": "PRODOTTI RS, MARGINE 4.400€", "operatore": "GENNI", "id": "g124"}, {"stato": "SCARTATA", "portale": "", "num_rdo": "", "descrizione": "ATTREZZATURA ROBOTICS - GUIDO MAMMOLITI", "base_asta": 40000.0, "tipologia": "PREVENTIVO", "ente": "", "data_creazione": "", "scadenza": "2026-03-05", "note": "RICHIESTA A CUI NON È STATO POSSIBILIE RISPONDERE A CAUSA DEL BUDGET LIMITATO PER LA RICHIESTA DI 3 STAZIONI ROBOTICHE COMPLETE.", "operatore": "GENNI", "id": "g125"}, {"stato": "PRESENTATA", "portale": "MEPA", "num_rdo": "6148592", "descrizione": "FORNITURA STAMPANTE HP", "base_asta": 7000.0, "tipologia": "RDO APERTA", "ente": "CONSORZIO DI BONIFIA 3 MEDIO VALDARNO", "data_creazione": "", "scadenza": "2026-03-14", "note": "PRODOTTO RICHIESTO A ESPRINET.", "operatore": "GENNI", "id": "g126"}, {"stato": "DA LAVORARE", "portale": "CNR", "num_rdo": "id-20260316-090512", "descrizione": "FORNITURA N. 3 LASER QCL", "base_asta": 39990.0, "tipologia": "INDAGINE DI MERCATO", "ente": "CNR - SESTO FIORENTINO", "data_creazione": "", "scadenza": "2026-03-31", "note": "", "operatore": "GENNI", "id": "g127"}], "aggiudicate": [{"portale": "MEPA", "num_rdo": "4777709", "descrizione": "POWER METER OTTICO CON ACCESSORI", "base_asta": 12000.0, "tipologia": "MANIFESTAZIONE D'INTERESSE", "ente": "POLITECNICO DI MILANO", "valore_offerto": 11998.0, "stato_proc": "", "stipula": "SI", "data_stipula": "2024-12-11", "num_ordine": "386", "fornitore": "LASER OPTRONIC", "consegna": "60 GG", "note": "", "id": "a1"}, {"portale": "UBUY", "num_rdo": "", "descrizione": "15 TROIDI PLANARI MODELLO YU-176", "base_asta": 180000.0, "tipologia": "INDAGINE DI MERCATO", "ente": "ENEA AGENZIA NAZIONALE PER LE NUOVE TECNOLOGIE, L'ENERGIA E LO SVILUPPO ECONOMICO SOSTENIBILE", "valore_offerto": 147176.0, "stato_proc": "CONCLUSA", "stipula": "SI", "data_stipula": "2025-02-06", "num_ordine": "58", "fornitore": "MICROWAVE POWER PRODUCTS", "consegna": "CONSEGNATO", "note": "", "id": "a2"}, {"portale": "MEPA", "num_rdo": "5171842", "descrizione": "FORNITURA ACQUISTO UN SENSORE DI FORZA/COPPIA", "base_asta": 4800.0, "tipologia": "CONFRONTO PREVENTIVI", "ente": "POLITECNICO DI MILANO", "valore_offerto": 4037.0, "stato_proc": "CONCLUSA", "stipula": "SI", "data_stipula": "2025-04-03", "num_ordine": "144", "fornitore": "SUNRISE INSTRUMENTS", "consegna": "8 WEEK", "note": "", "id": "a3"}, {"portale": "MEPA", "num_rdo": "5377842", "descrizione": "COMPONENTISTICA ELETTRONICA ED UTENSILERIA", "base_asta": 22863.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "C.N.R. CONSIGLIO NAZIONALE DELLE RICERCHE DI PADOVA", "valore_offerto": 22863.0, "stato_proc": "CONCLUSA", "stipula": "SI", "data_stipula": "2025-05-28", "num_ordine": "44", "fornitore": "RS - AMAZON -", "consegna": "90 GG", "note": "", "id": "a4"}, {"portale": "MEPA", "num_rdo": "4914164", "descrizione": "ARMADI ASPIRANTI", "base_asta": 20000.0, "tipologia": "RDO SEMPLICE", "ente": "ASREM CAMPOBASSO", "valore_offerto": 19749.0, "stato_proc": "CONCLUSA", "stipula": "SI", "data_stipula": "2025-06-05", "num_ordine": "83", "fornitore": "NUOVA F.I.M.S.", "consegna": "10 WEEK", "note": "IN CONSEGNA IL 02/10/2025", "id": "a5"}, {"portale": "MEPA", "num_rdo": "5330872", "descrizione": "ACQUISTO DI N. 6 CONTAINER + SMONTAGGIO E RICOVERO DEI MACCHINARI", "base_asta": 32504.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "MINISTERO DELLA GIUSTIZIA", "valore_offerto": 32504.0, "stato_proc": "CONCLUSA", "stipula": "SI", "data_stipula": "2025-06-06", "num_ordine": "361", "fornitore": "GLS - AMAZON", "consegna": "4 WEEK", "note": "", "id": "a6"}, {"portale": "MEPA", "num_rdo": "1151095", "descrizione": "PROTOTIPO DI SISTEMA ELETTROMECCANICO PER LA GESTIONE DI GENERATORI LINEARI A MAGNETI PERMANENTI", "base_asta": 27212.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "UNIVERSITA' DEGLI STUDI DEL SANNIO", "valore_offerto": 27212.0, "stato_proc": "CONCLUSA", "stipula": "SI", "data_stipula": "2025-06-10", "num_ordine": "8593902", "fornitore": "TOYO- ELETTRORENT", "consegna": "", "note": "", "id": "a7"}, {"portale": "MEPA", "num_rdo": "5338796", "descrizione": "DIGITAL TWIN", "base_asta": 12129.85, "tipologia": "TRATTATIVA DIRETTA", "ente": "ENEA PORTICI", "valore_offerto": 12125.0, "stato_proc": "CONCLUSA", "stipula": "SI", "data_stipula": "2025-07-02", "num_ordine": "113", "fornitore": "FORNITORI VARI (AMAZON - ERON ...)", "consegna": "30 GG", "note": "", "id": "a8"}, {"portale": "EMAIL", "num_rdo": "", "descrizione": "MODULI HARDWARE DEDICATI", "base_asta": 23985.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "GSSI - GRAN SASSO SCIENCE INSTITUTE", "valore_offerto": 23985.0, "stato_proc": "CONCLUSA", "stipula": "SI", "data_stipula": "2025-07-09", "num_ordine": "203", "fornitore": "", "consegna": "3/4 WEEK", "note": "", "id": "a9"}, {"portale": "MEPA", "num_rdo": "5505754", "descrizione": "FORNITURA DI RIDUTTORI E SISTEMI DI CONTROLLO PER MOTORI PASSO PASSO", "base_asta": 1380.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "INAF ISTITUTO NAZIONALE DI ASTROFISICA", "valore_offerto": 1380.0, "stato_proc": "CONCLUSA", "stipula": "SI", "data_stipula": "2025-07-22", "num_ordine": "244", "fornitore": "", "consegna": "7/10 GG", "note": "", "id": "a10"}, {"portale": "MEPA", "num_rdo": "5530248", "descrizione": "MATERIALE PROF. STAFFA", "base_asta": 4871.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "UNIVERSITA' PARTHENOPE NAPOLI", "valore_offerto": 4871.0, "stato_proc": "CONCLUSA", "stipula": "SI", "data_stipula": "2025-07-23", "num_ordine": "", "fornitore": "CREA3D, AMAZON ...", "consegna": "30 GG", "note": "", "id": "a11"}, {"portale": "MEPA", "num_rdo": "5507745", "descrizione": "SCHEDE CON GPGA E SCHEDE DI SVILUPPO", "base_asta": 5131.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "POLITECNICO DI MILANO", "valore_offerto": 5131.0, "stato_proc": "CONCLUSA", "stipula": "SI", "data_stipula": "2025-07-24", "num_ordine": "306", "fornitore": "OPAL KELLY", "consegna": "80 GG", "note": "", "id": "a12"}, {"portale": "MEPA", "num_rdo": "5514072", "descrizione": "SEDUTE OPERATIVE", "base_asta": 4800.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "UNIVERSITA' DEGLI STUDI DI SALERNO", "valore_offerto": 4740.0, "stato_proc": "CONCLUSA", "stipula": "SI", "data_stipula": "2025-07-24", "num_ordine": "320", "fornitore": "SELIN", "consegna": "30 GG", "note": "", "id": "a13"}, {"portale": "MEPA", "num_rdo": "8654034", "descrizione": "FRANKA RESEARCH 3", "base_asta": 27379.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "UNIVERSITA' DEGLI STUDI DI MODENA E REGGIO EMILIA", "valore_offerto": 27379.0, "stato_proc": "CONCLUSA", "stipula": "SI", "data_stipula": "2025-08-04", "num_ordine": "8654034", "fornitore": "", "consegna": "8 WEEK", "note": "", "id": "a14"}, {"portale": "MEPA", "num_rdo": "5532590", "descrizione": "FORNITURA COMPONENTISTICA ELETTRICA ED ELETTRONICA", "base_asta": 7500.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "C.N.R. CONSIGLIO NAZIONALE DELLE RICERCHE SESTO FIORENTINO", "valore_offerto": 7233.0, "stato_proc": "CONCLUSA", "stipula": "SI", "data_stipula": "2025-08-05", "num_ordine": "334", "fornitore": "RS", "consegna": "60GG", "note": "", "id": "a15"}, {"portale": "MEPA", "num_rdo": "5503430", "descrizione": "ARMADIO DEUMIDIFICATORE", "base_asta": 8000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.F.N. ISTITUTO NAZIONALE DI FISICA NUCLEARE", "valore_offerto": 9757.56, "stato_proc": "IN CORSO", "stipula": "SI", "data_stipula": "2025-09-08", "num_ordine": "1900-12-12 00:00:00", "fornitore": "ITECO", "consegna": "60 GG", "note": "", "id": "a16"}, {"portale": "MEPA", "num_rdo": "5562233", "descrizione": "FORNITURA DI COMPONENTI DI CIRCUTERIA RF", "base_asta": 22600.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.F.N. - ISTITUTO NAZIONALE DI FISICA NUCLEARE", "valore_offerto": 22490.0, "stato_proc": "IN CORSO", "stipula": "SI", "data_stipula": "2025-09-08", "num_ordine": "351/318/349/350", "fornitore": "RICHARSON/MOUSER/PEI GENESISI/CVC", "consegna": "8/10WEEK", "note": "", "id": "a17"}, {"portale": "MEPA", "num_rdo": "5594081", "descrizione": "FORNITURA DI SERVER DI ELABORAZIONE", "base_asta": 10000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.A.F. OSSERVATORIO ASTRONOMICO DI BRERA", "valore_offerto": 9706.0, "stato_proc": "IN CORSO", "stipula": "SI", "data_stipula": "2025-09-10", "num_ordine": "358", "fornitore": "GOMA", "consegna": "6/8 WEEK", "note": "", "id": "a18"}, {"portale": "MEPA", "num_rdo": "5625451", "descrizione": "DORATURA PIATTI RAME", "base_asta": 15800.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.F.N. ISTITUTO NAZIONALE DI FISICA NUCLEARE", "valore_offerto": 15800.0, "stato_proc": "IN CORSO", "stipula": "SI", "data_stipula": "2025-09-19", "num_ordine": "367", "fornitore": "GALVANICA VALTIERI", "consegna": "5/6 WEEK", "note": "", "id": "a19"}, {"portale": "MEPA", "num_rdo": "email", "descrizione": "DOATURA PIATTI DI RAME", "base_asta": 8200.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "LA SAPIENZA", "valore_offerto": 8200.0, "stato_proc": "IN CORSO", "stipula": "SI", "data_stipula": "2025-09-19", "num_ordine": "367", "fornitore": "GALVANICA VALTIERI", "consegna": "5/6 WEEK", "note": "", "id": "a20"}, {"portale": "GOV. CITTA' VATICANO", "num_rdo": "M012-25", "descrizione": "TELECAMERA RIFLETTOGRAFICA", "base_asta": 30000.0, "tipologia": "PROCEDURA APERTA", "ente": "MUSEI VATICANI", "valore_offerto": 27775.0, "stato_proc": "IN CORSO", "stipula": "SI", "data_stipula": "2025-09-24", "num_ordine": "387", "fornitore": "TKH VISION ITALIA", "consegna": "60GG", "note": "IN ATTESA DI CONFERMA ORDINE", "id": "a21"}, {"portale": "UBUY", "num_rdo": "G09137", "descrizione": "CENTRIFUGA DA BANCO", "base_asta": 0, "tipologia": "TRATTATIVA DIRETTA", "ente": "UNIVERSITA' DEGLI STUDI DELLA CAMPANIA - LUIGI VANVITELLI", "valore_offerto": 10433.0, "stato_proc": "IN CORSO", "stipula": "SI", "data_stipula": "2025-09-25", "num_ordine": "388", "fornitore": "EPPENDORF", "consegna": "60 GG", "note": "CONSEGNA PRIMA SETTIMANA DI NOVEMBRE", "id": "a22"}, {"portale": "MEPA", "num_rdo": "5408190", "descrizione": "RIPARAZIONE DUE MOTORI ARMADIO ESSICCATORE", "base_asta": 1080.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "ISTITUTO NAZIONALE FISICA NUCLEARE", "valore_offerto": 1080.0, "stato_proc": "CONCLUSA", "stipula": "SI", "data_stipula": "2025-06-06", "num_ordine": "171", "fornitore": "RIPARAZIONE", "consegna": "7/10 GG", "note": "", "id": "a23"}, {"portale": "MEPA", "num_rdo": "5588131", "descrizione": "MATERIALE ELETTRONICO - LAB QDN - PRIN2022 QUASAR", "base_asta": 7000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "C.N.R. CONSIGLIO NAZIONALE DELLE RICERCHE SESTO FIORENTINO", "valore_offerto": 6969.0, "stato_proc": "IN CORSO", "stipula": "NO", "data_stipula": "2025-09-30", "num_ordine": "", "fornitore": "RS", "consegna": "60GG", "note": "MATERIALE RS IN ARRIVO + LA MARCA + MOUSER", "id": "a24"}, {"portale": "MEPA", "num_rdo": "5660717", "descrizione": "FORNITURA, POSA IN OPERA E MANUTENZIONE ARREDI PER UFFICIO E ARREDI VARI", "base_asta": 130000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "UNIVERSITA' DEGLI STUDI DI SALERNO", "valore_offerto": 122785.0, "stato_proc": "IN CORSO", "stipula": "NO", "data_stipula": "2025-10-15", "num_ordine": "", "fornitore": "", "consegna": "", "note": "EVASO PARZIALMENTE", "id": "a25"}, {"portale": "MEPA", "num_rdo": "5660566", "descrizione": "SENSORI DI CONTROLLO E MONITORAGGIO DEI FLUSSI", "base_asta": 19000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "CNR NAPOLI - STEMS", "valore_offerto": 13060.0, "stato_proc": "IN CORSO", "stipula": "SI", "data_stipula": "2025-10-10", "num_ordine": "", "fornitore": "FITAVA", "consegna": "60GG", "note": "STIPULA FIRMATA E REINVIATA IL 13/10/2025", "id": "a26"}, {"portale": "CNR", "num_rdo": "5707442", "descrizione": "MATERIALI CONDUTTORI\nPER MICROELETTRONICA", "base_asta": 1800.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "CNR BRESCIA", "valore_offerto": 1180.0, "stato_proc": "IN CORSO", "stipula": "SI", "data_stipula": "2025-11-13", "num_ordine": "", "fornitore": "", "consegna": "", "note": "DOCUMENTI COMPILATI E CARICATI", "id": "a27"}, {"portale": "MEPA", "num_rdo": "5740809", "descrizione": "WAFER DI SILICIO - LAURA CARDANI", "base_asta": 4950.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.F.N. - ISTITUTO NAZIONALE DI FISICA NUCLEARE", "valore_offerto": 4950.0, "stato_proc": "IN CORSO", "stipula": "SI", "data_stipula": "", "num_ordine": "", "fornitore": "", "consegna": "", "note": "", "id": "a28"}, {"portale": "UBUY", "num_rdo": "G03599", "descrizione": "GARA PROF. VASCA", "base_asta": 100000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "UNIVERSITA' DEL SANNIO -BENEVENTO", "valore_offerto": 99000.0, "stato_proc": "IN CORSO", "stipula": "SI", "data_stipula": "2025-11-14", "num_ordine": "472 - 473", "fornitore": "EAGLEPROJECT - INMOTION", "consegna": "16 WEEK", "note": "", "id": "a29"}, {"portale": "MEPA", "num_rdo": "5770280", "descrizione": "GO2 EDU LASER", "base_asta": 24250.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "UNIVERSITA' DEGLI STUDI DELL'ACQUILA", "valore_offerto": 24250.0, "stato_proc": "IN CORSO", "stipula": "SI", "data_stipula": "2025-11-17", "num_ordine": "487", "fornitore": "EAGLEPROJECT", "consegna": "16 WEEK", "note": "", "id": "a30"}, {"portale": "MEPA", "num_rdo": "5793455", "descrizione": "MATERIALE PER COLTURE CELLULARI PRIN QUASAR", "base_asta": 8000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "CNR-INO: SEDE SECONDARIA DI SESTO FIORENTINO", "valore_offerto": 7896.0, "stato_proc": "IN CORSO", "stipula": "SI", "data_stipula": "2025-12-02", "num_ordine": "", "fornitore": "LEVANCHIMICA", "consegna": "30GG", "note": "", "id": "a31"}, {"portale": "UBUY", "num_rdo": "G09769", "descrizione": "NOLEGGIO STRUMENTAZIONE YOKOGAWA", "base_asta": 18900.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "UNIVERSITA' VANVITELLI", "valore_offerto": 18900.0, "stato_proc": "IN CORSO", "stipula": "SI", "data_stipula": "2025-11-27", "num_ordine": "263", "fornitore": "YOKOGAWA", "consegna": "6/8 WEEK", "note": "", "id": "a32"}, {"portale": "MEPA", "num_rdo": "5838516", "descrizione": "WP4-A3-008-ELETTRONICA", "base_asta": 11000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "CNR - ISTITUTO PER LA SCIENZA E TECNOLOGIA DEI PLASMI", "valore_offerto": 10371.0, "stato_proc": "IN CORSO", "stipula": "SI", "data_stipula": "2026-01-21", "num_ordine": "387", "fornitore": "VARI", "consegna": "60 GG", "note": "", "id": "a33"}, {"portale": "MEPA", "num_rdo": "6016082", "descrizione": "FORNITURA PIASTRINE SEMICONDUTTRICI TIPO TEC E CONTROLLER DIODI PER TERMALIZZAZIONE DEL PIANO FOCALE DELLE CAMERE ASTRI", "base_asta": 60000.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.A.F. - ISTITUTO NAZIONALE DI ASTROFISICA", "valore_offerto": 0, "stato_proc": "", "stipula": "", "data_stipula": "", "num_ordine": "", "fornitore": "", "consegna": "", "note": "", "id": "a34"}, {"portale": "MEPA", "num_rdo": "1445203", "descrizione": "02473-RA", "base_asta": 295.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.A.F. - ISTITUTO NAZIONALE DI ASTROFISICA", "valore_offerto": 0, "stato_proc": "", "stipula": "", "data_stipula": "", "num_ordine": "", "fornitore": "", "consegna": "", "note": "", "id": "a35"}, {"portale": "MEPA", "num_rdo": "", "descrizione": "SENSORE ARFT/M-I/S TITEC", "base_asta": 240.0, "tipologia": "TRATTATIVA DIRETTA", "ente": "I.N.A.F. - ISTITUTO NAZIONALE DI ASTROFISICA", "valore_offerto": 0, "stato_proc": "", "stipula": "", "data_stipula": "", "num_ordine": "", "fornitore": "", "consegna": "", "note": "", "id": "a36"}], "offerte": [{"num": "2", "data": "2025-01-29", "oggetto": "N.2 - FRIGOEMOTECHE", "ente": "A.O SAN PIO - BENEVENTO", "operatore": "GENNY", "id": "o1"}, {"num": "3", "data": "2025-02-03", "oggetto": "N.3 CAPPA BIOLOGICA", "ente": "POLITECNICO DI MILANO", "operatore": "ASSIA", "id": "o2"}, {"num": "4", "data": "2025-02-12", "oggetto": "N.4 STRUMENTAZIONE GEOFISICA", "ente": "CNR - FIRENZE", "operatore": "ASSIA", "id": "o3"}, {"num": "5", "data": "2025-02-20", "oggetto": "N.5 FRIGO FARMACI", "ente": "UOC - COSENZA", "operatore": "ASSIA", "id": "o4"}, {"num": "6", "data": "2025-02-26", "oggetto": "POMPA PERISTALTICA", "ente": "UNIVERSITA' -CAGLIARI", "operatore": "ASSIA", "id": "o5"}, {"num": "7", "data": "2025-02-27", "oggetto": "28 ANTENNE", "ente": "POLITECNICO DI MILANO", "operatore": "ASSIA", "id": "o6"}, {"num": "8", "data": "2025-03-07", "oggetto": "STRUMENTAZIONE SCIENTIFICA E SENSORI", "ente": "UNIVERSITA' DI PALERMO", "operatore": "ASSIA", "id": "o7"}, {"num": "9", "data": "2025-03-13", "oggetto": "25 ANTENNE 4GHZ", "ente": "POLITECNICO DI MILANO", "operatore": "ASSIA", "id": "o8"}, {"num": "10", "data": "2025-03-14", "oggetto": "TELECAMERA AD ALTA VELOCITÀ", "ente": "POLITECNICO DI MILANO", "operatore": "ASSIA", "id": "o9"}, {"num": "11", "data": "2025-03-12", "oggetto": "ROBOT BUNKER PRO", "ente": "POLITECNICO DI MILANO", "operatore": "GENNY", "id": "o10"}, {"num": "12", "data": "2025-03-14", "oggetto": "SENSORE DI FORZA COPPIA", "ente": "POLITECNICO DI MILANO", "operatore": "ASSIA", "id": "o11"}, {"num": "13", "data": "2025-03-17", "oggetto": "ACCESSOTRI MULTISTATION LEICA", "ente": "POLITECNICO DI MILANO", "operatore": "ASSIA", "id": "o12"}, {"num": "14", "data": "2025-04-02", "oggetto": "FORNITURA DI COMPONENTI", "ente": "UNIVERSITA' DI FERRARA", "operatore": "ASSIA", "id": "o13"}, {"num": "15", "data": "2025-03-24", "oggetto": "SORGENTE OMINIDIREZIONALE", "ente": "POLITECNICO DI MILANO", "operatore": "ASSIA", "id": "o14"}, {"num": "16", "data": "2025-03-25", "oggetto": "GIUNTATRICE PER FIBRE OTTICHE", "ente": "PHOTON TECHNOLOGY ITALY SRL", "operatore": "GENNY", "id": "o15"}, {"num": "17", "data": "2025-03-26", "oggetto": "CAVI RS", "ente": "POLITECNICO DI MILANO", "operatore": "ASSIA", "id": "o16"}, {"num": "18", "data": "2025-03-28", "oggetto": "BRACCIO ROBOTICO IGUS REBEL", "ente": "POLITECNICO DI MILANO", "operatore": "ASSIA", "id": "o17"}, {"num": "19", "data": "2025-03-28", "oggetto": "CONSULENZA PER ALLESTIMENTO DA LABORATORIO", "ente": "PHOTON TECHNOLOGY ITALY SRL", "operatore": "GENNY", "id": "o18"}, {"num": "20", "data": "2025-04-09", "oggetto": "THYRATRON TUBES", "ente": "ENEA", "operatore": "ASSIA", "id": "o19"}, {"num": "21", "data": "2025-04-14", "oggetto": "ANALIZZATORE DI RETE VETTORIALE", "ente": "POLITECNICO DI MILANO", "operatore": "GENNY", "id": "o20"}, {"num": "22", "data": "2025-05-08", "oggetto": "DIGITA TWIN", "ente": "ENEA", "operatore": "GENNY", "id": "o21"}, {"num": "23", "data": "2025-04-16", "oggetto": "MATERIALE THORLABS", "ente": "CNR NAPOLI", "operatore": "ASSIA", "id": "o22"}, {"num": "24", "data": "2025-04-29", "oggetto": "SORGENTE OMNIDIREZIONALE", "ente": "POLITECNICO DI MILANO", "operatore": "ASSIA", "id": "o23"}, {"num": "25", "data": "2025-05-05", "oggetto": "RACCORDI E TUBATURE", "ente": "CNR", "operatore": "ASSIA", "id": "o24"}, {"num": "26", "data": "2025-05-12", "oggetto": "TELECAMERE E UNITÀ DI CALCOLO", "ente": "POLITECNICO DI MILANO", "operatore": "ASSIA", "id": "o25"}, {"num": "27", "data": "2025-05-19", "oggetto": "STAMPANTI ZEBRA", "ente": "ASL BAT", "operatore": "GENNY", "id": "o26"}, {"num": "28", "data": "2025-05-26", "oggetto": "NASO ELETTRONICO", "ente": "UNIVERSITÀ DI PARMA", "operatore": "ASSIA", "id": "o27"}, {"num": "29", "data": "2025-05-30", "oggetto": "SCHEDE FPGA", "ente": "POLITECNICO DI MILANO", "operatore": "ASSIA", "id": "o28"}, {"num": "30", "data": "2025-06-04", "oggetto": "STRUMENTAZIONE MICRORAD", "ente": "GOV. CITTÀ DEL VATICANO", "operatore": "GENNY", "id": "o29"}, {"num": "31", "data": "", "oggetto": "COMPONENTISTICA DA VUOTO E COMPONENTI OTTICI LOTTO 1", "ente": "UNIVERSITA' DEGLI STUDI DI MESSINA", "operatore": "ASSIA", "id": "o30"}, {"num": "32", "data": "", "oggetto": "COMPONENTISTICA DA VUOTO E COMPONENTI OTTICI LOTTO 2", "ente": "UNIVERSITA' DEGLI STUDI DI MESSINA", "operatore": "ASSIA", "id": "o31"}, {"num": "33", "data": "", "oggetto": "COMPONENTISTICA DA VUOTO E COMPONENTI OTTICI LOTTO 3", "ente": "UNIVERSITA' DEGLI STUDI DI MESSINA", "operatore": "ASSIA", "id": "o32"}, {"num": "34", "data": "2025-06-16", "oggetto": "12 FRIGORIFERI DA LABORATORIO", "ente": "ARPAT DI FIRENZE", "operatore": "ASSIA", "id": "o33"}, {"num": "35", "data": "2025-06-19", "oggetto": "COMPONENTISTICA ELETTRICA ED ELETTRONICA", "ente": "CNR SESTO FIORENTINO", "operatore": "ASSIA", "id": "o34"}, {"num": "36", "data": "2025-06-20", "oggetto": "4 CONGELATORI -80°", "ente": "REGIONE TOSCANA", "operatore": "ASSIA", "id": "o35"}, {"num": "37", "data": "2025-06-26", "oggetto": "2 FLUKE DSX2 - 8000", "ente": "MINISTERO DELLA DIFESA", "operatore": "ASSIA", "id": "o36"}, {"num": "38", "data": "2025-07-01", "oggetto": "LASER CUTTER", "ente": "", "operatore": "ASSIA", "id": "o37"}, {"num": "39", "data": "2025-07-03", "oggetto": "PREVENTIVO - MEDIA PLAYER", "ente": "GOV. CITTÀ DEL VATICANO", "operatore": "GENNY", "id": "o38"}, {"num": "40", "data": "2025-07-04", "oggetto": "PREVENTIVO - PRODOTTI MULTIBOOST", "ente": "GOV. CITTÀ DEL VATICANO", "operatore": "GENNY", "id": "o39"}, {"num": "41", "data": "2025-07-03", "oggetto": "CAMERA DI INVECCHIAMENTO", "ente": "UNIVERSITA' DI PALERMO", "operatore": "ASSIA", "id": "o40"}, {"num": "42", "data": "2025-07-08", "oggetto": "MATERIALE PROF. STAFFA", "ente": "UNIVERSITÀ PATHENOPE NAPOLI", "operatore": "GENNY", "id": "o41"}, {"num": "43", "data": "2025-07-04", "oggetto": "MATERIALE DA LABORATOTIO VOLTERA", "ente": "UNIVERSITA' DEGLI STUDI DI MESSINA", "operatore": "ASSIA", "id": "o42"}, {"num": "44", "data": "2025-07-07", "oggetto": "OSCILLOSCOPIO", "ente": "CNR FIRENZE", "operatore": "ASSIA", "id": "o43"}, {"num": "45", "data": "2025-07-14", "oggetto": "ARREDI", "ente": "OSPEDALE DEI COLLI - NAPOLI", "operatore": "ASSIA", "id": "o44"}, {"num": "46", "data": "2025-07-21", "oggetto": "OTTICHE", "ente": "CNR FIRENZE", "operatore": "ASSIA", "id": "o45"}, {"num": "47", "data": "2025-07-22", "oggetto": "LASER DRIVER", "ente": "CNR - POZZUOLI", "operatore": "ASSIA", "id": "o46"}, {"num": "48", "data": "2025-07-23", "oggetto": "MATERIALE ELETTRONICO", "ente": "CNR - FIRENZE", "operatore": "ASSIA", "id": "o47"}, {"num": "49", "data": "2025-07-29", "oggetto": "TRASPALLET ELETTRICO", "ente": "AZIENDA SANITARIA SIRACUSA", "operatore": "ASSIA", "id": "o48"}, {"num": "50", "data": "2025-07-30", "oggetto": "SCHEDA DI ACQUISIZIONE DI SEGNALI DI TIPO PCI", "ente": "POLIMI", "operatore": "ASSIA", "id": "o49"}, {"num": "51", "data": "2025-08-01", "oggetto": "SISTEMI OTTICI TRAPPOLE DI DIPOLO", "ente": "CNR - SESTO FIORENTINO", "operatore": "ASSIA", "id": "o50"}, {"num": "52", "data": "2025-09-03", "oggetto": "FILTRI OTTICI", "ente": "CNR - SESTO FIORENTINO", "operatore": "ASSIA", "id": "o51"}, {"num": "53", "data": "2025-09-04", "oggetto": "SENSORI", "ente": "STEMS - NAPOLI", "operatore": "ASSIA", "id": "o52"}, {"num": "54", "data": "2025-09-05", "oggetto": "CONDUTTORI PER MICROELETTRONICA", "ente": "UNIVERSITÀ LUIGI VANVITELLI", "operatore": "ASSIA", "id": "o53"}, {"num": "55", "data": "", "oggetto": "CENTRIFUGA", "ente": "UNIVERSITÀ LUIGI VANVITELLI", "operatore": "ASSIA", "id": "o54"}, {"num": "56", "data": "2025-09-09", "oggetto": "SCHEDE PCIE", "ente": "CNR NAPOLI", "operatore": "ASSIA", "id": "o55"}, {"num": "57", "data": "2025-09-11", "oggetto": "THINKPAD X1 CARBON GEN 11", "ente": "POLIMI", "operatore": "ASSIA", "id": "o56"}, {"num": "58", "data": "2025-09-12", "oggetto": "SENSORI E VALVOLE", "ente": "POLIMI", "operatore": "ASSIA", "id": "o57"}, {"num": "59", "data": "2025-09-30", "oggetto": "CISCO C9200L-24P-4X-E", "ente": "GOV. CITTÀ DEL VATICANO", "operatore": "GENNY", "id": "o58"}, {"num": "60", "data": "2025-10-13", "oggetto": "MATERIALE AUDIO VIDEO BIBLIOTECA COMUNALE", "ente": "COMUNE DI CASORIA", "operatore": "GENNY", "id": "o59"}, {"num": "61", "data": "2025-10-06", "oggetto": "MATERIALE INFORMATICO", "ente": "STEMS - NAPOLI", "operatore": "ANNAMARIA", "id": "o60"}, {"num": "62", "data": "2025-10-08", "oggetto": "EVAPORATORE ROTANTE", "ente": "STEMS - NAPOLI", "operatore": "ANNAMARIA", "id": "o61"}, {"num": "63", "data": "2025-10-13", "oggetto": "CODICI THORLABS - OTTICA", "ente": "CNR - INO SESTO FIORENTINO", "operatore": "ANNAMARIA", "id": "o62"}, {"num": "64", "data": "2025-10-13", "oggetto": "CODICI THORLABS - OTTICA", "ente": "CNR - INO POZZUOLI", "operatore": "ANNAMARIA", "id": "o63"}, {"num": "65", "data": "2025-10-14", "oggetto": "MATERIALE ELETTRONICO", "ente": "I.I.S. VITTORIO VENETO-SALVEMINI", "operatore": "GENNY", "id": "o64"}, {"num": "66", "data": "2025-10-23", "oggetto": "MATERIALE PER COLTURE", "ente": "CNR - INO SESTO FIORENTINO", "operatore": "ANNAMARIA", "id": "o65"}, {"num": "67", "data": "2025-10-31", "oggetto": "MATERIALE OTTICO THORLABS", "ente": "CNR - INO SESTO FIORENTINO", "operatore": "GENNY", "id": "o66"}, {"num": "68", "data": "2025-11-03", "oggetto": "MATERIALE RS", "ente": "CNR - INO SESTO FIORENTINO", "operatore": "GENNY", "id": "o67"}, {"num": "69", "data": "2025-11-04", "oggetto": "FORNITURA N.3 ROBOT E SERVIZI", "ente": "CITTÀ DELLA SCIENZA", "operatore": "GENNY", "id": "o68"}, {"num": "70", "data": "2025-11-05", "oggetto": "SISTEMA HW/SW", "ente": "UNI ROMA TOR VERGATA", "operatore": "GENNY", "id": "o69"}, {"num": "71", "data": "2025-11-13", "oggetto": "SISTEMA GANTRY PER ISPEZIONE LAMIERE", "ente": "UNI SALERNO", "operatore": "GENNY", "id": "o70"}], "portali": [{"preferito": "⭐", "nome": "MEPA", "url": "https://www.acquistinretepa.it", "username": "", "password": "", "operatore": "", "note": "Mercato Elettronico della Pubblica Amministrazione", "stato": "ATTIVO", "id": "p1"}, {"preferito": "⭐", "nome": "START", "url": "https://start.toscana.it", "username": "", "password": "", "operatore": "", "note": "Regione Toscana", "stato": "ATTIVO", "id": "p2"}, {"preferito": "", "nome": "SINTEL", "url": "https://www.sintel.regione.lombardia.it", "username": "", "password": "", "operatore": "", "note": "Regione Lombardia", "stato": "ATTIVO", "id": "p3"}, {"preferito": "", "nome": "FARE APPALTI", "url": "https://www.fareappalti.it", "username": "", "password": "", "operatore": "", "note": "", "stato": "ATTIVO", "id": "p4"}, {"preferito": "", "nome": "EMPULIA", "url": "https://www.empulia.it", "username": "", "password": "", "operatore": "", "note": "Regione Puglia", "stato": "ATTIVO", "id": "p5"}, {"preferito": "", "nome": "UBUY", "url": "https://www.ubuy.it", "username": "", "password": "", "operatore": "", "note": "", "stato": "ATTIVO", "id": "p6"}, {"preferito": "", "nome": "EMAIL", "url": "", "username": "", "password": "", "operatore": "", "note": "Richieste via email diretta", "stato": "", "id": "p7"}, {"preferito": "", "nome": "CNR", "url": "https://portalegare.cnr.it", "username": "", "password": "", "operatore": "", "note": "Portale gare CNR", "stato": "ATTIVO", "id": "p8"}, {"preferito": "", "nome": "GOV. CITTÀ VATICANO", "url": "", "username": "", "password": "", "operatore": "", "note": "", "stato": "", "id": "p9"}, {"preferito": "", "nome": "EAV", "url": "", "username": "", "password": "", "operatore": "", "note": "Ente Autonomo Volturno", "stato": "", "id": "p10"}, {"preferito": "", "nome": "UNI SANNIO", "url": "https://gare.unisannio.it", "username": "", "password": "", "operatore": "", "note": "Università del Sannio", "stato": "ATTIVO", "id": "p11"}, {"preferito": "", "nome": "CITTÀ DELLA SCIENZA", "url": "", "username": "", "password": "", "operatore": "", "note": "Napoli", "stato": "", "id": "p12"}, {"preferito": "", "nome": "ATAC", "url": "https://gare.atac.roma.it", "username": "", "password": "", "operatore": "", "note": "Roma", "stato": "", "id": "p13"}]};
+
+// ═══════════════════════════════════════════════════════
+// STATE — persistenza locale + sync remoto opzionale
+// ═══════════════════════════════════════════════════════
+const LS = {gare:'mg_gare', agg:'mg_agg', off:'mg_off', port:'mg_port'};
+const UI_LS = 'mg_ui_prefs';
+const STATE_MAP = {gare:'gare', agg:'aggiudicate', off:'offerte', port:'portali'};
+const DEFAULT_REMOTE_CONFIG = {
+  syncTable: 'app_state',
+  syncRowId: 'shared',
+  pollIntervalMs: 15000
+};
+const remoteCfg = Object.assign({}, DEFAULT_REMOTE_CONFIG, window.MARTEC_CONFIG || {});
+const remoteSync = {
+  client: null,
+  enabled: false,
+  lastHash: '',
+  pollingId: null,
+  initialized: false
+};
+const DEFAULT_UI_PREFS = {
+  gareSort: 'scadenza-asc',
+  aggSort: 'scadenza-asc',
+  offYear: '',
+  portStatus: '',
+  scadRange: '30'
+};
+
+function lsLoad(key, seed) {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : seed;
+  } catch(e) { return seed; }
+}
+function lsSave(key, data) {
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch(e) {}
+}
+
+function loadUiPrefs() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(UI_LS) || '{}');
+    return Object.assign({}, DEFAULT_UI_PREFS, saved);
+  } catch(e) {
+    return Object.assign({}, DEFAULT_UI_PREFS);
+  }
+}
+
+function saveUiPrefs() {
+  try { localStorage.setItem(UI_LS, JSON.stringify(uiPrefs)); } catch(e) {}
+}
+
+let state = {
+  gare:        lsLoad(LS.gare,  SEED.gare),
+  aggiudicate: lsLoad(LS.agg,   SEED.aggiudicate),
+  offerte:     lsLoad(LS.off,   SEED.offerte),
+  portali:     lsLoad(LS.port,  SEED.portali),
+};
+let uiPrefs = loadUiPrefs();
+
+function normalizeOperatoreValue(value) {
+  const normalized = value ? String(value).toUpperCase().trim() : '';
+  return normalized === 'GENNY' ? 'GENNI' : normalized;
+}
+
+function normalizeCollectionOperatori(rows) {
+  let changed = false;
+  const normalizedRows = (rows || []).map(row => {
+    if(!row || typeof row !== 'object' || !('operatore' in row)) return row;
+    const nextOperatore = normalizeOperatoreValue(row.operatore);
+    if((row.operatore || '') === nextOperatore) return row;
+    changed = true;
+    return Object.assign({}, row, { operatore: nextOperatore });
+  });
+  return { rows: normalizedRows, changed };
+}
+
+function normalizeStateOperatori() {
+  const gare = normalizeCollectionOperatori(state.gare);
+  const aggiudicate = normalizeCollectionOperatori(state.aggiudicate);
+  const offerte = normalizeCollectionOperatori(state.offerte);
+  const portali = normalizeCollectionOperatori(state.portali);
+  const changed = gare.changed || aggiudicate.changed || offerte.changed || portali.changed;
+  if(changed) {
+    state = {
+      gare: gare.rows,
+      aggiudicate: aggiudicate.rows,
+      offerte: offerte.rows,
+      portali: portali.rows
+    };
+  }
+  return changed;
+}
+
+normalizeStateOperatori();
+
+function hashState(data) { return JSON.stringify(data); }
+
+function saveLocalSnapshot() {
+  Object.entries(STATE_MAP).forEach(([key, col]) => lsSave(LS[key], state[col]));
+}
+
+function getLocalPortaliSecrets() {
+  return new Map(
+    (lsLoad(LS.port, state.portali) || []).map(p => [
+      p.id || p.nome,
+      { username: p.username || '', password: p.password || '' }
+    ])
+  );
+}
+
+function serializeRemoteState() {
+  return {
+    gare: state.gare,
+    aggiudicate: state.aggiudicate,
+    offerte: state.offerte,
+    portali: state.portali.map(({ username, password, ...rest }) => rest)
+  };
+}
+
+function mergePortaliSecrets(portali) {
+  const secrets = getLocalPortaliSecrets();
+  return (portali || []).map(portale => {
+    const local = secrets.get(portale.id || portale.nome) || {};
+    return Object.assign({}, portale, {
+      username: local.username || '',
+      password: local.password || ''
+    });
+  });
+}
+
+function applyState(nextState) {
+  state = {
+    gare: Array.isArray(nextState.gare) ? nextState.gare : [],
+    aggiudicate: Array.isArray(nextState.aggiudicate) ? nextState.aggiudicate : [],
+    offerte: Array.isArray(nextState.offerte) ? nextState.offerte : [],
+    portali: mergePortaliSecrets(Array.isArray(nextState.portali) ? nextState.portali : [])
+  };
+  normalizeStateOperatori();
+  saveLocalSnapshot();
+}
+
+function setSyncStatus(label, tone='neutral') {
+  const colors = {
+    neutral: '#78909C',
+    ok: '#2E7D32',
+    warn: '#E65100',
+    err: '#C62828'
+  };
+  document.getElementById('sync-status').innerHTML =
+    '<span style="color:'+colors[tone]+';font-weight:600">●</span> ' + label;
+}
+
+async function pushRemoteState(reason='manual') {
+  if(!remoteSync.enabled || !remoteSync.client) return false;
+  const payload = serializeRemoteState();
+  const payloadHash = hashState(payload);
+  if(reason !== 'force' && payloadHash === remoteSync.lastHash) return true;
+  setSyncStatus('Sincronizzazione cloud...', 'warn');
+  const { error } = await remoteSync.client
+    .from(remoteCfg.syncTable)
+    .upsert({ id: remoteCfg.syncRowId, payload }, { onConflict: 'id' });
+  if(error) {
+    console.error('Errore sync remoto', error);
+    setSyncStatus('Cloud non raggiungibile, uso locale', 'err');
+    return false;
+  }
+  remoteSync.lastHash = payloadHash;
+  setSyncStatus('Cloud attivo · credenziali portali solo locali', 'ok');
+  return true;
+}
+
+async function pullRemoteState(silent=false) {
+  if(!remoteSync.enabled || !remoteSync.client) return false;
+  const { data, error } = await remoteSync.client
+    .from(remoteCfg.syncTable)
+    .select('payload')
+    .eq('id', remoteCfg.syncRowId)
+    .maybeSingle();
+
+  if(error) {
+    console.error('Errore lettura remota', error);
+    if(!silent) setSyncStatus('Cloud non raggiungibile, uso locale', 'err');
+    return false;
+  }
+
+  const hasRemoteCollections = data && data.payload && (
+    Array.isArray(data.payload.gare) ||
+    Array.isArray(data.payload.aggiudicate) ||
+    Array.isArray(data.payload.offerte) ||
+    Array.isArray(data.payload.portali)
+  );
+
+  if(!hasRemoteCollections) {
+    await pushRemoteState('force');
+    return true;
+  }
+
+  const incomingHash = hashState(data.payload);
+  if(incomingHash === remoteSync.lastHash) {
+    if(!silent) setSyncStatus('Cloud attivo · credenziali portali solo locali', 'ok');
+    return true;
+  }
+
+  applyState(data.payload);
+  remoteSync.lastHash = incomingHash;
+  if(remoteSync.initialized) {
+    updateBadges();
+    fillPortSel('xg-port','');
+    fillPortSel('xa-port','');
+    fillOffYearFilter();
+    redrawCurrent();
+    toast('Dati aggiornati dal cloud','ok');
+  }
+  if(!silent) setSyncStatus('Cloud attivo · credenziali portali solo locali', 'ok');
+  return true;
+}
+
+async function setupRemoteSync() {
+  if(!remoteCfg.supabaseUrl || !remoteCfg.supabaseAnonKey || !window.supabase || !window.supabase.createClient) {
+    setSyncStatus('Solo locale · configura Supabase per condividere i dati', 'warn');
+    return false;
+  }
+
+  try {
+    remoteSync.client = window.supabase.createClient(remoteCfg.supabaseUrl, remoteCfg.supabaseAnonKey);
+    remoteSync.enabled = true;
+    await pullRemoteState();
+    if(remoteSync.pollingId) clearInterval(remoteSync.pollingId);
+    remoteSync.pollingId = window.setInterval(() => { pullRemoteState(true); }, remoteCfg.pollIntervalMs);
+    document.addEventListener('visibilitychange', () => {
+      if(!document.hidden) pullRemoteState(true);
+    });
+    return true;
+  } catch(error) {
+    console.error('Init sync remoto fallita', error);
+    setSyncStatus('Cloud non disponibile, uso locale', 'err');
+    return false;
+  }
+}
+
+function remoteInitWithTimeout(ms=5000) {
+  let timeoutId = null;
+  return Promise.race([
+    setupRemoteSync().then(result => {
+      if(timeoutId) window.clearTimeout(timeoutId);
+      return result;
+    }),
+    new Promise(resolve => {
+      timeoutId = window.setTimeout(() => {
+        setSyncStatus('Cloud lento o non raggiungibile, uso locale', 'warn');
+        resolve(false);
+      }, ms);
+    })
+  ]);
+}
+
+function save(key) {
+  lsSave(LS[key], state[STATE_MAP[key]]);
+  if(remoteSync.enabled) void pushRemoteState();
+}
+
+function syncUiControls() {
+  fillOffYearFilter();
+  fillPortaliStatusBar();
+  fillScadRangeBar();
+  syncGareSortControls();
+  syncAggSortControls();
+}
+
+function setGareSort(value) {
+  uiPrefs.gareSort = value || DEFAULT_UI_PREFS.gareSort;
+  saveUiPrefs();
+  syncGareSortControls();
+  pg.cur = 1;
+  drawGare();
+}
+
+function getGareSortParts() {
+  const [field='scadenza', direction='asc'] = (uiPrefs.gareSort || DEFAULT_UI_PREFS.gareSort).split('-');
+  return { field: 'scadenza', direction: direction === 'desc' ? 'desc' : 'asc' };
+}
+
+function syncGareSortControls() {
+  const { field, direction } = getGareSortParts();
+  document.querySelectorAll('#g-sortbar [data-sort-field]').forEach(btn => {
+    btn.classList.toggle('on', btn.dataset.sortField === field);
+  });
+  const dirBtn = document.getElementById('g-sortdir');
+  if(dirBtn) dirBtn.textContent = direction === 'asc' ? '↑ Crescente' : '↓ Decrescente';
+}
+
+function setGareSortField(field) {
+  const current = getGareSortParts();
+  const direction = current.field === field ? current.direction : 'asc';
+  setGareSort(field + '-' + direction);
+}
+
+function toggleGareSortDirection() {
+  const current = getGareSortParts();
+  const nextDirection = current.direction === 'asc' ? 'desc' : 'asc';
+  setGareSort(current.field + '-' + nextDirection);
+}
+
+function getAggSortParts() {
+  const [field='scadenza', direction='asc'] = (uiPrefs.aggSort || DEFAULT_UI_PREFS.aggSort).split('-');
+  return { field: 'scadenza', direction: direction === 'desc' ? 'desc' : 'asc' };
+}
+
+function syncAggSortControls() {
+  const { field, direction } = getAggSortParts();
+  document.querySelectorAll('#a-sortbar [data-sort-field]').forEach(btn => {
+    btn.classList.toggle('on', btn.dataset.sortField === field);
+  });
+  const dirBtn = document.getElementById('a-sortdir');
+  if(dirBtn) dirBtn.textContent = direction === 'asc' ? '↑ Crescente' : '↓ Decrescente';
+}
+
+function setAggSortField(field) {
+  const current = getAggSortParts();
+  const direction = current.field === field ? current.direction : 'asc';
+  setAggSort(field + '-' + direction);
+}
+
+function toggleAggSortDirection() {
+  const current = getAggSortParts();
+  const nextDirection = current.direction === 'asc' ? 'desc' : 'asc';
+  setAggSort(current.field + '-' + nextDirection);
+}
+
+function setAggSort(value) {
+  uiPrefs.aggSort = value || DEFAULT_UI_PREFS.aggSort;
+  saveUiPrefs();
+  syncAggSortControls();
+  pa.cur = 1;
+  drawAgg();
+}
+
+function sortByMode(rows, mode, type) {
+  const list = [...rows];
+  const dateAsc = key => list.sort((a,b)=>(a[key] || '9999-12-31').localeCompare(b[key] || '9999-12-31'));
+  const dateDesc = key => list.sort((a,b)=>(b[key] || '0000-00-00').localeCompare(a[key] || '0000-00-00'));
+  const textAsc = key => list.sort((a,b)=>(a[key] || '').localeCompare(b[key] || '', 'it'));
+  const textDesc = key => list.sort((a,b)=>(b[key] || '').localeCompare(a[key] || '', 'it'));
+  const numAsc = key => list.sort((a,b)=>(a[key] || 0) - (b[key] || 0));
+  const numDesc = key => list.sort((a,b)=>(b[key] || 0) - (a[key] || 0));
+
+  if(type === 'gare') {
+    switch(mode) {
+      case 'scadenza-desc': dateDesc('scadenza'); break;
+      case 'scadenza-asc':
+      default:
+        dateAsc('scadenza');
+        break;
+    }
+    if(mode.startsWith('scadenza')) {
+      list.sort((a,b)=>{
+        const da = a.scadenza || (mode === 'scadenza-asc' ? '9999-12-31' : '0000-00-00');
+        const db = b.scadenza || (mode === 'scadenza-asc' ? '9999-12-31' : '0000-00-00');
+        if(da !== db) return mode === 'scadenza-asc' ? da.localeCompare(db) : db.localeCompare(da);
+        return (b.data_creazione || '0000-00-00').localeCompare(a.data_creazione || '0000-00-00');
+      });
+    }
+    return list;
+  }
+
+  switch(mode) {
+    case 'scadenza-desc':
+      list.sort((a,b)=>(b.scadenza || '0000-00-00').localeCompare(a.scadenza || '0000-00-00'));
+      break;
+    case 'scadenza-asc':
+    default:
+      list.sort((a,b)=>(a.scadenza || '9999-12-31').localeCompare(b.scadenza || '9999-12-31'));
+      break;
+  }
+  return list;
+}
+
+// ═══════════════════════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════════════════════
+let editId = {};
+let charts = {};
+let curView = 'dashboard';
+const PS = 25;
+let pg={cur:1}, pa={cur:1}, po={cur:1};
+let activeDropdown = null;
+const tblFilters = {gare:{}, agg:{}, off:{}, port:{}, scad:{}};
+
+// ═══════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════
+const eur = n => n ? new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',minimumFractionDigits:0}).format(n) : '—';
+const fmtD = s => { if(!s) return '—'; const [y,m,g]=s.split('-'); return g+'/'+m+'/'+y; };
+const uid  = p => p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const daysTo = s => { if(!s) return null; return Math.ceil((new Date(s)-new Date())/(864e5)); };
+const up = s => s ? String(s).toUpperCase().trim() : '';
+
+function bdSt(s) {
+  const m={AGGIUDICATA:'AG',PRESENTATA:'PR','DA LAVORARE':'DL',PERSA:'PE',SCARTATA:'SC'};
+  return '<span class="bd bd-'+(m[s]||'SC')+'">'+s+'</span>';
+}
+function bdSP(s) {
+  if(!s) return '—';
+  const m={'CONCLUSA':'CONCLUSA','IN CORSO':'INCORSO','IN ATTESA DI STIPULA':'ATTESA'};
+  return '<span class="bd bd-'+(m[s]||'')+'">'+s+'</span>';
+}
+function bdAcc(s) {
+  return s ? '<span class="bd bd-'+s+'">'+s+'</span>' : '';
+}
+function rowC(s) {
+  return {AGGIUDICATA:'rAG',PRESENTATA:'rPR','DA LAVORARE':'rDL',PERSA:'rPE',SCARTATA:'rSC'}[s]||'';
+}
+function opBd(op) {
+  if(!op) return '—';
+  const c={ASSIA:'#1565C0',GENNI:'#00838F',ANNAMARIA:'#E65100'};
+  return '<span style="background:'+(c[op]||'#546E7A')+';color:#fff;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700">'+op+'</span>';
+}
+function scadTag(s, stato) {
+  if(['PERSA','AGGIUDICATA','SCARTATA'].includes(stato)) return '';
+  const d=daysTo(s); if(d===null||d<0) return '';
+  if(d<=3) return ' <span class="scad-urg">🚨'+d+'gg</span>';
+  if(d<=10) return ' <span class="scad-att">⚠️'+d+'gg</span>';
+  return '';
+}
+function toast(msg, type) {
+  const t=document.createElement('div');
+  t.className='toast'+(type?' '+type:'');
+  t.textContent=(type==='ok'?'✅ ':type==='err'?'❌ ':'ℹ️ ')+msg;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(()=>t.remove(), 3000);
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+const viewCfg = {
+  dashboard:   {ttl:'Dashboard',           sub:'Analisi in tempo reale', add:''},
+  gare:        {ttl:'Lista Gare',           sub:'',                       add:'＋ Nuova Gara'},
+  aggiudicate: {ttl:'Gare Aggiudicate',    sub:'',                       add:'＋ Aggiungi'},
+  offerte:     {ttl:'Offerte Presentate',  sub:'',                       add:'＋ Nuova Offerta'},
+  portali:     {ttl:'Portali',              sub:'Credenziali & accessi',  add:'＋ Portale'},
+  scadenze:    {ttl:'Scadenze',             sub:'Gare in scadenza',       add:''},
+};
+
+document.querySelectorAll('.nav').forEach(n => {
+  n.addEventListener('click', () => {
+    const v = n.dataset.v;
+    curView = v;
+    document.querySelectorAll('.nav').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+    n.classList.add('on');
+    document.getElementById('v-'+v).classList.add('on');
+    const c = viewCfg[v];
+    document.getElementById('tb-ttl').textContent = c.ttl;
+    document.getElementById('tb-sub').textContent = c.sub;
+    const ba = document.getElementById('btn-add');
+    if(c.add){ ba.textContent=c.add; ba.style.display=''; } else { ba.style.display='none'; }
+    redrawCurrent();
+  });
+});
+
+function openAdd() {
+  const m={dashboard:'gara',gare:'gara',aggiudicate:'agg',offerte:'off',portali:'port',scadenze:'gara'};
+  openM(m[curView]||'gara');
+}
+
+function redrawCurrent() {
+  ({dashboard:drawDash,gare:drawGare,aggiudicate:drawAgg,offerte:drawOff,portali:drawPortali,scadenze:drawScad}[curView]||drawDash)();
+}
+
+function updateBadges() {
+  document.getElementById('nb-g').textContent = state.gare.length;
+  document.getElementById('nb-a').textContent = state.aggiudicate.length;
+  document.getElementById('nb-o').textContent = state.offerte.length;
+  const s = state.gare.filter(g=>{const d=daysTo(g.scadenza);return d!==null&&d>=0&&d<=7&&!['PERSA','AGGIUDICATA','SCARTATA'].includes(g.stato);}).length;
+  document.getElementById('nb-s').textContent = s;
+}
+
+function fillPortSel(id, sel) {
+  const el=document.getElementById(id); if(!el) return;
+  const names=[...new Set(state.portali.map(p=>p.nome).filter(Boolean))].sort();
+  el.innerHTML='<option value="">—</option>'+names.map(n=>'<option'+(n===sel?' selected':'')+'>'+n+'</option>').join('');
+  if(sel&&!names.includes(sel)) el.innerHTML+='<option selected>'+sel+'</option>';
+}
+
+function fillOffYearFilter() {
+  const bar = document.getElementById('o-yearbar');
+  if(!bar) return;
+  const current = uiPrefs.offYear || '';
+  const years = [...new Set(
+    state.offerte
+      .map(o => (o.data || '').slice(0,4))
+      .filter(Boolean)
+  )].sort((a,b)=>b.localeCompare(a));
+  bar.innerHTML =
+    '<button type="button" class="sortchip'+(!current?' on':'')+'" onclick="setOffYear(\'\')">Tutti</button>'
+    + years.map(y =>
+      '<button type="button" class="sortchip'+(y===current?' on':'')+'" onclick="setOffYear(\''+y+'\')">'+y+'</button>'
+    ).join('');
+}
+
+function setOffYear(year) {
+  uiPrefs.offYear = year || '';
+  saveUiPrefs();
+  fillOffYearFilter();
+  po.cur = 1;
+  drawOff();
+}
+
+function fillPortaliStatusBar() {
+  const bar = document.getElementById('p-statusbar');
+  if(!bar) return;
+  const current = uiPrefs.portStatus || '';
+  const options = [
+    { value: '', label: 'Tutti' },
+    { value: 'ATTIVO', label: 'Attivo' },
+    { value: 'SCADUTO', label: 'Scaduto' },
+    { value: 'SOSPESO', label: 'Sospeso' }
+  ];
+  bar.innerHTML = options.map(opt =>
+    '<button type="button" class="sortchip'+(opt.value===current?' on':'')+'" onclick="setPortaliStatus(\''+opt.value+'\')">'+opt.label+'</button>'
+  ).join('');
+}
+
+function setPortaliStatus(status) {
+  uiPrefs.portStatus = status || '';
+  saveUiPrefs();
+  fillPortaliStatusBar();
+  drawPortali();
+}
+
+function fillScadRangeBar() {
+  const bar = document.getElementById('s-rangebar');
+  if(!bar) return;
+  const current = uiPrefs.scadRange || '30';
+  const options = [
+    { value: '7', label: '7 giorni' },
+    { value: '15', label: '15 giorni' },
+    { value: '30', label: '30 giorni' },
+    { value: '60', label: '60 giorni' },
+    { value: '999', label: 'Tutte' }
+  ];
+  bar.innerHTML = options.map(opt =>
+    '<button type="button" class="sortchip'+(opt.value===current?' on':'')+'" onclick="setScadRange(\''+opt.value+'\')">'+opt.label+'</button>'
+  ).join('');
+}
+
+function setScadRange(value) {
+  uiPrefs.scadRange = value || '30';
+  saveUiPrefs();
+  fillScadRangeBar();
+  drawScad();
+}
+
+// ═══════════════════════════════════════════════════════
+// COLUMN FILTERS (event delegation — works on dynamic content)
+// ═══════════════════════════════════════════════════════
+function getTableData(tbl) {
+  const gareAttive = state.gare.filter(g=>{const d=daysTo(g.scadenza);return d!==null&&d>=0&&!['PERSA','AGGIUDICATA','SCARTATA'].includes(g.stato);});
+  return {gare:state.gare,agg:state.aggiudicate,off:state.offerte,port:state.portali,scad:gareAttive}[tbl]||[];
+}
+
+function closeDropdown() {
+  if(activeDropdown){activeDropdown.remove();activeDropdown=null;}
+}
+
+document.addEventListener('click', function(e) {
+  // Column header click
+  const th = e.target.closest('.th-click');
+  if(th) {
+    e.stopPropagation();
+    const tbl=th.dataset.tbl, col=th.dataset.col;
+    if(!tbl||!col) return;
+    if(activeDropdown&&activeDropdown._th===th){closeDropdown();return;}
+    closeDropdown();
+    openColDD(th, tbl, col);
+    return;
+  }
+  // Click outside dropdown
+  if(activeDropdown && !activeDropdown.contains(e.target)) closeDropdown();
+});
+
+function openColDD(th, tbl, col) {
+  const rect = th.getBoundingClientRect();
+  const data = getTableData(tbl);
+  const vals = [...new Set(data.map(r=>r[col]).filter(x=>x&&String(x).trim()))].sort();
+  const cur  = (tblFilters[tbl]||{})[col]||'';
+
+  const dd = document.createElement('div');
+  dd.className='col-dropdown'; dd._th=th; activeDropdown=dd;
+
+  let html='<div class="col-dd-search"><input placeholder="Cerca..." oninput="ddSearch(this)"></div>';
+  if(cur) html+='<div class="col-dd-clear">✕ Rimuovi: <strong>'+cur+'</strong></div>';
+  vals.forEach(v=>{
+    html+='<div class="col-dropdown-item'+(v===cur?' on':'')+'" data-v="'+v.toString().replace(/"/g,'&quot;')+'">'+v+(v===cur?'<span class="ck">✓</span>':'')+'</div>';
+  });
+  if(!vals.length) html+='<div style="padding:10px 16px;font-size:12px;color:var(--gray3)">—</div>';
+  dd.innerHTML=html;
+  dd.style.cssText='position:fixed;left:'+Math.min(rect.left,window.innerWidth-230)+'px;top:'+(rect.bottom+2)+'px';
+
+  dd.addEventListener('click', ev=>{
+    ev.stopPropagation();
+    const item=ev.target.closest('.col-dropdown-item');
+    if(item) { setFilter(tbl,col,item.dataset.v); return; }
+    if(ev.target.closest('.col-dd-clear')) { setFilter(tbl,col,''); return; }
+  });
+  document.body.appendChild(dd);
+  dd.querySelector('input').focus();
+}
+
+function ddSearch(inp) {
+  const q=inp.value.toLowerCase();
+  inp.closest('.col-dropdown').querySelectorAll('.col-dropdown-item').forEach(el=>{
+    el.style.display=el.textContent.toLowerCase().includes(q)?'':'none';
+  });
+}
+
+function setFilter(tbl, col, val) {
+  if(!tblFilters[tbl]) tblFilters[tbl]={};
+  tblFilters[tbl][col]=val;
+  closeDropdown();
+  updateThHeaders(tbl);
+  if(tbl==='gare') updateFilterChips();
+  redrawTable(tbl);
+}
+
+function redrawTable(tbl) {
+  ({gare:()=>{pg.cur=1;drawGare();},agg:()=>{pa.cur=1;drawAgg();},
+    off:()=>{po.cur=1;drawOff();},port:drawPortali,scad:drawScad}[tbl]||drawGare)();
+}
+
+function updateThHeaders(tbl) {
+  const L={stato:'Stato',portale:'Portale',tipologia:'Tipologia',operatore:'Operatore',
+           stato_proc:'Stato',stipula:'Stipula',fornitore:'Fornitore',ente:'Ente',nome:'Portale'};
+  document.querySelectorAll('.th-click[data-tbl="'+tbl+'"]').forEach(th=>{
+    const col=th.dataset.col, val=(tblFilters[tbl]||{})[col]||'';
+    th.classList.toggle('active-filter',!!val);
+    th.textContent=val?(L[col]||col)+' ✕':(L[col]||col)+' ▾';
+  });
+}
+
+function updateFilterChips() {
+  const bar=document.getElementById('active-filters-bar'); if(!bar) return;
+  const L={stato:'Stato',portale:'Portale',tipologia:'Tipologia',operatore:'Operatore'};
+  const C={stato:'chip-stato',portale:'chip-portale',tipologia:'chip-tipologia',operatore:'chip-operatore'};
+  const active=Object.entries(tblFilters.gare||{}).filter(([k,v])=>!!v);
+  bar.innerHTML=active.map(([k,v])=>
+    '<span class="filter-chip '+(C[k]||'')+'" data-col="'+k+'">'+(L[k]||k)+': <strong>'+v+'</strong> ✕</span>'
+  ).join('')+(active.length>1?'<span class="filter-chip" id="chip-clr" style="background:#FFEBEE;color:#C62828;border-color:#FFCDD2">✕ Tutti</span>':'');
+  bar.querySelectorAll('[data-col]').forEach(c=>c.addEventListener('click',()=>setFilter('gare',c.dataset.col,'')));
+  const ca=bar.querySelector('#chip-clr');
+  if(ca) ca.addEventListener('click',()=>{tblFilters.gare={};updateThHeaders('gare');updateFilterChips();pg.cur=1;drawGare();});
+}
+
+// ═══════════════════════════════════════════════════════
+// DETAIL MODAL — event delegation via data-type / data-id
+// ═══════════════════════════════════════════════════════
+document.addEventListener('click', function(e) {
+  if(activeDropdown && !activeDropdown.contains(e.target) && !e.target.closest('.th-click')) closeDropdown();
+  const tr = e.target.closest('tr[data-type]');
+  if(!tr) return;
+  showDetail(tr.dataset.type, tr.dataset.id);
+});
+
+function showDetail(type, id) {
+  let rec, title, badge, m1, m2, fields=[];
+  if(type==='gara') {
+    rec=state.gare.find(x=>x.id===id); if(!rec) return;
+    title=rec.descrizione||'—'; badge=bdSt(rec.stato); m1=rec.portale||''; m2=eur(rec.base_asta);
+    const d=daysTo(rec.scadenza);
+    fields=[
+      {l:'N° RDO',          v:rec.num_rdo||'—',       mono:true},
+      {l:"Base d'Asta",     v:eur(rec.base_asta)},
+      {l:'Tipologia',       v:rec.tipologia||'—'},
+      {l:'Ente Appaltante', v:rec.ente||'—',           full:true},
+      {l:'Data Creazione',  v:fmtD(rec.data_creazione)},
+      {l:'Scadenza',        v:fmtD(rec.scadenza)+(d!==null&&d>=0?' ('+d+' giorni)':d!==null?' (scaduta)':'')},
+      {l:'Operatore',       v:opBd(rec.operatore),     html:true},
+      {l:'Note',            v:rec.note||'—',           full:true},
+    ];
+    document.getElementById('gd-btn-edit').onclick=()=>{closeM('detail');editGara(id);};
+    document.getElementById('gd-btn-del').onclick=()=>{if(confirm('Eliminare questa gara?')){closeM('detail');delItem('gare',id);}};
+  } else {
+    rec=state.aggiudicate.find(x=>x.id===id); if(!rec) return;
+    title=rec.descrizione||'—'; badge=bdSP(rec.stato_proc)||''; m1=rec.portale||''; m2='Offerto: '+eur(rec.valore_offerto);
+    fields=[
+      {l:'N° RDO',          v:rec.num_rdo||'—',       mono:true},
+      {l:'Tipologia',       v:rec.tipologia||'—'},
+      {l:'Ente Appaltante', v:rec.ente||'—',           full:true},
+      {l:"Base d'Asta",    v:eur(rec.base_asta)},
+      {l:'Valore Offerto',  v:eur(rec.valore_offerto)},
+      {l:'Scadenza',        v:fmtD(rec.scadenza)},
+      {l:'Stipula',         v:rec.stipula||'—'},
+      {l:'Data Stipula',    v:fmtD(rec.data_stipula)},
+      {l:'N° Ordine',       v:rec.num_ordine||'—',    mono:true},
+      {l:'Fornitore',       v:rec.fornitore||'—'},
+      {l:'Consegna',        v:rec.consegna||'—'},
+      {l:'Note',            v:rec.note||'—',           full:true},
+    ];
+    document.getElementById('gd-btn-edit').onclick=()=>{closeM('detail');editAgg(id);};
+    document.getElementById('gd-btn-del').onclick=()=>{if(confirm('Eliminare?')){closeM('detail');delItem('aggiudicate',id);}};
+  }
+  document.getElementById('gd-title').textContent=title;
+  document.getElementById('gd-stato-badge').innerHTML=badge;
+  document.getElementById('gd-portale-badge').textContent=m1;
+  document.getElementById('gd-asta-badge').textContent=m2;
+  const summary = type==='gara'
+    ? [
+        {label:'Portale', value:rec.portale||'—'},
+        {label:'N° RDO', value:rec.num_rdo||'—'},
+        {label:'Operatore', value:rec.operatore||'—'},
+        {label:'Scadenza', value:fmtD(rec.scadenza)},
+        {label:'Tipologia', value:rec.tipologia||'—'},
+        {label:"Base d'Asta", value:eur(rec.base_asta)}
+      ]
+    : [
+        {label:'Portale', value:rec.portale||'—'},
+        {label:'Fornitore', value:rec.fornitore||'—'},
+        {label:'Scadenza', value:fmtD(rec.scadenza)},
+        {label:'Stipula', value:rec.stipula||'—'},
+        {label:'Data Stipula', value:fmtD(rec.data_stipula)}
+      ];
+  document.getElementById('gd-body').innerHTML=
+    '<div class="gd-summary">'+summary.map(item=>
+      '<div class="gd-summary-card"><div class="gd-summary-label">'+item.label+'</div><div class="gd-summary-value">'+item.value+'</div></div>'
+    ).join('')+'</div>'
+    + fields.map(f=>
+    '<div class="gd-cell'+(f.full?' full':'')+'">'
+    +'<div class="gd-lbl">'+f.l+'</div>'
+    +'<div class="gd-val'+(f.mono?' mono':'')+'">'+(f.v||'—')+'</div>'
+    +'</div>').join('');
+  document.getElementById('m-detail').classList.add('on');
+}
+
+// ═══════════════════════════════════════════════════════
+// PAGINATION
+// ═══════════════════════════════════════════════════════
+function pagHTML(o, tot, cb) {
+  const tp=Math.ceil(tot/PS); if(tp<=1) return '';
+  let h=''; const c=o.cur, s=Math.max(1,c-2), e=Math.min(tp,c+2);
+  if(s>1) h+='<button class="pb" onclick="'+cb+'(1)">1</button>';
+  if(s>2) h+='<span style="padding:0 4px;color:var(--gray4)">…</span>';
+  for(let i=s;i<=e;i++) h+='<button class="pb'+(i===c?' on':'')+'" onclick="'+cb+'('+i+')">'+i+'</button>';
+  if(e<tp-1) h+='<span style="padding:0 4px;color:var(--gray4)">…</span>';
+  if(e<tp) h+='<button class="pb" onclick="'+cb+'('+tp+')">'+tp+'</button>';
+  return h;
+}
+function setGarePage(p){pg.cur=p;drawGare();}
+function setAggPage(p){pa.cur=p;drawAgg();}
+function setOffPage(p){po.cur=p;drawOff();}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════
+function drawDash() {
+  const g=state.gare, ag=state.aggiudicate, of=state.offerte;
+  const tot=g.length,
+    agg=g.filter(x=>x.stato==='AGGIUDICATA').length,
+    pre=g.filter(x=>x.stato==='PRESENTATA').length,
+    dl =g.filter(x=>x.stato==='DA LAVORARE').length,
+    att=g.filter(x=>{
+      const d = daysTo(x.scadenza);
+      return d!==null&&d>=0&&d<=7&&!['PERSA','AGGIUDICATA','SCARTATA'].includes(x.stato);
+    }).length,
+    pct=tot?((agg/tot)*100).toFixed(1)+' %':'0 %',
+    val=ag.reduce((s,a)=>s+(a.valore_offerto||0),0);
+  document.getElementById('kpi-row').innerHTML=[
+    {l:'Totale Gare',      v:tot,      s:'archiviate',          c:''},
+    {l:'Aggiudicate',      v:agg,      s:'gare vinte',          c:'g'},
+    {l:'In Lavorazione',   v:pre+dl,   s:'presentate o attive', c:'t'},
+    {l:'Scadenze 7 gg',    v:att,      s:'da monitorare',       c:'o'},
+    {l:'Valore Acquisito', v:eur(val), s:'offerte vinte',       c:'go'},
+    {l:'Offerte Inviate',  v:of.length,s:'totale invii',        c:'pu'},
+  ].map(k=>'<div class="kpi '+k.c+'"><div class="kpi-lbl">'+k.l+'</div><div class="kpi-val">'+k.v+'</div><div class="kpi-sub">'+k.s+'</div></div>').join('');
+  drawCharts(g);
+}
+
+const CC=['#1565C0','#2E7D32','#C62828','#E65100','#546E7A','#00838F','#6A1B9A','#F9A825','#0288D1','#388E3C'];
+function dChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
+function drawCharts(g) {
+  dChart('stati');
+  const sL=['AGGIUDICATA','PRESENTATA','DA LAVORARE','PERSA','SCARTATA'];
+  charts['stati']=new Chart(document.getElementById('c-stati'),{type:'doughnut',
+    data:{labels:sL,datasets:[{data:sL.map(s=>g.filter(x=>x.stato===s).length),backgroundColor:['#2E7D32','#1565C0','#E65100','#C62828','#546E7A'],borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10}}}}});
+
+  dChart('portali');
+  const pc={};g.forEach(x=>{if(x.portale)pc[x.portale]=(pc[x.portale]||0)+1;});
+  const ps=Object.entries(pc).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  charts['portali']=new Chart(document.getElementById('c-portali'),{type:'bar',
+    data:{labels:ps.map(x=>x[0]),datasets:[{data:ps.map(x=>x[1]),backgroundColor:CC,borderRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{ticks:{font:{size:10}}}}}});
+
+  dChart('trend');
+  const mo={};g.forEach(x=>{if(!x.data_creazione)return;const k=x.data_creazione.slice(0,7);if(!mo[k])mo[k]={t:0,a:0,p:0};mo[k].t++;if(x.stato==='AGGIUDICATA')mo[k].a++;if(x.stato==='PERSA')mo[k].p++;});
+  const mk=Object.keys(mo).sort().slice(-18);
+  charts['trend']=new Chart(document.getElementById('c-trend'),{type:'bar',
+    data:{labels:mk.map(k=>{const[y,m]=k.split('-');return m+'/'+y.slice(2);}),
+    datasets:[
+      {label:'Totale',data:mk.map(k=>mo[k].t),backgroundColor:'rgba(21,101,192,.15)',borderColor:'#1565C0',borderWidth:2,borderRadius:4},
+      {label:'Aggiudicate',data:mk.map(k=>mo[k].a),backgroundColor:'rgba(46,125,50,.75)',borderRadius:4},
+      {label:'Perse',data:mk.map(k=>mo[k].p),backgroundColor:'rgba(198,40,40,.55)',borderRadius:4},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{beginAtZero:true},x:{ticks:{font:{size:10}}}}}});
+
+  dChart('tipo');
+  const tc={};g.forEach(x=>{if(x.tipologia)tc[x.tipologia]=(tc[x.tipologia]||0)+1;});
+  const te=Object.entries(tc).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  charts['tipo']=new Chart(document.getElementById('c-tipo'),{type:'doughnut',
+    data:{labels:te.map(x=>x[0]),datasets:[{data:te.map(x=>x[1]),backgroundColor:CC,borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10}}}}});
+}
+
+// ═══════════════════════════════════════════════════════
+// LISTA GARE
+// ═══════════════════════════════════════════════════════
+function drawGare() {
+  const q=(document.getElementById('sg').value||'').toLowerCase();
+  const f=tblFilters.gare||{};
+  let fl=state.gare.filter(g=>{
+    if(f.stato     &&g.stato    !==f.stato)     return false;
+    if(f.portale   &&g.portale  !==f.portale)   return false;
+    if(f.tipologia &&g.tipologia!==f.tipologia) return false;
+    if(f.operatore &&g.operatore!==f.operatore) return false;
+    if(q&&!(g.descrizione+g.portale+g.ente+g.num_rdo+g.stato+g.tipologia).toLowerCase().includes(q)) return false;
+    return true;
+  });
+  fl = sortByMode(fl, uiPrefs.gareSort, 'gare');
+  const tot=fl.length;
+  const rows = fl;
+  document.getElementById('tb-g').innerHTML=rows.length?rows.map(g=>
+    '<tr class="'+rowC(g.stato)+' row-click gara-row" data-type="gara" data-id="'+g.id+'" style="cursor:pointer">'
+    +'<td>'+bdSt(g.stato)+'</td>'
+    +'<td class="gara-portale">'+g.portale+'</td>'
+    +'<td class="gara-rdo">'+(g.num_rdo||'—')+'</td>'
+    +'<td><div class="gara-desc"><div class="gara-desc-main">'+g.descrizione+scadTag(g.scadenza,g.stato)+'</div><div class="gara-desc-sub">'+(g.tipologia||'—')+'</div></div></td>'
+    +'<td><span class="gara-asta">'+eur(g.base_asta)+'</span></td>'
+    +'<td style="font-size:12px">'+g.tipologia+'</td>'
+    +'<td class="gara-ente">'+g.ente+'</td>'
+    +'<td class="gara-note">'+(g.note||'—')+'</td>'
+    +'<td class="gara-scad">'+fmtD(g.scadenza)+'</td>'
+    +'<td>'+opBd(g.operatore)+'</td>'
+    +'</tr>'
+  ).join(''):'<tr><td colspan="10"><div class="empty"><div class="ei">🔍</div><h4>Nessun risultato</h4></div></td></tr>';
+  document.getElementById('cnt-g').textContent=tot+' gare';
+  document.getElementById('pag-g').innerHTML='';
+}
+
+// ═══════════════════════════════════════════════════════
+// AGGIUDICATE
+// ═══════════════════════════════════════════════════════
+function drawAgg() {
+  const q=(document.getElementById('sa').value||'').toLowerCase();
+  const f=tblFilters.agg||{};
+  let fl=state.aggiudicate.filter(a=>{
+    if(f.portale   &&a.portale   !==f.portale)   return false;
+    if(f.stato_proc&&a.stato_proc!==f.stato_proc) return false;
+    if(f.stipula   &&a.stipula   !==f.stipula)   return false;
+    if(f.fornitore &&a.fornitore !==f.fornitore) return false;
+    if(q&&!(a.descrizione+a.portale+a.ente+a.fornitore).toLowerCase().includes(q)) return false;
+    return true;
+  });
+  fl = sortByMode(fl, uiPrefs.aggSort, 'agg');
+  const tot=fl.length, page=fl.slice((pa.cur-1)*PS,pa.cur*PS);
+  document.getElementById('tb-a').innerHTML=page.length?page.map(a=>
+    '<tr class="row-click" data-type="agg" data-id="'+a.id+'" style="cursor:pointer">'
+    +'<td style="font-weight:700;color:var(--teal)">'+a.portale+'</td>'
+    +'<td style="font-family:monospace;font-size:11px;color:var(--gray3)">'+a.num_rdo+'</td>'
+    +'<td style="font-weight:600;max-width:200px">'+a.descrizione+'</td>'
+    +'<td><span class="asta-val">'+eur(a.base_asta)+'</span></td>'
+    +'<td><span class="asta-val" style="color:var(--green)">'+eur(a.valore_offerto)+'</span></td>'
+    +'<td>'+bdSP(a.stato_proc)+'</td>'
+    +'<td style="font-size:11px;font-weight:700">'+fmtD(a.scadenza)+'</td>'
+    +'<td style="font-weight:700;color:'+(a.stipula==='SI'?'var(--green)':'var(--red)')+'">'+( a.stipula||'—')+'</td>'
+    +'<td style="font-size:11px">'+fmtD(a.data_stipula)+'</td>'
+    +'<td style="font-family:monospace;font-size:11px">'+a.num_ordine+'</td>'
+    +'<td style="font-size:11px">'+a.fornitore+'</td>'
+    +'</tr>'
+  ).join(''):'<tr><td colspan="11"><div class="empty"><div class="ei">✅</div><h4>Nessuna gara</h4></div></td></tr>';
+  document.getElementById('cnt-a').textContent=tot+' gare';
+  document.getElementById('pag-a').innerHTML=pagHTML(pa,tot,'setAggPage');
+}
+
+// ═══════════════════════════════════════════════════════
+// OFFERTE
+// ═══════════════════════════════════════════════════════
+function drawOff() {
+  const q=(document.getElementById('so').value||'').toLowerCase();
+  const year=uiPrefs.offYear || '';
+  const f=tblFilters.off||{};
+  let fl=state.offerte.filter(o=>{
+    if(f.ente     &&o.ente     !==f.ente)     return false;
+    if(f.operatore&&o.operatore!==f.operatore) return false;
+    if(year && (o.data || '').slice(0,4) !== year) return false;
+    if(q&&!(o.oggetto+o.ente+o.num).toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const tot=fl.length, page=fl.slice((po.cur-1)*PS,po.cur*PS);
+  document.getElementById('tb-o').innerHTML=page.length?page.map(o=>
+    '<tr>'
+    +'<td style="font-family:Barlow Condensed,sans-serif;font-size:20px;font-weight:800;color:var(--teal)">#'+o.num+'</td>'
+    +'<td>'+fmtD(o.data)+'</td>'
+    +'<td style="font-weight:600">'+o.oggetto+'</td>'
+    +'<td style="font-size:11px">'+o.ente+'</td>'
+    +'<td>'+opBd(o.operatore)+'</td>'
+    +'<td style="white-space:nowrap"><button class="btn btn-o btn-ic btn-sm" onclick="event.stopPropagation();editOff(\''+o.id+'\')">✏️</button> <button class="btn-del" onclick="event.stopPropagation();delItem(\'offerte\',\''+o.id+'\')">🗑️</button></td>'
+    +'</tr>'
+  ).join(''):'<tr><td colspan="6"><div class="empty"><div class="ei">📬</div><h4>Nessuna offerta</h4></div></td></tr>';
+  document.getElementById('cnt-o').textContent=tot+' offerte';
+  document.getElementById('pag-o').innerHTML=pagHTML(po,tot,'setOffPage');
+}
+
+// ═══════════════════════════════════════════════════════
+// PORTALI
+// ═══════════════════════════════════════════════════════
+function maskPwd(p){return p?'●'.repeat(Math.min(p.length,8)):'—';}
+function togglePwd(id){const el=document.getElementById(id);el.textContent=el.textContent.includes('●')?(el.dataset.p||'—'):maskPwd(el.dataset.p);}
+function toggleFav(id){
+  const p=state.portali.find(x=>x.id===id);if(!p)return;
+  p.preferito=p.preferito==='⭐'?'':'⭐';
+  save('port');drawPortali();toast('Preferito aggiornato','ok');
+}
+
+function drawPortali() {
+  const q=(document.getElementById('sp')||{value:''}).value.toLowerCase();
+  const f=tblFilters.port||{};
+  const statusFilter = uiPrefs.portStatus || '';
+  const sorted=[...state.portali].sort((a,b)=>{
+    if(a.preferito==='⭐'&&b.preferito!=='⭐') return -1;
+    if(a.preferito!=='⭐'&&b.preferito==='⭐') return 1;
+    return (a.nome||'').localeCompare(b.nome||'');
+  }).filter(p=>{
+    if(f.nome     &&p.nome     !==f.nome)     return false;
+    if(f.operatore&&p.operatore!==f.operatore) return false;
+    if(f.stato    &&p.stato    !==f.stato)    return false;
+    if(statusFilter && (p.stato || '') !== statusFilter) return false;
+    if(q&&!(p.nome+p.url+p.note+p.operatore).toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const tbody=document.getElementById('tb-portali'); if(!tbody) return;
+  tbody.innerHTML=sorted.length?sorted.map(p=>
+    '<tr class="'+(p.preferito==='⭐'?'port-fav':'')+'">'
+    +'<td class="star-cell" onclick="event.stopPropagation();toggleFav(\''+p.id+'\')">'+(p.preferito==='⭐'?'⭐':'☆')+'</td>'
+    +'<td style="font-weight:700;color:var(--navy)">'+p.nome+'</td>'
+    +'<td>'+(p.url?'<a href="'+p.url+'" target="_blank" style="color:var(--blue);font-size:12px;text-decoration:none" onclick="event.stopPropagation()">🔗 '+p.url+'</a>':'—')+'</td>'
+    +'<td style="font-family:monospace;font-size:12px">'+(p.username||'—')+'</td>'
+    +'<td><span id="pw-'+p.id+'" data-p="'+(p.password||'').replace(/"/g,'&quot;')+'">'+maskPwd(p.password)+'</span>'
+    +(p.password?'<button class="eye" onclick="event.stopPropagation();togglePwd(\'pw-'+p.id+'\')">👁️</button>':'')+'</td>'
+    +'<td>'+opBd(p.operatore)+'</td>'
+    +'<td>'+bdAcc(p.stato)+'</td>'
+    +'<td style="font-size:11px;color:var(--gray3);max-width:200px">'+(p.note||'')+'</td>'
+    +'<td style="white-space:nowrap">'
+    +'<button class="btn btn-o btn-ic btn-sm" onclick="event.stopPropagation();editPort(\''+p.id+'\')">✏️</button> '
+    +'<button class="btn-del" onclick="event.stopPropagation();delItem(\'portali\',\''+p.id+'\')">🗑️</button>'
+    +'</td>'
+    +'</tr>'
+  ).join(''):'<tr><td colspan="9"><div class="empty"><div class="ei">🌐</div><h4>Nessun portale</h4></div></td></tr>';
+}
+
+// ═══════════════════════════════════════════════════════
+// SCADENZE
+// ═══════════════════════════════════════════════════════
+function drawScad() {
+  const gg=parseInt(uiPrefs.scadRange || '30', 10);
+  const f=tblFilters.scad||{};
+  const fl=state.gare.filter(g=>{
+    const d=daysTo(g.scadenza);
+    if(d===null||d<0||d>gg) return false;
+    if(['PERSA','AGGIUDICATA','SCARTATA'].includes(g.stato)) return false;
+    if(f.stato    &&g.stato    !==f.stato)    return false;
+    if(f.portale  &&g.portale  !==f.portale)  return false;
+    if(f.ente     &&g.ente     !==f.ente)     return false;
+    if(f.operatore&&g.operatore!==f.operatore) return false;
+    return true;
+  }).sort((a,b)=>new Date(a.scadenza)-new Date(b.scadenza));
+  document.getElementById('tb-sc').innerHTML=fl.length?fl.map(g=>{
+    const d=daysTo(g.scadenza);
+    return '<tr>'
+      +'<td>'+bdSt(g.stato)+'</td>'
+      +'<td style="font-weight:700;color:var(--teal)">'+g.portale+'</td>'
+      +'<td style="font-family:monospace;font-size:11px">'+g.num_rdo+'</td>'
+      +'<td style="font-weight:600">'+g.descrizione+'</td>'
+      +'<td style="font-size:11px">'+g.ente+'</td>'
+      +'<td>'+fmtD(g.scadenza)+'</td>'
+      +'<td><span class="'+(d<=3?'scad-urg':d<=10?'scad-att':'scad-ok')+'">'+d+' gg</span></td>'
+      +'<td>'+opBd(g.operatore)+'</td>'
+      +'</tr>';
+  }).join(''):'<tr><td colspan="8"><div class="empty"><div class="ei">✅</div><h4>Nessuna scadenza entro '+gg+' giorni</h4></div></td></tr>';
+  document.getElementById('cnt-sc').textContent=fl.length+' scadenze';
+}
+
+// ═══════════════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════════════
+function openM(type) {
+  const ev=editId[type];
+  if(type==='gara') {
+    fillPortSel('xg-port',ev?ev.portale:'');
+    document.getElementById('m-gara-ttl').textContent=ev?'✏️ Modifica Gara':'📋 Nuova Gara';
+    if(!ev){
+      ['xg-rdo','xg-desc','xg-ente','xg-note'].forEach(i=>document.getElementById(i).value='');
+      document.getElementById('xg-stato').value='DA LAVORARE';
+      document.getElementById('xg-asta').value='';
+      document.getElementById('xg-op').value='';
+      document.getElementById('xg-crea').value=new Date().toISOString().slice(0,10);
+      document.getElementById('xg-scad').value='';
+    } else {
+      document.getElementById('xg-stato').value=ev.stato||'';
+      document.getElementById('xg-rdo').value=ev.num_rdo||'';
+      document.getElementById('xg-tipo').value=ev.tipologia||'';
+      document.getElementById('xg-desc').value=ev.descrizione||'';
+      document.getElementById('xg-ente').value=ev.ente||'';
+      document.getElementById('xg-asta').value=ev.base_asta||'';
+      document.getElementById('xg-op').value=ev.operatore||'';
+      document.getElementById('xg-crea').value=ev.data_creazione||'';
+      document.getElementById('xg-scad').value=ev.scadenza||'';
+      document.getElementById('xg-note').value=ev.note||'';
+    }
+  }
+  if(type==='agg') {
+    fillPortSel('xa-port',ev?ev.portale:'');
+    document.getElementById('m-agg-ttl').textContent=ev?'✏️ Modifica':'✅ Nuova Gara Aggiudicata';
+    if(!ev){
+      ['xa-rdo','xa-desc','xa-ente','xa-asta','xa-val','xa-nord','xa-forn','xa-cons','xa-note'].forEach(i=>document.getElementById(i).value='');
+      document.getElementById('xa-stp').value='';document.getElementById('xa-stip').value='';document.getElementById('xa-scad').value='';document.getElementById('xa-dstip').value='';
+    } else {
+      document.getElementById('xa-rdo').value=ev.num_rdo||'';document.getElementById('xa-desc').value=ev.descrizione||'';
+      document.getElementById('xa-ente').value=ev.ente||'';document.getElementById('xa-asta').value=ev.base_asta||'';
+      document.getElementById('xa-val').value=ev.valore_offerto||'';document.getElementById('xa-tipo').value=ev.tipologia||'';
+      document.getElementById('xa-stp').value=ev.stato_proc||'';document.getElementById('xa-stip').value=ev.stipula||'';document.getElementById('xa-scad').value=ev.scadenza||'';
+      document.getElementById('xa-dstip').value=ev.data_stipula||'';document.getElementById('xa-nord').value=ev.num_ordine||'';
+      document.getElementById('xa-forn').value=ev.fornitore||'';document.getElementById('xa-cons').value=ev.consegna||'';
+      document.getElementById('xa-note').value=ev.note||'';
+    }
+  }
+  if(type==='off') {
+    document.getElementById('m-off-ttl').textContent=ev?'✏️ Modifica':'📬 Nuova Offerta';
+    if(!ev){
+      document.getElementById('xo-num').value=(state.offerte.length+1).toString();
+      document.getElementById('xo-data').value=new Date().toISOString().slice(0,10);
+      ['xo-ogg','xo-ente'].forEach(i=>document.getElementById(i).value='');
+      document.getElementById('xo-op').value='';
+    } else {
+      document.getElementById('xo-num').value=ev.num||'';document.getElementById('xo-data').value=ev.data||'';
+      document.getElementById('xo-ogg').value=ev.oggetto||'';document.getElementById('xo-ente').value=ev.ente||'';
+      document.getElementById('xo-op').value=ev.operatore||'';
+    }
+  }
+  if(type==='port') {
+    document.getElementById('m-port-ttl').textContent=ev?'✏️ Modifica Portale':'🌐 Nuovo Portale';
+    if(!ev){
+      ['xp-nome','xp-url','xp-user','xp-pass','xp-note'].forEach(i=>document.getElementById(i).value='');
+      document.getElementById('xp-op').value='';document.getElementById('xp-stato').value='ATTIVO';document.getElementById('xp-fav').checked=false;
+    } else {
+      document.getElementById('xp-nome').value=ev.nome||'';document.getElementById('xp-url').value=ev.url||'';
+      document.getElementById('xp-user').value=ev.username||'';document.getElementById('xp-pass').value=ev.password||'';
+      document.getElementById('xp-op').value=ev.operatore||'';document.getElementById('xp-stato').value=ev.stato||'';
+      document.getElementById('xp-note').value=ev.note||'';document.getElementById('xp-fav').checked=ev.preferito==='⭐';
+    }
+  }
+  document.getElementById('m-'+type).classList.add('on');
+}
+function closeM(type){document.getElementById('m-'+type).classList.remove('on');delete editId[type];}
+document.querySelectorAll('.ovl').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('on');}));
+
+function editGara(id){editId.gara=state.gare.find(x=>x.id===id);openM('gara');}
+function editAgg(id){editId.agg=state.aggiudicate.find(x=>x.id===id);openM('agg');}
+function editOff(id){editId.off=state.offerte.find(x=>x.id===id);openM('off');}
+function editPort(id){editId.port=state.portali.find(x=>x.id===id);openM('port');}
+
+// ═══════════════════════════════════════════════════════
+// SAVE / DELETE
+// ═══════════════════════════════════════════════════════
+function saveGara(){
+  const desc=document.getElementById('xg-desc').value.trim();
+  if(!desc){toast('Inserisci la descrizione','err');return;}
+  const obj={id:editId.gara?editId.gara.id:uid('g'),stato:document.getElementById('xg-stato').value,portale:up(document.getElementById('xg-port').value),num_rdo:up(document.getElementById('xg-rdo').value),tipologia:document.getElementById('xg-tipo').value,descrizione:up(desc),ente:up(document.getElementById('xg-ente').value),base_asta:parseFloat(document.getElementById('xg-asta').value)||0,operatore:up(document.getElementById('xg-op').value),data_creazione:document.getElementById('xg-crea').value,scadenza:document.getElementById('xg-scad').value,note:up(document.getElementById('xg-note').value)};
+  if(editId.gara){const i=state.gare.findIndex(x=>x.id===obj.id);state.gare[i]=obj;}else state.gare.unshift(obj);
+  save('gare');closeM('gara');updateBadges();drawGare();toast('Gara salvata','ok');
+}
+function saveAgg(){
+  const desc=document.getElementById('xa-desc').value.trim();
+  if(!desc){toast('Inserisci la descrizione','err');return;}
+  const obj={id:editId.agg?editId.agg.id:uid('a'),portale:up(document.getElementById('xa-port').value),num_rdo:up(document.getElementById('xa-rdo').value),descrizione:up(desc),ente:up(document.getElementById('xa-ente').value),base_asta:parseFloat(document.getElementById('xa-asta').value)||0,valore_offerto:parseFloat(document.getElementById('xa-val').value)||0,tipologia:document.getElementById('xa-tipo').value,stato_proc:document.getElementById('xa-stp').value,scadenza:document.getElementById('xa-scad').value,stipula:document.getElementById('xa-stip').value,data_stipula:document.getElementById('xa-dstip').value,num_ordine:up(document.getElementById('xa-nord').value),fornitore:up(document.getElementById('xa-forn').value),consegna:up(document.getElementById('xa-cons').value),note:up(document.getElementById('xa-note').value)};
+  if(editId.agg){const i=state.aggiudicate.findIndex(x=>x.id===obj.id);state.aggiudicate[i]=obj;}else state.aggiudicate.unshift(obj);
+  save('agg');closeM('agg');updateBadges();drawAgg();toast('Salvata','ok');
+}
+function saveOff(){
+  const ogg=document.getElementById('xo-ogg').value.trim();
+  if(!ogg){toast("Inserisci l'oggetto",'err');return;}
+  const obj={id:editId.off?editId.off.id:uid('o'),num:document.getElementById('xo-num').value,data:document.getElementById('xo-data').value,oggetto:up(ogg),ente:up(document.getElementById('xo-ente').value),operatore:up(document.getElementById('xo-op').value)};
+  if(editId.off){const i=state.offerte.findIndex(x=>x.id===obj.id);state.offerte[i]=obj;}else state.offerte.push(obj);
+  save('off');closeM('off');updateBadges();drawOff();toast('Offerta salvata','ok');
+}
+function savePort(){
+  const nome=document.getElementById('xp-nome').value.trim();
+  if(!nome){toast('Inserisci il nome del portale','err');return;}
+  const obj={id:editId.port?editId.port.id:uid('p'),nome:up(nome),url:document.getElementById('xp-url').value.trim(),username:up(document.getElementById('xp-user').value),password:document.getElementById('xp-pass').value,operatore:up(document.getElementById('xp-op').value),stato:document.getElementById('xp-stato').value,note:document.getElementById('xp-note').value,preferito:document.getElementById('xp-fav').checked?'⭐':''};
+  if(editId.port){const i=state.portali.findIndex(x=>x.id===obj.id);state.portali[i]=obj;}else state.portali.push(obj);
+  save('port');closeM('port');drawPortali();toast('Portale salvato','ok');
+  fillPortSel('xg-port','');fillPortSel('xa-port','');
+}
+function delItem(col,id){
+  if(!confirm('Eliminare questo elemento?')) return;
+  state[col]=state[col].filter(x=>x.id!==id);
+  save({gare:'gare',aggiudicate:'agg',offerte:'off',portali:'port'}[col]);
+  updateBadges();redrawCurrent();toast('Eliminato','ok');
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+async function init(){
+  try {
+    setSyncStatus('Avvio applicazione...', 'warn');
+    saveLocalSnapshot();
+    await remoteInitWithTimeout(5000);
+    if(normalizeStateOperatori()) {
+      saveLocalSnapshot();
+      if(remoteSync.enabled) await pushRemoteState('force');
+    }
+    syncUiControls();
+    updateBadges();
+    fillPortSel('xg-port','');
+    fillPortSel('xa-port','');
+    drawDash();
+    remoteSync.initialized = true;
+  } catch(error) {
+    console.error('Errore inizializzazione app', error);
+    setSyncStatus('Errore cloud, avvio locale completato', 'warn');
+    syncUiControls();
+    updateBadges();
+    fillPortSel('xg-port','');
+    fillPortSel('xa-port','');
+    drawDash();
+  } finally {
+    document.getElementById('loading').style.display='none';
+  }
+}
+window.addEventListener('load', init);
+</script>
+</body>
+</html>
