@@ -381,7 +381,7 @@ thead th{position:sticky;top:0;z-index:2}
       <div class="tc">
         <div class="tc-hdr">
           <h3>📋 Lista Gare</h3>
-          <div class="srch"><span>🔍</span><input id="sg" placeholder="Cerca per descrizione, ente, RDO..." oninput="pg.cur=1;drawGare()"></div>
+          <div class="srch"><span>🔍</span><input id="sg" placeholder="Cerca..." oninput="pg.cur=1;drawGare()"></div>
           <div class="sortbar" id="g-sortbar">
             <span class="sortbar-label">Ordina per</span>
             <button type="button" class="sortchip" data-sort-field="scadenza" onclick="setGareSortField('scadenza')">Scadenza</button>
@@ -1083,6 +1083,62 @@ function getNextOffertaNum() {
   return String((parseInt(latest && latest.num, 10) || 0) + 1);
 }
 
+function findAggForGara(gara) {
+  if(!gara) return null;
+  return state.aggiudicate.find(item => {
+    if(item.gara_id && item.gara_id === gara.id) return true;
+    return !!gara.num_rdo && up(item.num_rdo) === up(gara.num_rdo);
+  }) || null;
+}
+
+function mapGaraToAggiudicata(gara, existing) {
+  const prev = existing || {};
+  return Object.assign({}, prev, {
+    id: prev.id || uid('a'),
+    gara_id: gara.id,
+    portale: gara.portale || '',
+    num_rdo: gara.num_rdo || '',
+    descrizione: gara.descrizione || '',
+    ente: gara.ente || '',
+    base_asta: Number(gara.base_asta) || 0,
+    valore_offerto: typeof prev.valore_offerto === 'number' ? prev.valore_offerto : (parseFloat(prev.valore_offerto) || 0),
+    tipologia: gara.tipologia || '',
+    stato_proc: prev.stato_proc || 'CONCLUSA',
+    scadenza: gara.scadenza || '',
+    stipula: prev.stipula || '',
+    data_stipula: prev.data_stipula || '',
+    num_ordine: prev.num_ordine || '',
+    fornitore: prev.fornitore || '',
+    consegna: prev.consegna || '',
+    note: gara.note || prev.note || '',
+    operatore: gara.operatore || prev.operatore || ''
+  });
+}
+
+function syncAggiudicateFromGare() {
+  let changed = false;
+  state.gare.forEach(gara => {
+    if(gara.stato !== 'AGGIUDICATA') return;
+    const existing = findAggForGara(gara);
+    const next = mapGaraToAggiudicata(gara, existing);
+    if(existing) {
+      const index = state.aggiudicate.findIndex(item => item.id === existing.id);
+      if(index >= 0) {
+        const currentSerialized = JSON.stringify(state.aggiudicate[index]);
+        const nextSerialized = JSON.stringify(next);
+        if(currentSerialized !== nextSerialized) {
+          state.aggiudicate[index] = next;
+          changed = true;
+        }
+      }
+      return;
+    }
+    state.aggiudicate.unshift(next);
+    changed = true;
+  });
+  return changed;
+}
+
 function bdSt(s) {
   const m={AGGIUDICATA:'AG',PRESENTATA:'PR','DA LAVORARE':'DL',PERSA:'PE',SCARTATA:'SC'};
   return '<span class="bd bd-'+(m[s]||'SC')+'">'+s+'</span>';
@@ -1367,7 +1423,7 @@ function showDetail(type, id) {
       {l:'Note',            v:rec.note||'—',           full:true},
     ];
     document.getElementById('gd-btn-edit').onclick=()=>{closeM('detail');editGara(id);};
-    document.getElementById('gd-btn-del').onclick=()=>{if(confirm('Eliminare questa gara?')){closeM('detail');delItem('gare',id);}};
+    document.getElementById('gd-btn-del').onclick=()=>{closeM('detail');delItem('gare',id);};
   } else {
     rec=state.aggiudicate.find(x=>x.id===id); if(!rec) return;
     title=rec.descrizione||'—'; badge=bdSP(rec.stato_proc)||''; m1=rec.portale||''; m2='Offerto: '+eur(rec.valore_offerto);
@@ -1386,7 +1442,7 @@ function showDetail(type, id) {
       {l:'Note',            v:rec.note||'—',           full:true},
     ];
     document.getElementById('gd-btn-edit').onclick=()=>{closeM('detail');editAgg(id);};
-    document.getElementById('gd-btn-del').onclick=()=>{if(confirm('Eliminare?')){closeM('detail');delItem('aggiudicate',id);}};
+    document.getElementById('gd-btn-del').onclick=()=>{closeM('detail');delItem('aggiudicate',id);};
   }
   document.getElementById('gd-title').textContent=title;
   document.getElementById('gd-stato-badge').innerHTML=badge;
@@ -1775,12 +1831,15 @@ function saveGara(){
   if(!desc){toast('Inserisci la descrizione','err');return;}
   const obj={id:editId.gara?editId.gara.id:uid('g'),stato:document.getElementById('xg-stato').value,portale:up(document.getElementById('xg-port').value),num_rdo:up(document.getElementById('xg-rdo').value),tipologia:document.getElementById('xg-tipo').value,descrizione:up(desc),ente:up(document.getElementById('xg-ente').value),base_asta:parseFloat(document.getElementById('xg-asta').value)||0,operatore:up(document.getElementById('xg-op').value),data_creazione:document.getElementById('xg-crea').value,scadenza:buildScadenzaValue(document.getElementById('xg-scad-date').value, document.getElementById('xg-scad-time').value),note:up(document.getElementById('xg-note').value)};
   if(editId.gara){const i=state.gare.findIndex(x=>x.id===obj.id);state.gare[i]=obj;}else state.gare.unshift(obj);
-  save('gare');closeM('gara');updateBadges();drawGare();toast('Gara salvata','ok');
+  const aggiudicateChanged = syncAggiudicateFromGare();
+  save('gare');
+  if(aggiudicateChanged) save('agg');
+  closeM('gara');updateBadges();redrawCurrent();toast(aggiudicateChanged?'Gara salvata e aggiudicata aggiornata':'Gara salvata','ok');
 }
 function saveAgg(){
   const desc=document.getElementById('xa-desc').value.trim();
   if(!desc){toast('Inserisci la descrizione','err');return;}
-  const obj={id:editId.agg?editId.agg.id:uid('a'),portale:up(document.getElementById('xa-port').value),num_rdo:up(document.getElementById('xa-rdo').value),descrizione:up(desc),ente:up(document.getElementById('xa-ente').value),base_asta:parseFloat(document.getElementById('xa-asta').value)||0,valore_offerto:parseFloat(document.getElementById('xa-val').value)||0,tipologia:document.getElementById('xa-tipo').value,stato_proc:document.getElementById('xa-stp').value,scadenza:document.getElementById('xa-scad').value,stipula:document.getElementById('xa-stip').value,data_stipula:document.getElementById('xa-dstip').value,num_ordine:up(document.getElementById('xa-nord').value),fornitore:up(document.getElementById('xa-forn').value),consegna:up(document.getElementById('xa-cons').value),note:up(document.getElementById('xa-note').value)};
+  const obj={id:editId.agg?editId.agg.id:uid('a'),gara_id:editId.agg?editId.agg.gara_id||'':'',portale:up(document.getElementById('xa-port').value),num_rdo:up(document.getElementById('xa-rdo').value),descrizione:up(desc),ente:up(document.getElementById('xa-ente').value),base_asta:parseFloat(document.getElementById('xa-asta').value)||0,valore_offerto:parseFloat(document.getElementById('xa-val').value)||0,tipologia:document.getElementById('xa-tipo').value,stato_proc:document.getElementById('xa-stp').value,scadenza:document.getElementById('xa-scad').value,stipula:document.getElementById('xa-stip').value,data_stipula:document.getElementById('xa-dstip').value,num_ordine:up(document.getElementById('xa-nord').value),fornitore:up(document.getElementById('xa-forn').value),consegna:up(document.getElementById('xa-cons').value),note:up(document.getElementById('xa-note').value),operatore:editId.agg?editId.agg.operatore||'':''};
   if(editId.agg){const i=state.aggiudicate.findIndex(x=>x.id===obj.id);state.aggiudicate[i]=obj;}else state.aggiudicate.unshift(obj);
   save('agg');closeM('agg');updateBadges();drawAgg();toast('Salvata','ok');
 }
