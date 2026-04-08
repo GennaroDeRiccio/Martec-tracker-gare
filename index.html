@@ -466,7 +466,6 @@ thead th{position:sticky;top:0;z-index:2}
               <th style="width:36px">⭐</th>
               <th class="th-click" data-tbl="port" data-col="nome">Portale ▾</th>
               <th>URL</th><th>Username</th><th>Password</th>
-              <th class="th-click" data-tbl="port" data-tbl="gare" data-col="operatore">Operatore ▾</th>
               <th class="th-click" data-tbl="port" data-tbl="gare" data-col="stato">Stato ▾</th>
               <th>Note</th><th></th>
             </tr></thead>
@@ -588,8 +587,8 @@ thead th{position:sticky;top:0;z-index:2}
       <div class="fg">
         <div class="fi full"><label>Nome Portale *</label><input id="xp-nome" class="upper"></div>
         <div class="fi full"><label>URL</label><input id="xp-url" type="url" placeholder="https://..."></div>
-        <div class="fi"><label>Username</label><input id="xp-user" class="upper"></div>
-        <div class="fi"><label>Password</label><input id="xp-pass" type="password"></div>
+        <div class="fi"><label>Username</label><input id="xp-user" autocapitalize="off" autocomplete="username" spellcheck="false"></div>
+        <div class="fi"><label>Password</label><input id="xp-pass" type="password" autocapitalize="off" autocomplete="current-password" spellcheck="false"></div>
         <div class="fi"><label>Operatore</label><select id="xp-op">
           <option value="">—</option><option>ASSIA</option><option>GENNI</option><option>ANNAMARIA</option>
         </select></div>
@@ -1697,7 +1696,6 @@ function drawPortali() {
     +'<td style="font-family:monospace;font-size:12px">'+(p.username||'—')+'</td>'
     +'<td><span id="pw-'+p.id+'" data-p="'+(p.password||'').replace(/"/g,'&quot;')+'">'+maskPwd(p.password)+'</span>'
     +(p.password?'<button class="eye" onclick="event.stopPropagation();togglePwd(\'pw-'+p.id+'\')">👁️</button>':'')+'</td>'
-    +'<td>'+opBd(p.operatore)+'</td>'
     +'<td>'+bdAcc(p.stato)+'</td>'
     +'<td style="font-size:11px;color:var(--gray3);max-width:200px">'+(p.note||'')+'</td>'
     +'<td style="white-space:nowrap">'
@@ -1705,7 +1703,7 @@ function drawPortali() {
     +'<button class="btn-del" onclick="event.stopPropagation();delItem(\'portali\',\''+p.id+'\')">🗑️</button>'
     +'</td>'
     +'</tr>'
-  ).join(''):'<tr><td colspan="9"><div class="empty"><div class="ei">🌐</div><h4>Nessun portale</h4></div></td></tr>';
+  ).join(''):'<tr><td colspan="8"><div class="empty"><div class="ei">🌐</div><h4>Nessun portale</h4></div></td></tr>';
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1853,7 +1851,7 @@ function saveOff(){
 function savePort(){
   const nome=document.getElementById('xp-nome').value.trim();
   if(!nome){toast('Inserisci il nome del portale','err');return;}
-  const obj={id:editId.port?editId.port.id:uid('p'),nome:up(nome),url:document.getElementById('xp-url').value.trim(),username:up(document.getElementById('xp-user').value),password:document.getElementById('xp-pass').value,operatore:up(document.getElementById('xp-op').value),stato:document.getElementById('xp-stato').value,note:document.getElementById('xp-note').value,preferito:document.getElementById('xp-fav').checked?'⭐':''};
+  const obj={id:editId.port?editId.port.id:uid('p'),nome:up(nome),url:document.getElementById('xp-url').value.trim(),username:document.getElementById('xp-user').value.trim(),password:document.getElementById('xp-pass').value,operatore:up(document.getElementById('xp-op').value),stato:document.getElementById('xp-stato').value,note:document.getElementById('xp-note').value,preferito:document.getElementById('xp-fav').checked?'⭐':''};
   if(editId.port){const i=state.portali.findIndex(x=>x.id===obj.id);state.portali[i]=obj;}else state.portali.push(obj);
   save('port');closeM('port');drawPortali();toast('Portale salvato','ok');
   fillPortSel('xg-port','');fillPortSel('xa-port','');
