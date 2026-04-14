@@ -8,7 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="./config.js"></script>
+<script src="./quote-template.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -17,7 +19,7 @@
   --red:#C62828;--orange:#E65100;--gold:#F9A825;--purple:#6A1B9A;
   --gray1:#263238;--gray2:#455A64;--gray3:#78909C;--gray4:#B0BEC5;
   --gray5:#ECEFF1;--gray6:#F5F7FA;--white:#FFFFFF;
-  --sb:220px;--hh:58px;--r:10px;
+  --sb:220px;--hh:58px;--r:10px;--quote-panel-w:320px;
   --sh:0 2px 12px rgba(13,27,62,.09);--sh2:0 6px 28px rgba(13,27,62,.14);
 }
 body{font-family:'Manrope',sans-serif;background:var(--gray6);color:var(--gray1);display:flex;height:100vh;overflow:hidden}
@@ -286,6 +288,64 @@ thead th{position:sticky;top:0;z-index:2}
 .col-dd-clear{padding:8px 16px;cursor:pointer;font-size:12px;color:var(--red);border-top:1px solid #EEF2F7;display:flex;align-items:center;gap:6px}
 .col-dd-clear:hover{background:#FFF0F0}
 
+/* QUOTAZIONI */
+.quote-layout{display:grid;grid-template-columns:minmax(280px,var(--quote-panel-w)) 10px minmax(0,1fr);gap:0;align-items:stretch}
+.quote-panel,.quote-workspace{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.quote-panel{display:flex;flex-direction:column;min-height:720px;margin-right:14px}
+.quote-resizer{position:relative;cursor:col-resize;touch-action:none}
+.quote-resizer::before{content:'';position:absolute;left:50%;top:16px;bottom:16px;width:3px;transform:translateX(-50%);border-radius:999px;background:linear-gradient(180deg,#D9E5F3 0%,#C6D7EC 100%);transition:background .15s, box-shadow .15s}
+.quote-resizer:hover::before,.quote-resizer.dragging::before{background:linear-gradient(180deg,#90CAF9 0%,#42A5F5 100%);box-shadow:0 0 0 5px rgba(66,165,245,.12)}
+.quote-panel-hd,.quote-workspace-hd{padding:14px 16px;border-bottom:1px solid #EEF2F7;background:#FBFCFE}
+.quote-panel-hd h3,.quote-workspace-hd h3{font-size:15px;font-weight:700;color:var(--navy)}
+.quote-panel-sub,.quote-workspace-sub{font-size:11px;color:var(--gray3);margin-top:3px}
+.quote-list{padding:10px;display:flex;flex-direction:column;gap:10px;overflow:auto}
+.quote-item{border:1.5px solid #DCE5EF;border-radius:12px;padding:12px;background:#fff;cursor:pointer;transition:all .15s}
+.quote-item:hover{border-color:#90CAF9;box-shadow:0 4px 14px rgba(21,101,192,.08)}
+.quote-item.on{border-color:#1565C0;background:#EDF4FF}
+.quote-item-title{font-size:13px;font-weight:800;color:var(--navy);line-height:1.35}
+.quote-item-meta{font-size:11px;color:var(--gray3);margin-top:6px;display:flex;justify-content:space-between;gap:8px}
+.quote-item-total{font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;color:var(--blue);margin-top:8px}
+.quote-item-actions{display:flex;gap:6px;margin-top:10px}
+.quote-empty{padding:24px 18px;text-align:center;color:var(--gray3)}
+.quote-empty strong{display:block;font-size:14px;color:var(--navy);margin-bottom:6px}
+.quote-workspace{display:flex;flex-direction:column;min-height:720px}
+.quote-body{padding:16px;display:flex;flex-direction:column;gap:14px}
+.quote-top-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr .85fr .85fr;gap:12px}
+.quote-field{display:flex;flex-direction:column;gap:5px}
+.quote-field.full{grid-column:1/-1}
+.quote-field label{font-size:10px;font-weight:700;color:var(--gray3);text-transform:uppercase;letter-spacing:.8px}
+.quote-field input,.quote-field textarea{width:100%}
+.quote-input-suffix{position:relative}
+.quote-input-suffix input{padding-right:34px}
+.quote-input-suffix span{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:700;color:var(--gray3);pointer-events:none}
+.quote-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.quote-kpi{background:linear-gradient(135deg,#F8FBFF 0%,#fff 100%);border:1px solid #E3EDF8;border-radius:12px;padding:12px 14px}
+.quote-kpi-l{font-size:9px;font-weight:700;letter-spacing:.85px;text-transform:uppercase;color:var(--gray3);margin-bottom:5px}
+.quote-kpi-v{font-family:'Outfit',sans-serif;font-size:24px;font-weight:700;color:var(--navy);line-height:1}
+.quote-kpi-v.quote-acquisto{color:var(--red)}
+.quote-kpi-v.quote-offerta{color:var(--blue)}
+.quote-kpi-v.quote-margine{color:var(--green)}
+.quote-kpi-s{font-size:11px;color:var(--gray3);margin-top:6px}
+.quote-table-wrap{border:1px solid #E3EAF2;border-radius:14px;overflow:auto;background:#fff}
+.quote-table{min-width:1520px}
+.quote-table thead th{position:static}
+.quote-table input,.quote-table textarea{font-size:12px;padding:7px 9px;border-radius:6px}
+.quote-table textarea{min-height:40px;resize:none;overflow:hidden;line-height:1.35}
+.quote-table .quote-input-suffix input{padding-right:28px}
+.quote-table .quote-input-suffix span{right:9px;font-size:12px}
+.quote-table th:nth-child(2),.quote-table td:nth-child(2){min-width:130px}
+.quote-table th:nth-child(3),.quote-table td:nth-child(3){min-width:280px}
+.quote-table td:nth-child(2) textarea{min-width:110px}
+.quote-table td:nth-child(3) textarea{min-width:260px}
+.quote-num{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--navy)}
+.quote-money{font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:var(--blue)}
+.quote-money.quote-acquisto{color:var(--red)}
+.quote-money.quote-margine{color:var(--green)}
+.quote-muted{font-size:11px;color:var(--gray3)}
+.quote-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center}
+.quote-actions-left,.quote-actions-right{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.quote-status{font-size:11px;color:var(--gray3)}
+
 @media (max-width: 900px){
   body{flex-direction:column;height:auto;overflow:auto}
   #sb{width:100%;height:auto;min-height:auto}
@@ -303,6 +363,9 @@ thead th{position:sticky;top:0;z-index:2}
   .ch-grid{grid-template-columns:1fr}
   .ch-card.full{grid-column:auto}
   .fg,.fg3,.gd-body,.gara-detail-grid{grid-template-columns:1fr}
+  .quote-layout,.quote-top-grid,.quote-kpis{grid-template-columns:1fr}
+  .quote-panel{margin-right:0}
+  .quote-resizer{display:none}
   .gd-summary{grid-template-columns:1fr 1fr}
   .gd-cell:nth-child(odd),.gd-field:nth-child(odd){border-right:none}
 }
@@ -346,6 +409,7 @@ thead th{position:sticky;top:0;z-index:2}
   <div class="nav on" data-v="dashboard"><span class="ic">📊</span>Dashboard</div>
   <div class="nav" data-v="gare"><span class="ic">📋</span>Lista Gare<span class="nb" id="nb-g">—</span></div>
   <div class="nav" data-v="aggiudicate"><span class="ic">✅</span>Aggiudicate<span class="nb" id="nb-a">—</span></div>
+  <div class="nav" data-v="quotazioni"><span class="ic">🧾</span>Quotazioni<span class="nb" id="nb-q">0</span></div>
   <div class="nav" data-v="offerte"><span class="ic">📬</span>Offerte<span class="nb" id="nb-o">—</span></div>
   <div class="sb-sec">Gestione</div>
   <div class="nav" data-v="portali"><span class="ic">🌐</span>Portali</div>
@@ -373,6 +437,27 @@ thead th{position:sticky;top:0;z-index:2}
         <div class="ch-card"><div class="ch-ttl">🌐 Gare per Portale (top 8)</div><div class="ch-wrap"><canvas id="c-portali"></canvas></div></div>
         <div class="ch-card full"><div class="ch-ttl">📈 Trend Mensile</div><div class="ch-wrap lg"><canvas id="c-trend"></canvas></div></div>
         <div class="ch-card"><div class="ch-ttl">📁 Tipologie Gara</div><div class="ch-wrap"><canvas id="c-tipo"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- QUOTAZIONI -->
+    <div class="view" id="v-quotazioni">
+      <div class="quote-layout">
+        <div class="quote-panel">
+          <div class="quote-panel-hd">
+            <h3>🧾 Quotazioni Salvate</h3>
+            <div class="quote-panel-sub">Bozze locali sincronizzate con il tracker</div>
+          </div>
+          <div class="quote-list" id="quote-list"></div>
+        </div>
+        <div class="quote-resizer" id="quote-resizer" onpointerdown="startQuotePanelResize(event)" aria-hidden="true"></div>
+        <div class="quote-workspace">
+          <div class="quote-workspace-hd">
+            <h3>⚙️ Editor Quotazione</h3>
+            <div class="quote-workspace-sub">Compila le righe come nel file Excel e poi esporta il modello originale già valorizzato.</div>
+          </div>
+          <div class="quote-body" id="quote-body"></div>
+        </div>
       </div>
     </div>
 
@@ -643,9 +728,9 @@ const SEED = {"gare": [{"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": 
 // ═══════════════════════════════════════════════════════
 // STATE — persistenza locale + sync remoto opzionale
 // ═══════════════════════════════════════════════════════
-const LS = {gare:'mg_gare', agg:'mg_agg', off:'mg_off', port:'mg_port'};
+const LS = {gare:'mg_gare', agg:'mg_agg', off:'mg_off', port:'mg_port', quote:'mg_quote'};
 const UI_LS = 'mg_ui_prefs';
-const STATE_MAP = {gare:'gare', agg:'aggiudicate', off:'offerte', port:'portali'};
+const STATE_MAP = {gare:'gare', agg:'aggiudicate', off:'offerte', port:'portali', quote:'quotazioni'};
 const DEFAULT_REMOTE_CONFIG = {
   syncTable: 'app_state',
   syncRowId: 'shared',
@@ -664,7 +749,8 @@ const DEFAULT_UI_PREFS = {
   aggSort: 'scadenza-asc',
   offYear: '',
   portStatus: '',
-  scadRange: '30'
+  scadRange: '30',
+  quotePanelWidth: 320
 };
 
 function lsLoad(key, seed) {
@@ -695,6 +781,7 @@ let state = {
   aggiudicate: lsLoad(LS.agg,   SEED.aggiudicate),
   offerte:     lsLoad(LS.off,   SEED.offerte),
   portali:     lsLoad(LS.port,  SEED.portali),
+  quotazioni:  lsLoad(LS.quote, []),
 };
 let uiPrefs = loadUiPrefs();
 
@@ -726,7 +813,8 @@ function normalizeStateOperatori() {
       gare: gare.rows,
       aggiudicate: aggiudicate.rows,
       offerte: offerte.rows,
-      portali: portali.rows
+      portali: portali.rows,
+      quotazioni: state.quotazioni
     };
   }
   return changed;
@@ -754,7 +842,8 @@ function serializeRemoteState() {
     gare: state.gare,
     aggiudicate: state.aggiudicate,
     offerte: state.offerte,
-    portali: state.portali.map(({ username, password, ...rest }) => rest)
+    portali: state.portali.map(({ username, password, ...rest }) => rest),
+    quotazioni: state.quotazioni
   };
 }
 
@@ -774,7 +863,8 @@ function applyState(nextState) {
     gare: Array.isArray(nextState.gare) ? nextState.gare : [],
     aggiudicate: Array.isArray(nextState.aggiudicate) ? nextState.aggiudicate : [],
     offerte: Array.isArray(nextState.offerte) ? nextState.offerte : [],
-    portali: mergePortaliSecrets(Array.isArray(nextState.portali) ? nextState.portali : [])
+    portali: mergePortaliSecrets(Array.isArray(nextState.portali) ? nextState.portali : []),
+    quotazioni: Array.isArray(nextState.quotazioni) ? nextState.quotazioni : []
   };
   normalizeStateOperatori();
   saveLocalSnapshot();
@@ -1024,13 +1114,25 @@ let charts = {};
 let curView = 'dashboard';
 const PS = 25;
 let pg={cur:1}, pa={cur:1}, po={cur:1};
+let activeQuoteId = null;
+let activeQuoteDraft = null;
 let activeDropdown = null;
 const tblFilters = {gare:{}, agg:{}, off:{}, port:{}, scad:{}};
 
 // ═══════════════════════════════════════════════════════
 // UTILS
 // ═══════════════════════════════════════════════════════
-const eur = n => n ? new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',minimumFractionDigits:0}).format(n) : '—';
+const eur = n => {
+  if(n === '' || n === null || n === undefined) return '—';
+  const value = Number(n);
+  if(Number.isNaN(value)) return '—';
+  return new Intl.NumberFormat('it-IT',{
+    style:'currency',
+    currency:'EUR',
+    minimumFractionDigits:2,
+    maximumFractionDigits:2
+  }).format(value);
+};
 const fmtD = s => {
   if(!s) return '—';
   const [datePart='', timePart=''] = String(s).split('T');
@@ -1178,6 +1280,7 @@ function toast(msg, type) {
 // ═══════════════════════════════════════════════════════
 const viewCfg = {
   dashboard:   {ttl:'Dashboard',           sub:'Analisi in tempo reale', add:''},
+  quotazioni:  {ttl:'Quotazioni',          sub:'Listino e export Excel', add:'＋ Nuova Quotazione'},
   gare:        {ttl:'Lista Gare',           sub:'',                       add:'＋ Nuova Gara'},
   aggiudicate: {ttl:'Gare Aggiudicate',    sub:'',                       add:'＋ Aggiungi'},
   offerte:     {ttl:'Offerte Presentate',  sub:'',                       add:'＋ Nuova Offerta'},
@@ -1203,15 +1306,17 @@ document.querySelectorAll('.nav').forEach(n => {
 });
 
 function openAdd() {
+  if(curView==='quotazioni') { newQuote(); return; }
   const m={dashboard:'gara',gare:'gara',aggiudicate:'agg',offerte:'off',portali:'port',scadenze:'gara'};
   openM(m[curView]||'gara');
 }
 
 function redrawCurrent() {
-  ({dashboard:drawDash,gare:drawGare,aggiudicate:drawAgg,offerte:drawOff,portali:drawPortali,scadenze:drawScad}[curView]||drawDash)();
+  ({dashboard:drawDash,quotazioni:drawQuotePage,gare:drawGare,aggiudicate:drawAgg,offerte:drawOff,portali:drawPortali,scadenze:drawScad}[curView]||drawDash)();
 }
 
 function updateBadges() {
+  document.getElementById('nb-q').textContent = state.quotazioni.length;
   document.getElementById('nb-g').textContent = state.gare.length;
   document.getElementById('nb-a').textContent = state.aggiudicate.length;
   document.getElementById('nb-o').textContent = state.offerte.length;
@@ -1293,6 +1398,636 @@ function setScadRange(value) {
   saveUiPrefs();
   fillScadRangeBar();
   drawScad();
+}
+
+// ═══════════════════════════════════════════════════════
+// QUOTAZIONI
+// ═══════════════════════════════════════════════════════
+const QUOTE_MAX_ROWS = 97;
+const QUOTE_TEMPLATE_PATH = './New_Griglia.xlsx';
+
+function base64ToUint8Array(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for(let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function escHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function createQuoteRow(index) {
+  return {
+    id: uid('qr'),
+    posizione: index,
+    codice: '',
+    descrizione: '',
+    quantita: '',
+    fornitore: '',
+    note: '',
+    costo_unitario: '',
+    lead_time: '',
+    margine: 10
+  };
+}
+
+function createEmptyQuote() {
+  const now = new Date().toISOString();
+  return {
+    id: uid('q'),
+    titolo: 'Nuova Quotazione',
+    cliente: '',
+    riferimento: '',
+    riferimento_importo: '',
+    margine_globale: 10,
+    trasporto: '',
+    note: '',
+    createdAt: now,
+    updatedAt: now,
+    rows: [createQuoteRow(1)]
+  };
+}
+
+function ensureQuoteShape(quote) {
+  const next = Object.assign(createEmptyQuote(), quote || {});
+  next.rows = Array.isArray(next.rows) && next.rows.length
+    ? next.rows.slice(0, QUOTE_MAX_ROWS).map((row, index) => Object.assign(createQuoteRow(index + 1), row || {}, { posizione: index + 1 }))
+    : [createQuoteRow(1)];
+  if(next.margine_globale === '' || next.margine_globale === null || next.margine_globale === undefined) {
+    next.margine_globale = 10;
+  }
+  return next;
+}
+
+function cloneQuote(quote) {
+  return JSON.parse(JSON.stringify(ensureQuoteShape(quote)));
+}
+
+function getQuoteIndex(id=activeQuoteId) {
+  return state.quotazioni.findIndex(q => q.id === id);
+}
+
+function getActiveQuote() {
+  if(!state.quotazioni.length) return null;
+  if(!(activeQuoteId && state.quotazioni.some(q => q.id === activeQuoteId))) {
+    activeQuoteId = state.quotazioni[0].id;
+  }
+  const base = state.quotazioni.find(q => q.id === activeQuoteId);
+  if(!activeQuoteDraft || activeQuoteDraft.id !== activeQuoteId) {
+    activeQuoteDraft = cloneQuote(base);
+  }
+  return cloneQuote(activeQuoteDraft);
+}
+
+function persistQuotes() {
+  save('quote');
+  updateBadges();
+}
+
+function isQuoteDirty() {
+  const index = getQuoteIndex();
+  if(index < 0 || !activeQuoteDraft) return false;
+  return JSON.stringify(ensureQuoteShape(state.quotazioni[index])) !== JSON.stringify(ensureQuoteShape(activeQuoteDraft));
+}
+
+function resetQuoteDraft(id=activeQuoteId) {
+  const index = getQuoteIndex(id);
+  if(index < 0) {
+    activeQuoteDraft = null;
+    return;
+  }
+  activeQuoteDraft = cloneQuote(state.quotazioni[index]);
+}
+
+function setActiveQuote(id) {
+  if(activeQuoteId && id !== activeQuoteId && isQuoteDirty() && !confirm('Ci sono modifiche non salvate. Vuoi scartarle?')) return;
+  activeQuoteId = id;
+  resetQuoteDraft(id);
+  drawQuotePage();
+}
+
+function newQuote() {
+  if(activeQuoteId && isQuoteDirty() && !confirm('Ci sono modifiche non salvate. Vuoi scartarle e creare una nuova quotazione?')) return;
+  const quote = createEmptyQuote();
+  state.quotazioni.unshift(quote);
+  activeQuoteId = quote.id;
+  activeQuoteDraft = cloneQuote(quote);
+  persistQuotes();
+  if(curView === 'quotazioni') drawQuotePage();
+}
+
+function deleteQuote(id) {
+  if(!confirm('Eliminare questa quotazione?')) return;
+  state.quotazioni = state.quotazioni.filter(q => q.id !== id);
+  if(activeQuoteId === id) activeQuoteId = state.quotazioni[0] ? state.quotazioni[0].id : null;
+  persistQuotes();
+  drawQuotePage();
+}
+
+function duplicateQuote(id) {
+  if(activeQuoteId && isQuoteDirty() && id === activeQuoteId && !confirm('Duplico l’ultima versione salvata. Le modifiche non salvate verranno ignorate. Continuare?')) return;
+  const source = state.quotazioni.find(q => q.id === id);
+  if(!source) return;
+  const clone = ensureQuoteShape(source);
+  clone.id = uid('q');
+  clone.titolo = (clone.titolo || 'Quotazione') + ' copia';
+  clone.createdAt = new Date().toISOString();
+  clone.updatedAt = clone.createdAt;
+  clone.rows = clone.rows.map((row, index) => Object.assign({}, row, { id: uid('qr'), posizione: index + 1 }));
+  state.quotazioni.unshift(clone);
+  activeQuoteId = clone.id;
+  activeQuoteDraft = cloneQuote(clone);
+  persistQuotes();
+  drawQuotePage();
+}
+
+function updateActiveQuoteDraft(mutator, options={ redraw:false }) {
+  const current = getActiveQuote();
+  if(!current) return;
+  mutator(activeQuoteDraft);
+  activeQuoteDraft = ensureQuoteShape(activeQuoteDraft);
+  if(options.redraw) drawQuotePage();
+  else refreshQuoteComputedDom();
+}
+
+function saveCurrentQuote() {
+  const index = getQuoteIndex();
+  if(index < 0 || !activeQuoteDraft) return;
+  const quote = cloneQuote(activeQuoteDraft);
+  quote.updatedAt = new Date().toISOString();
+  state.quotazioni[index] = quote;
+  activeQuoteDraft = cloneQuote(quote);
+  persistQuotes();
+  drawQuotePage();
+  toast('Quotazione salvata', 'ok');
+}
+
+function discardCurrentQuoteChanges() {
+  if(!isQuoteDirty()) return;
+  if(!confirm('Annullare le modifiche non salvate?')) return;
+  resetQuoteDraft();
+  drawQuotePage();
+}
+
+function updateQuoteMeta(field, value) {
+  updateActiveQuoteDraft(quote => {
+    quote[field] = value;
+    if(field === 'margine_globale') {
+      quote.rows = quote.rows.map(row => Object.assign({}, row, { margine: value }));
+    }
+  });
+}
+
+function autoResizeQuoteField(el) {
+  if(!el || el.tagName !== 'TEXTAREA') return;
+  el.style.height = 'auto';
+  el.style.height = Math.max(el.scrollHeight, 40) + 'px';
+}
+
+function syncQuoteTableFieldHeights() {
+  document.querySelectorAll('.quote-table textarea').forEach(autoResizeQuoteField);
+}
+
+function updateQuoteRow(rowIndex, field, value) {
+  updateActiveQuoteDraft(quote => {
+    if(!quote.rows[rowIndex]) return;
+    quote.rows[rowIndex][field] = value;
+  });
+}
+
+function addQuoteRow() {
+  updateActiveQuoteDraft(quote => {
+    if(quote.rows.length >= QUOTE_MAX_ROWS) return;
+    const row = createQuoteRow(quote.rows.length + 1);
+    row.margine = quote.margine_globale;
+    quote.rows.push(row);
+  }, { redraw:true });
+}
+
+function removeQuoteRow(rowIndex) {
+  updateActiveQuoteDraft(quote => {
+    if(quote.rows.length === 1) {
+      quote.rows = [createQuoteRow(1)];
+      return;
+    }
+    quote.rows.splice(rowIndex, 1);
+    quote.rows = quote.rows.map((row, index) => Object.assign({}, row, { posizione: index + 1 }));
+  }, { redraw:true });
+}
+
+function parseQuoteNumber(value) {
+  const normalized = String(value ?? '').replace(',', '.').trim();
+  const parsed = parseFloat(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function parseQuoteMargin(value) {
+  const parsed = parseQuoteNumber(value);
+  if(parsed > 1) return parsed / 100;
+  return parsed;
+}
+
+function ceilToEuro(value) {
+  return Math.ceil((Number(value) || 0) - 1e-9);
+}
+
+function computeQuoteRow(row, index) {
+  const qty = parseQuoteNumber(row.quantita);
+  const unitCost = parseQuoteNumber(row.costo_unitario);
+  const margin = parseQuoteMargin(row.margine || 0);
+  const costoTotale = unitCost * qty;
+  const prezzoUnitario = ceilToEuro(unitCost * (1 + margin));
+  const valoreOfferto = prezzoUnitario * qty;
+  const margineTotale = valoreOfferto - costoTotale;
+  return {
+    posizione: index + 1,
+    codice: row.codice || '',
+    descrizione: row.descrizione || '',
+    quantita: qty,
+    fornitore: row.fornitore || '',
+    note: row.note || '',
+    costo_unitario: unitCost,
+    lead_time: row.lead_time || '',
+    margine: margin,
+    totale_costo: costoTotale,
+    prezzo_unitario_offerto: prezzoUnitario,
+    valore_totale_offerto: valoreOfferto,
+    margine_totale: margineTotale
+  };
+}
+
+function computeQuote(quote) {
+  const normalized = ensureQuoteShape(quote);
+  const rows = normalized.rows.map((row, index) => computeQuoteRow(row, index));
+  const trasporto = parseQuoteNumber(normalized.trasporto);
+  const totaleAcquistoRighe = rows.reduce((sum, row) => sum + row.totale_costo, 0);
+  const offertaFinale = rows.reduce((sum, row) => sum + row.valore_totale_offerto, 0);
+  const margineRighe = rows.reduce((sum, row) => sum + row.margine_totale, 0);
+  const totaleAcquisto = totaleAcquistoRighe + trasporto;
+  const margineTotale = margineRighe;
+  const riferimentoImporto = parseQuoteNumber(normalized.riferimento_importo);
+  const scontoCliente = riferimentoImporto - offertaFinale;
+  return { quote: normalized, rows, totaleAcquistoRighe, trasporto, totaleAcquisto, offertaFinale, margineRighe, margineTotale, riferimentoImporto, scontoCliente };
+}
+
+function refreshQuoteComputedDom() {
+  if(!activeQuoteDraft) return;
+  const computed = computeQuote(activeQuoteDraft);
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if(el) el.textContent = value;
+  };
+  setText('quote-kpi-acquisto', eur(computed.totaleAcquisto));
+  setText('quote-kpi-offerta', eur(computed.offertaFinale));
+  setText('quote-kpi-margine', eur(computed.margineTotale));
+  setText('quote-kpi-sconto', eur(computed.scontoCliente));
+  setText('quote-dirty-status', (isQuoteDirty() ? 'Modifiche non salvate' : 'Tutto salvato') + ' · Template Excel: 97 righe disponibili');
+  computed.rows.forEach((row, index) => {
+    setText('quote-row-total-cost-' + index, eur(row.totale_costo));
+    setText('quote-row-offer-unit-' + index, eur(row.prezzo_unitario_offerto));
+    setText('quote-row-offer-total-' + index, eur(row.valore_totale_offerto));
+    setText('quote-row-margin-total-' + index, eur(row.margine_totale));
+  });
+}
+
+function formatDateTime(value) {
+  if(!value) return '—';
+  return new Date(value).toLocaleString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function applyQuotePanelWidth() {
+  const width = Math.max(280, Math.min(520, Number(uiPrefs.quotePanelWidth) || DEFAULT_UI_PREFS.quotePanelWidth));
+  document.documentElement.style.setProperty('--quote-panel-w', width + 'px');
+}
+
+function startQuotePanelResize(event) {
+  if(window.innerWidth <= 980) return;
+  const layout = event.target.closest('.quote-layout');
+  const handle = document.getElementById('quote-resizer');
+  if(!layout || !handle) return;
+  const layoutRect = layout.getBoundingClientRect();
+  handle.classList.add('dragging');
+  document.body.style.cursor = 'col-resize';
+  document.body.style.userSelect = 'none';
+
+  const onMove = e => {
+    const nextWidth = Math.max(280, Math.min(520, e.clientX - layoutRect.left));
+    uiPrefs.quotePanelWidth = nextWidth;
+    document.documentElement.style.setProperty('--quote-panel-w', nextWidth + 'px');
+  };
+
+  const onUp = () => {
+    handle.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    saveUiPrefs();
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+  };
+
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+}
+
+function drawQuotePage() {
+  const listEl = document.getElementById('quote-list');
+  const bodyEl = document.getElementById('quote-body');
+  if(!listEl || !bodyEl) return;
+  if(!state.quotazioni.length) {
+    newQuote();
+    return;
+  }
+  const active = getActiveQuote();
+  const computed = computeQuote(active);
+  const dirty = isQuoteDirty();
+  listEl.innerHTML = state.quotazioni.map(rawQuote => {
+    const q = computeQuote(rawQuote);
+    return '<div class="quote-item'+(q.quote.id===activeQuoteId?' on':'')+'" onclick="setActiveQuote(\''+q.quote.id+'\')">'
+      +'<div class="quote-item-title">'+escHtml(q.quote.titolo || 'Quotazione senza titolo')+'</div>'
+      +'<div class="quote-item-meta"><span>'+(q.rows.filter(r=>r.descrizione||r.codice||r.quantita).length)+' righe</span><span>'+formatDateTime(q.quote.updatedAt)+'</span></div>'
+      +'<div class="quote-item-total">'+eur(q.offertaFinale)+'</div>'
+      +'<div class="quote-item-actions">'
+      +'<button class="btn btn-o btn-sm" onclick="event.stopPropagation();duplicateQuote(\''+q.quote.id+'\')">Duplica</button>'
+      +'<button class="btn-del" onclick="event.stopPropagation();deleteQuote(\''+q.quote.id+'\')">🗑️</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+
+  bodyEl.innerHTML =
+    '<div class="quote-top-grid">'
+      +'<div class="quote-field"><label>Titolo Quotazione</label><input value="'+escHtml(computed.quote.titolo)+'" oninput="updateQuoteMeta(\'titolo\', this.value)"></div>'
+      +'<div class="quote-field"><label>Cliente</label><input value="'+escHtml(computed.quote.cliente)+'" oninput="updateQuoteMeta(\'cliente\', this.value)"></div>'
+      +'<div class="quote-field"><label>Riferimento</label><div class="quote-input-suffix"><input type="number" step="0.01" value="'+escHtml(computed.quote.riferimento_importo)+'" oninput="updateQuoteMeta(\'riferimento_importo\', this.value)"><span>€</span></div></div>'
+      +'<div class="quote-field"><label>Margine Globale %</label><input type="number" step="0.01" value="'+escHtml(computed.quote.margine_globale)+'" oninput="updateQuoteMeta(\'margine_globale\', this.value)"></div>'
+      +'<div class="quote-field"><label>Trasporto</label><div class="quote-input-suffix"><input type="number" step="0.01" min="0" value="'+escHtml(computed.quote.trasporto)+'" oninput="updateQuoteMeta(\'trasporto\', this.value)"><span>€</span></div></div>'
+      +'<div class="quote-field full"><label>Note Quotazione</label><textarea oninput="updateQuoteMeta(\'note\', this.value)">'+escHtml(computed.quote.note)+'</textarea></div>'
+    +'</div>'
+    +'<div class="quote-kpis">'
+      +'<div class="quote-kpi"><div class="quote-kpi-l">Valore acquisto</div><div class="quote-kpi-v quote-acquisto" id="quote-kpi-acquisto">'+eur(computed.totaleAcquisto)+'</div></div>'
+      +'<div class="quote-kpi"><div class="quote-kpi-l">Offerta finale</div><div class="quote-kpi-v quote-offerta" id="quote-kpi-offerta">'+eur(computed.offertaFinale)+'</div></div>'
+      +'<div class="quote-kpi"><div class="quote-kpi-l">Margine totale</div><div class="quote-kpi-v quote-margine" id="quote-kpi-margine">'+eur(computed.margineTotale)+'</div></div>'
+      +'<div class="quote-kpi"><div class="quote-kpi-l">Sconto cliente</div><div class="quote-kpi-v" id="quote-kpi-sconto">'+eur(computed.scontoCliente)+'</div></div>'
+    +'</div>'
+    +'<div class="quote-actions">'
+      +'<div class="quote-actions-left">'
+        +'<button class="btn btn-p" onclick="addQuoteRow()"'+(computed.quote.rows.length>=QUOTE_MAX_ROWS?' disabled':'')+'>＋ Riga</button>'
+        +'<button class="btn btn-o" onclick="saveCurrentQuote()">💾 Salva Quotazione</button>'
+        +'<button class="btn btn-o" onclick="discardCurrentQuoteChanges()"'+(dirty?'':' disabled')+'>↺ Annulla modifiche</button>'
+        +'<span class="quote-status" id="quote-dirty-status">'+(dirty?'Modifiche non salvate':'Tutto salvato')+' · Template Excel: 97 righe disponibili</span>'
+      +'</div>'
+      +'<div class="quote-actions-right">'
+        +'<button class="btn btn-o" onclick="duplicateQuote(\''+computed.quote.id+'\')">Duplica</button>'
+        +'<button class="btn btn-g" onclick="exportQuoteXlsx()">⬇︎ Esporta Excel</button>'
+      +'</div>'
+    +'</div>'
+    +'<div class="quote-table-wrap"><table class="quote-table"><thead><tr>'
+      +'<th>Posizione</th><th>Codice</th><th>Descrizione</th><th>Q.tà</th><th>Fornitore</th><th>Note</th><th>Costo Unit.</th><th>Totale Acquisto</th><th>L/T</th><th>Prezzo Offerto Unit.</th><th>Valore Totale Offerto</th><th>Margine Totale</th><th>% Margine</th><th></th>'
+    +'</tr></thead><tbody>'
+    +computed.rows.map((row, index) =>
+      '<tr>'
+      +'<td class="quote-num">'+row.posizione+'</td>'
+      +'<td><textarea rows="1" oninput="autoResizeQuoteField(this);updateQuoteRow('+index+', \'codice\', this.value)">'+escHtml(computed.quote.rows[index].codice)+'</textarea></td>'
+      +'<td><textarea rows="1" oninput="autoResizeQuoteField(this);updateQuoteRow('+index+', \'descrizione\', this.value)">'+escHtml(computed.quote.rows[index].descrizione)+'</textarea></td>'
+      +'<td><input type="number" step="1" min="0" value="'+escHtml(computed.quote.rows[index].quantita)+'" oninput="updateQuoteRow('+index+', \'quantita\', this.value)"></td>'
+      +'<td><input value="'+escHtml(computed.quote.rows[index].fornitore)+'" oninput="updateQuoteRow('+index+', \'fornitore\', this.value)"></td>'
+      +'<td><input value="'+escHtml(computed.quote.rows[index].note)+'" oninput="updateQuoteRow('+index+', \'note\', this.value)"></td>'
+      +'<td><div class="quote-input-suffix"><input type="number" step="0.01" min="0" value="'+escHtml(computed.quote.rows[index].costo_unitario)+'" oninput="updateQuoteRow('+index+', \'costo_unitario\', this.value)"><span>€</span></div></td>'
+      +'<td><span class="quote-money quote-acquisto" id="quote-row-total-cost-'+index+'">'+eur(row.totale_costo)+'</span></td>'
+      +'<td><input value="'+escHtml(computed.quote.rows[index].lead_time)+'" oninput="updateQuoteRow('+index+', \'lead_time\', this.value)"></td>'
+      +'<td><span class="quote-money" id="quote-row-offer-unit-'+index+'">'+eur(row.prezzo_unitario_offerto)+'</span></td>'
+      +'<td><span class="quote-money" id="quote-row-offer-total-'+index+'">'+eur(row.valore_totale_offerto)+'</span></td>'
+      +'<td><span class="quote-money quote-margine" id="quote-row-margin-total-'+index+'">'+eur(row.margine_totale)+'</span></td>'
+      +'<td><input type="number" step="0.01" min="0" value="'+escHtml(computed.quote.rows[index].margine)+'" oninput="updateQuoteRow('+index+', \'margine\', this.value)"></td>'
+      +'<td><button class="btn-del" onclick="removeQuoteRow('+index+')">🗑️</button></td>'
+      +'</tr>'
+    ).join('')
+    +'</tbody></table></div>';
+  syncQuoteTableFieldHeights();
+}
+
+function getSheetCellDoc(sheetXml) {
+  const parser = new DOMParser();
+  return parser.parseFromString(sheetXml, 'application/xml');
+}
+
+const XLSX_NS = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+
+function getRowNode(sheetDoc, rowNumber) {
+  let rowNode = Array.from(sheetDoc.getElementsByTagNameNS(XLSX_NS, 'row')).find(node => Number(node.getAttribute('r')) === rowNumber);
+  if(rowNode) return rowNode;
+  const sheetData = sheetDoc.getElementsByTagNameNS(XLSX_NS, 'sheetData')[0];
+  rowNode = sheetDoc.createElementNS(XLSX_NS, 'row');
+  rowNode.setAttribute('r', String(rowNumber));
+  sheetData.appendChild(rowNode);
+  return rowNode;
+}
+
+function clearCell(cell) {
+  while(cell.firstChild) cell.removeChild(cell.firstChild);
+  cell.removeAttribute('t');
+}
+
+function setInlineStringCell(sheetDoc, ref, text) {
+  const cell = ensureCell(sheetDoc, ref);
+  clearCell(cell);
+  if(!text) return cell;
+  cell.setAttribute('t', 'inlineStr');
+  const isNode = sheetDoc.createElementNS(XLSX_NS, 'is');
+  const tNode = sheetDoc.createElementNS(XLSX_NS, 't');
+  tNode.textContent = text;
+  isNode.appendChild(tNode);
+  cell.appendChild(isNode);
+  return cell;
+}
+
+function setNumberCell(sheetDoc, ref, value) {
+  const cell = ensureCell(sheetDoc, ref);
+  clearCell(cell);
+  if(value === '' || value === null || value === undefined) return cell;
+  const vNode = sheetDoc.createElementNS(XLSX_NS, 'v');
+  vNode.textContent = String(value);
+  cell.appendChild(vNode);
+  return cell;
+}
+
+function ensureCell(sheetDoc, ref) {
+  let cell = Array.from(sheetDoc.getElementsByTagNameNS(XLSX_NS, 'c')).find(node => node.getAttribute('r') === ref);
+  if(cell) return cell;
+  const match = ref.match(/^([A-Z]+)(\d+)$/);
+  const rowNode = getRowNode(sheetDoc, Number(match[2]));
+  cell = sheetDoc.createElementNS(XLSX_NS, 'c');
+  cell.setAttribute('r', ref);
+  rowNode.appendChild(cell);
+  return cell;
+}
+
+function setFormulaValue(sheetDoc, ref, formula, value) {
+  const cell = ensureCell(sheetDoc, ref);
+  clearCell(cell);
+  const fNode = sheetDoc.createElementNS(XLSX_NS, 'f');
+  fNode.textContent = formula;
+  cell.appendChild(fNode);
+  const vNode = sheetDoc.createElementNS(XLSX_NS, 'v');
+  vNode.textContent = String(value || 0);
+  cell.appendChild(vNode);
+  return cell;
+}
+
+function setCellStyle(sheetDoc, ref, styleId) {
+  const cell = ensureCell(sheetDoc, ref);
+  if(styleId === '' || styleId === null || styleId === undefined) cell.removeAttribute('s');
+  else cell.setAttribute('s', String(styleId));
+  return cell;
+}
+
+function updateSheetDimension(sheetDoc, lastRow) {
+  const dimension = sheetDoc.getElementsByTagNameNS(XLSX_NS, 'dimension')[0];
+  if(!dimension) return;
+  const ref = dimension.getAttribute('ref') || 'A1:O100';
+  const parts = ref.split(':');
+  const start = parts[0] || 'A1';
+  const end = parts[1] || parts[0] || 'O100';
+  const match = end.match(/^([A-Z]+)(\d+)$/);
+  if(!match) return;
+  const endCol = match[1];
+  const endRow = Number(match[2]) || 1;
+  dimension.setAttribute('ref', start + ':' + endCol + Math.max(endRow, lastRow));
+}
+
+function removeCalcChainArtifacts(zip) {
+  const parser = new DOMParser();
+  const serializer = new XMLSerializer();
+  zip.remove('xl/calcChain.xml');
+
+  const relsFile = zip.file('xl/_rels/workbook.xml.rels');
+  if(relsFile) {
+    return Promise.all([
+      relsFile.async('string').then(xml => {
+        const doc = parser.parseFromString(xml, 'application/xml');
+        Array.from(doc.getElementsByTagName('Relationship')).forEach(node => {
+          if((node.getAttribute('Type') || '').includes('/calcChain')) node.remove();
+        });
+        zip.file('xl/_rels/workbook.xml.rels', serializer.serializeToString(doc));
+      }),
+      zip.file('[Content_Types].xml').async('string').then(xml => {
+        const doc = parser.parseFromString(xml, 'application/xml');
+        Array.from(doc.getElementsByTagName('Override')).forEach(node => {
+          if((node.getAttribute('PartName') || '') === '/xl/calcChain.xml') node.remove();
+        });
+        zip.file('[Content_Types].xml', serializer.serializeToString(doc));
+      })
+    ]);
+  }
+  return Promise.resolve();
+}
+
+async function exportQuoteXlsx() {
+  const active = activeQuoteDraft ? cloneQuote(activeQuoteDraft) : getActiveQuote();
+  if(!active) return;
+  const computed = computeQuote(active);
+  if(typeof JSZip === 'undefined') {
+    toast('Libreria export non disponibile', 'err');
+    return;
+  }
+  try {
+    let buffer;
+    if(location.protocol === 'file:' && window.MARTEC_QUOTE_TEMPLATE_BASE64) {
+      buffer = base64ToUint8Array(window.MARTEC_QUOTE_TEMPLATE_BASE64).buffer;
+    } else {
+      try {
+        const response = await fetch(QUOTE_TEMPLATE_PATH);
+        if(!response.ok) throw new Error('Template Excel non trovato');
+        buffer = await response.arrayBuffer();
+      } catch(fetchError) {
+        if(!window.MARTEC_QUOTE_TEMPLATE_BASE64) throw fetchError;
+        buffer = base64ToUint8Array(window.MARTEC_QUOTE_TEMPLATE_BASE64).buffer;
+      }
+    }
+    const zip = await JSZip.loadAsync(buffer);
+    await removeCalcChainArtifacts(zip);
+    const sheetXml = await zip.file('xl/worksheets/sheet1.xml').async('string');
+    const sheetDoc = getSheetCellDoc(sheetXml);
+
+    const trasportoFormula = computed.trasporto ? '+' + String(computed.trasporto).replace(',', '.') : '';
+
+    setNumberCell(sheetDoc, 'N2', computed.riferimentoImporto);
+    setFormulaValue(sheetDoc, 'H2', 'SUBTOTAL(9,H4:H100)'+trasportoFormula, computed.totaleAcquisto);
+    setFormulaValue(sheetDoc, 'K2', 'SUBTOTAL(9,K4:K100)', computed.offertaFinale);
+    setFormulaValue(sheetDoc, 'L2', 'SUBTOTAL(9,L4:L100)', computed.margineTotale);
+    setFormulaValue(sheetDoc, 'O2', 'N2-K2', computed.scontoCliente);
+
+    for(let rowNumber = 4; rowNumber <= 100; rowNumber++) {
+      const item = computed.rows[rowNumber - 4];
+      const raw = computed.quote.rows[rowNumber - 4];
+      setInlineStringCell(sheetDoc, 'B'+rowNumber, item ? item.codice : '');
+      setInlineStringCell(sheetDoc, 'C'+rowNumber, item ? item.descrizione : '');
+      setNumberCell(sheetDoc, 'D'+rowNumber, item && raw.quantita !== '' ? item.quantita : '');
+      setInlineStringCell(sheetDoc, 'E'+rowNumber, item ? item.fornitore : '');
+      setInlineStringCell(sheetDoc, 'F'+rowNumber, item ? item.note : '');
+      setNumberCell(sheetDoc, 'G'+rowNumber, item && raw.costo_unitario !== '' ? item.costo_unitario : '');
+      setInlineStringCell(sheetDoc, 'I'+rowNumber, item ? item.lead_time : '');
+      setNumberCell(sheetDoc, 'M'+rowNumber, item ? item.margine : parseQuoteMargin(computed.quote.margine_globale || 10));
+      const formulaRow = rowNumber;
+      setFormulaValue(sheetDoc, 'H'+rowNumber, 'G'+formulaRow+'*D'+formulaRow, item ? item.totale_costo : 0);
+      setFormulaValue(sheetDoc, 'J'+rowNumber, 'CEILING(G'+formulaRow+'*M'+formulaRow+'+G'+formulaRow+',1)', item ? item.prezzo_unitario_offerto : 0);
+      setFormulaValue(sheetDoc, 'K'+rowNumber, 'J'+formulaRow+'*D'+formulaRow, item ? item.valore_totale_offerto : 0);
+      setFormulaValue(sheetDoc, 'L'+rowNumber, 'K'+formulaRow+'-H'+formulaRow, item ? item.margine_totale : 0);
+    }
+
+    if(computed.trasporto > 0) {
+      const transportPosition = Math.min(computed.quote.rows.length + 1, 98);
+      const transportRow = 3 + transportPosition;
+      updateSheetDimension(sheetDoc, transportRow);
+      setCellStyle(sheetDoc, 'A'+transportRow, 12);
+      setCellStyle(sheetDoc, 'B'+transportRow, 11);
+      setCellStyle(sheetDoc, 'C'+transportRow, 11);
+      setCellStyle(sheetDoc, 'D'+transportRow, 12);
+      setCellStyle(sheetDoc, 'E'+transportRow, 11);
+      setCellStyle(sheetDoc, 'F'+transportRow, 11);
+      setCellStyle(sheetDoc, 'G'+transportRow, 13);
+      setCellStyle(sheetDoc, 'H'+transportRow, 13);
+      setCellStyle(sheetDoc, 'I'+transportRow, 11);
+      setCellStyle(sheetDoc, 'J'+transportRow, 13);
+      setCellStyle(sheetDoc, 'K'+transportRow, 13);
+      setCellStyle(sheetDoc, 'L'+transportRow, 13);
+      setCellStyle(sheetDoc, 'M'+transportRow, 10);
+
+      setNumberCell(sheetDoc, 'A'+transportRow, transportPosition);
+      setInlineStringCell(sheetDoc, 'B'+transportRow, 'TRASPORTO');
+      setInlineStringCell(sheetDoc, 'C'+transportRow, 'Costo trasporto escluso dal margine');
+      setNumberCell(sheetDoc, 'D'+transportRow, 1);
+      setInlineStringCell(sheetDoc, 'E'+transportRow, '');
+      setInlineStringCell(sheetDoc, 'F'+transportRow, '');
+      setNumberCell(sheetDoc, 'G'+transportRow, computed.trasporto);
+      setNumberCell(sheetDoc, 'H'+transportRow, computed.trasporto);
+      setInlineStringCell(sheetDoc, 'I'+transportRow, '');
+      setNumberCell(sheetDoc, 'J'+transportRow, '');
+      setNumberCell(sheetDoc, 'K'+transportRow, '');
+      setNumberCell(sheetDoc, 'L'+transportRow, '');
+      setNumberCell(sheetDoc, 'M'+transportRow, 0);
+    }
+
+    const xml = new XMLSerializer().serializeToString(sheetDoc);
+    zip.file('xl/worksheets/sheet1.xml', xml);
+    const blob = await zip.generateAsync({ type:'blob' });
+    const link = document.createElement('a');
+    const safeTitle = (computed.quote.titolo || 'quotazione').replace(/[\\\\/:*?\"<>|]+/g, '-');
+    link.href = URL.createObjectURL(blob);
+    link.download = safeTitle + '.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    URL.revokeObjectURL(link.href);
+    link.remove();
+    toast('Quotazione esportata in Excel', 'ok');
+  } catch(error) {
+    console.error(error);
+    toast('Errore durante l’esportazione Excel', 'err');
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1869,6 +2604,7 @@ function delItem(col,id){
 async function init(){
   try {
     setSyncStatus('Avvio applicazione...', 'warn');
+    applyQuotePanelWidth();
     saveLocalSnapshot();
     await remoteInitWithTimeout(5000);
     if(normalizeStateOperatori()) {
@@ -1884,6 +2620,7 @@ async function init(){
   } catch(error) {
     console.error('Errore inizializzazione app', error);
     setSyncStatus('Errore cloud, avvio locale completato', 'warn');
+    applyQuotePanelWidth();
     syncUiControls();
     updateBadges();
     fillPortSel('xg-port','');
