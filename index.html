@@ -247,26 +247,48 @@ tbody .row-click{cursor:pointer}
 .gara-asta{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;background:#EDF4FF;color:var(--blue);font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;letter-spacing:.1px}
 
 /* GARA DETAIL */
-#m-detail .mdl{max-width:none;width:min(86vw,1500px);max-height:min(95vh,1320px);display:flex;flex-direction:column}
-.gd-header{
-  background:linear-gradient(135deg,var(--navy) 0%,#1a3a6e 100%);
-  padding:28px 32px 22px;border-radius:14px 14px 0 0;
-}
-.gd-header-title{font-family:'Outfit',sans-serif;font-size:30px;font-weight:700;color:#fff;line-height:1.16;margin-bottom:10px;max-width:900px}
-.gd-header-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.gd-body{display:grid;grid-template-columns:1fr 1fr;background:#fff;overflow:auto}
-.gd-cell{padding:18px 22px;border-bottom:1px solid #F0F4F8}
-.gd-cell:nth-child(odd){border-right:1px solid #F0F4F8}
-.gd-cell.full{grid-column:1/-1}
-.gd-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.85px;color:var(--gray3);margin-bottom:6px}
-.gd-val{font-size:15px;font-weight:600;color:var(--gray1);line-height:1.45}
-.gd-val.hero{font-family:'Outfit',sans-serif;font-size:27px;font-weight:700;color:var(--blue)}
-.gd-val.mono{font-family:'JetBrains Mono',monospace;font-size:13px}
-.gd-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:18px 22px;background:#F8FAFD;border-bottom:1px solid #EEF2F7}
-.gd-summary-card{background:#fff;border:1px solid #E6EDF5;border-radius:12px;padding:12px 14px;box-shadow:0 1px 4px rgba(13,27,62,.04)}
-.gd-summary-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--gray3);margin-bottom:5px}
-.gd-summary-value{font-size:14px;font-weight:700;color:var(--navy);line-height:1.35}
-.gd-footer{padding:18px 24px;border-top:1px solid #EEF2F7;display:flex;align-items:center;gap:10px;background:#FAFBFC;border-radius:0 0 14px 14px}
+#m-detail .mdl{max-width:none;width:min(92vw,1180px);max-height:min(94vh,980px);display:flex;flex-direction:column;background:#F3F7FB;overflow:auto}
+.gd-header{padding:28px 30px 18px;border-radius:14px 14px 0 0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:start}
+.gd-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:11px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--gray3)}
+.gd-header-title{font-family:'Outfit',sans-serif;font-size:31px;font-weight:800;color:var(--navy);line-height:1.05;letter-spacing:.7px;text-transform:uppercase;max-width:760px}
+.gd-header-sub{margin-top:12px;max-width:760px;font-size:15px;font-weight:600;line-height:1.45;color:var(--gray2)}
+.gd-head-actions{display:flex;gap:12px;align-items:center;justify-content:flex-end}
+.gd-head-actions .btn{min-width:130px;justify-content:center;padding:13px 16px;border-radius:10px}
+.gd-head-actions .mcl{width:42px;height:42px;border-radius:10px;background:#fff;box-shadow:var(--sh);font-size:20px;color:var(--gray2)}
+.gd-body{padding:8px 30px 30px;display:grid;grid-template-columns:minmax(0,1.75fr) 330px;gap:24px;background:transparent;overflow:visible}
+.gd-main-card,.gd-side-card,.gd-map-card,.gd-note-card{background:#fff;border:1px solid #EAF0F6;border-radius:12px;box-shadow:0 8px 28px rgba(13,27,62,.06)}
+.gd-main-card{padding:26px 28px}
+.gd-section-title{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;color:#43516B;margin-bottom:28px}
+.gd-section-title .info-dot{width:22px;height:22px;border-radius:50%;background:#1F73E8;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:900}
+.gd-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px 34px}
+.gd-info.full{grid-column:1/-1}
+.gd-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.1px;color:var(--gray3);margin-bottom:8px}
+.gd-val{font-size:16px;font-weight:800;color:var(--gray1);line-height:1.4}
+.gd-val.hero{font-family:'Outfit',sans-serif;font-size:31px;font-weight:800;color:var(--blue)}
+.gd-val.red{color:var(--red)}
+.gd-val.green{color:var(--green)}
+.gd-val.mono{font-family:'JetBrains Mono',monospace;font-size:14px}
+.gd-metrics{margin-top:34px;display:grid;grid-template-columns:1fr 1fr;gap:0;background:#F1F5FA;border-radius:8px;overflow:hidden}
+.gd-metric{padding:20px 26px}
+.gd-metric+.gd-metric{border-left:1px solid #DDE6F1}
+.gd-side{display:flex;flex-direction:column;gap:18px}
+.gd-side-card{background:linear-gradient(135deg,#061C43 0%,#082B62 100%);padding:24px;color:#fff;overflow:hidden;position:relative}
+.gd-side-card.danger{background:linear-gradient(135deg,#8B1018 0%,#C62828 100%)}
+.gd-side-card::after{content:'';position:absolute;right:-55px;bottom:-70px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.04)}
+.gd-side-title{font-size:18px;font-weight:800;opacity:.9;margin-bottom:16px}
+.gd-progress-row{display:flex;align-items:end;gap:12px;margin-bottom:12px}
+.gd-progress-value{font-family:'Outfit',sans-serif;font-size:34px;font-weight:700}
+.gd-status-word{font-family:'Outfit',sans-serif;font-size:34px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+.gd-progress-label{font-size:13px;color:rgba(255,255,255,.7);padding-bottom:6px}
+.gd-progress{height:9px;border-radius:999px;background:rgba(255,255,255,.15);overflow:hidden}
+.gd-progress span{display:block;height:100%;border-radius:inherit;background:#1F8BFF}
+.gd-side-card.danger .gd-progress span{background:#FFCDD2}
+.gd-map-card{padding:18px 20px;display:flex;align-items:flex-start;gap:12px}
+.gd-map-ic{width:34px;height:34px;border-radius:10px;background:#EDF4FF;color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.gd-map-place{font-size:14px;font-weight:800;color:#4A5871;line-height:1.4}
+.gd-map-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--gray3);margin-bottom:4px}
+.gd-note-card{padding:20px 22px}
+.gd-note-text{font-size:14px;line-height:1.55;color:var(--gray2);font-weight:600}
 
 /* TH sticky */
 thead th{position:sticky;top:0;z-index:2}
@@ -696,24 +718,18 @@ thead th{position:sticky;top:0;z-index:2}
 <div class="ovl" id="m-detail">
   <div class="mdl">
     <div class="gd-header">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5)">DETTAGLIO GARA</div>
-        <button class="mcl" onclick="closeM('detail')" style="color:rgba(255,255,255,.6);font-size:20px">✕</button>
+      <div class="gd-head-main">
+        <div class="gd-eyebrow" id="gd-eyebrow">DETTAGLIO GARA</div>
+        <div class="gd-header-title" id="gd-title">—</div>
+        <div class="gd-header-sub" id="gd-subtitle">—</div>
       </div>
-      <div class="gd-header-title" id="gd-title">—</div>
-      <div class="gd-header-meta">
-        <div id="gd-stato-badge"></div>
-        <div id="gd-portale-badge" style="background:rgba(255,255,255,.12);color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700"></div>
-        <div id="gd-asta-badge" style="background:rgba(79,195,247,.2);color:#4FC3F7;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:800;font-family:'Outfit',sans-serif"></div>
+      <div class="gd-head-actions">
+        <button class="btn btn-r btn-sm" id="gd-btn-del">🗑️ Elimina Gara</button>
+        <button class="btn btn-p btn-sm" id="gd-btn-edit">✏️ Modifica Gara</button>
+        <button class="mcl" onclick="closeM('detail')">✕</button>
       </div>
     </div>
     <div class="gd-body" id="gd-body"></div>
-    <div class="gd-footer">
-      <button class="btn btn-r btn-sm" id="gd-btn-del">🗑️ Elimina Gara</button>
-      <div style="flex:1"></div>
-      <button class="btn btn-o btn-sm" onclick="closeM('detail')">Chiudi</button>
-      <button class="btn btn-p btn-sm" id="gd-btn-edit">✏️ Modifica Gara</button>
-    </div>
   </div>
 </div>
 
@@ -2141,72 +2157,93 @@ document.addEventListener('click', function(e) {
 });
 
 function showDetail(type, id) {
-  let rec, title, badge, m1, m2, fields=[];
+  let rec, title, badge, subtitle, fields, metrics, progress, progressLabel, place, note, dangerState=false;
   if(type==='gara') {
     rec=state.gare.find(x=>x.id===id); if(!rec) return;
-    title=rec.descrizione||'—'; badge=bdSt(rec.stato); m1=rec.portale||''; m2=eur(rec.base_asta);
     const d=daysTo(rec.scadenza);
+    title=rec.descrizione||'—';
+    badge=bdSt(rec.stato);
+    subtitle=rec.tipologia || 'Procedura di gara pubblica monitorata nel tracker.';
+    dangerState = rec.stato==='SCARTATA' || rec.stato==='PERSA';
+    progress = rec.stato==='AGGIUDICATA' ? 100 : rec.stato==='PRESENTATA' ? 60 : rec.stato==='DA LAVORARE' ? 15 : 100;
+    progressLabel = rec.stato==='AGGIUDICATA' ? 'Aggiudicata' : rec.stato==='PRESENTATA' ? 'Presentata' : rec.stato==='DA LAVORARE' ? 'Inizio elaborazione' : rec.stato;
     fields=[
-      {l:'N° RDO',          v:rec.num_rdo||'—',       mono:true},
-      {l:"Base d'Asta",     v:eur(rec.base_asta)},
-      {l:'Tipologia',       v:rec.tipologia||'—'},
-      {l:'Ente Appaltante', v:rec.ente||'—',           full:true},
-      {l:'Data Creazione',  v:fmtD(rec.data_creazione)},
-      {l:'Scadenza',        v:fmtD(rec.scadenza)+(d!==null&&d>=0?' ('+d+' giorni)':d!==null?' (scaduta)':'')},
-      {l:'Operatore',       v:opBd(rec.operatore),     html:true},
-      {l:'Note',            v:rec.note||'—',           full:true},
+      {l:'Ente Appaltante', v:rec.ente||'—'},
+      {l:'Operatore Assegnato', v:opBd(rec.operatore), html:true},
+      {l:'Portale', v:rec.portale||'—'},
+      {l:'N° RDO', v:rec.num_rdo||'—', mono:true}
     ];
+    metrics=[
+      {l:"Base d'Asta", v:eur(rec.base_asta), c:'hero'},
+      {l:'Scadenza', v:fmtD(rec.scadenza)+(d!==null&&d>=0?' · '+d+' gg':d!==null?' · scaduta':''), c:d!==null&&d<0?'red':''}
+    ];
+    place = rec.ente || rec.portale || 'Sede non indicata';
+    note = rec.note || 'Nessuna nota inserita per questa gara.';
     document.getElementById('gd-btn-edit').onclick=()=>{closeM('detail');editGara(id);};
     document.getElementById('gd-btn-del').onclick=()=>{closeM('detail');delItem('gare',id);};
   } else {
     rec=state.aggiudicate.find(x=>x.id===id); if(!rec) return;
-    title=rec.descrizione||'—'; badge=bdSP(rec.stato_proc)||''; m1=rec.portale||''; m2='Offerto: '+eur(rec.valore_offerto);
+    title=rec.descrizione||'—';
+    badge=bdSP(rec.stato_proc)||'';
+    subtitle=rec.tipologia || 'Riepilogo aggiudicazione, stipula e fornitura.';
+    progress = rec.stato_proc==='CONCLUSA' ? 100 : rec.stato_proc==='INCORSO' ? 65 : 35;
+    progressLabel = rec.stato_proc || 'Da aggiornare';
     fields=[
-      {l:'N° RDO',          v:rec.num_rdo||'—',       mono:true},
-      {l:'Tipologia',       v:rec.tipologia||'—'},
-      {l:'Ente Appaltante', v:rec.ente||'—',           full:true},
-      {l:"Base d'Asta",    v:eur(rec.base_asta)},
-      {l:'Valore Offerto',  v:eur(rec.valore_offerto)},
-      {l:'Scadenza',        v:fmtD(rec.scadenza)},
-      {l:'Stipula',         v:rec.stipula||'—'},
-      {l:'Data Stipula',    v:fmtD(rec.data_stipula)},
-      {l:'N° Ordine',       v:rec.num_ordine||'—',    mono:true},
-      {l:'Fornitore',       v:rec.fornitore||'—'},
-      {l:'Consegna',        v:rec.consegna||'—'},
-      {l:'Note',            v:rec.note||'—',           full:true},
+      {l:'Ente Appaltante', v:rec.ente||'—'},
+      {l:'Fornitore', v:rec.fornitore||'—'},
+      {l:'Portale', v:rec.portale||'—'},
+      {l:'N° RDO', v:rec.num_rdo||'—', mono:true}
     ];
+    metrics=[
+      {l:"Base d'Asta", v:eur(rec.base_asta), c:'hero'},
+      {l:'Valore Offerto', v:eur(rec.valore_offerto), c:'green'},
+      {l:'Stipula', v:rec.stipula||'—'},
+      {l:'Data Stipula', v:fmtD(rec.data_stipula)}
+    ];
+    place = rec.consegna || rec.ente || 'Sede non indicata';
+    note = rec.note || 'Nessuna nota inserita per questa aggiudicazione.';
     document.getElementById('gd-btn-edit').onclick=()=>{closeM('detail');editAgg(id);};
     document.getElementById('gd-btn-del').onclick=()=>{closeM('detail');delItem('aggiudicate',id);};
   }
-  document.getElementById('gd-title').textContent=title;
-  document.getElementById('gd-stato-badge').innerHTML=badge;
-  document.getElementById('gd-portale-badge').textContent=m1;
-  document.getElementById('gd-asta-badge').textContent=m2;
-  const summary = type==='gara'
-    ? [
-        {label:'Portale', value:rec.portale||'—'},
-        {label:'N° RDO', value:rec.num_rdo||'—'},
-        {label:'Operatore', value:rec.operatore||'—'},
-        {label:'Scadenza', value:fmtD(rec.scadenza)},
-        {label:'Tipologia', value:rec.tipologia||'—'},
-        {label:"Base d'Asta", value:eur(rec.base_asta)}
-      ]
-    : [
-        {label:'Portale', value:rec.portale||'—'},
-        {label:'Fornitore', value:rec.fornitore||'—'},
-        {label:'Scadenza', value:fmtD(rec.scadenza)},
-        {label:'Stipula', value:rec.stipula||'—'},
-        {label:'Data Stipula', value:fmtD(rec.data_stipula)}
-      ];
-  document.getElementById('gd-body').innerHTML=
-    '<div class="gd-summary">'+summary.map(item=>
-      '<div class="gd-summary-card"><div class="gd-summary-label">'+item.label+'</div><div class="gd-summary-value">'+item.value+'</div></div>'
-    ).join('')+'</div>'
-    + fields.map(f=>
-    '<div class="gd-cell'+(f.full?' full':'')+'">'
-    +'<div class="gd-lbl">'+f.l+'</div>'
-    +'<div class="gd-val'+(f.mono?' mono':'')+'">'+(f.v||'—')+'</div>'
-    +'</div>').join('');
+  const progressBlock = dangerState
+    ? '<div class="gd-status-word">'+escHtml(progressLabel)+'</div>'
+    : '<div class="gd-progress-row"><div class="gd-progress-value">'+progress+'%</div><div class="gd-progress-label">'+escHtml(progressLabel)+'</div></div><div class="gd-progress"><span style="width:'+progress+'%"></span></div>';
+
+  document.getElementById('gd-eyebrow').innerHTML = badge;
+  document.getElementById('gd-title').textContent = title;
+  document.getElementById('gd-subtitle').textContent = subtitle;
+  document.getElementById('gd-body').innerHTML =
+    '<div class="gd-main">'
+      +'<div class="gd-main-card">'
+        +'<div class="gd-section-title"><span class="info-dot">i</span>Dettaglio '+(type==='gara'?'Gara':'Aggiudicazione')+'</div>'
+        +'<div class="gd-info-grid">'+fields.map(f=>
+          '<div class="gd-info">'
+            +'<div class="gd-lbl">'+f.l+'</div>'
+            +'<div class="gd-val'+(f.mono?' mono':'')+'">'+(f.html?f.v:escHtml(f.v||'—'))+'</div>'
+          +'</div>'
+        ).join('')+'</div>'
+        +'<div class="gd-metrics">'+metrics.map(m=>
+          '<div class="gd-metric">'
+            +'<div class="gd-lbl">'+m.l+'</div>'
+            +'<div class="gd-val '+(m.c||'')+'">'+escHtml(m.v||'—')+'</div>'
+          +'</div>'
+        ).join('')+'</div>'
+      +'</div>'
+      +'<div class="gd-note-card" style="margin-top:18px">'
+        +'<div class="gd-lbl">Note</div>'
+        +'<div class="gd-note-text">'+escHtml(note)+'</div>'
+      +'</div>'
+    +'</div>'
+    +'<div class="gd-side">'
+      +'<div class="gd-side-card'+(dangerState?' danger':'')+'">'
+        +'<div class="gd-side-title">Stato Avanzamento</div>'
+        +progressBlock
+      +'</div>'
+      +'<div class="gd-map-card">'
+        +'<div class="gd-map-ic">🏛️</div>'
+        +'<div><div class="gd-map-label">Ente</div><div class="gd-map-place">'+escHtml(place)+'</div></div>'
+      +'</div>'
+    +'</div>';
   document.getElementById('m-detail').classList.add('on');
 }
 
