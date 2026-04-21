@@ -36,7 +36,9 @@ body{font-family:'Manrope',sans-serif;background:var(--gray6);color:var(--gray1)
 .nav .ic{font-size:15px;width:20px;text-align:center;flex-shrink:0}
 .nb{margin-left:auto;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;font-family:'JetBrains Mono',monospace}
 .nb.red{background:var(--red)}
-.sb-footer{margin-top:auto;padding:12px 16px;border-top:1px solid rgba(255,255,255,.06);font-size:9px;color:rgba(255,255,255,.2);text-align:center}
+.sb-bottom{margin-top:auto;display:flex;flex-direction:column}
+.sb-user-wrap{padding:14px 12px 10px}
+.sb-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.06);font-size:9px;color:rgba(255,255,255,.2);text-align:center}
 .sync-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4CAF50;margin-right:4px;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
@@ -47,6 +49,13 @@ body{font-family:'Manrope',sans-serif;background:var(--gray6);color:var(--gray1)
 .tb-sub{font-size:11px;color:var(--gray3)}
 .tb-right{margin-left:auto;display:flex;gap:8px;align-items:center}
 #sync-status{font-size:11px;color:var(--gray3);display:flex;align-items:center;gap:4px}
+.auth-user{display:grid;grid-template-columns:42px minmax(0,1fr);grid-template-areas:'avatar meta' 'logout logout';gap:10px 12px;padding:12px;border:1px solid rgba(255,255,255,.09);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,.04) 100%);box-shadow:0 10px 28px rgba(3,10,25,.18);backdrop-filter:blur(6px)}
+.auth-user-avatar{grid-area:avatar;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#F8FBFF 0%,#DCEAFF 100%);color:var(--blue);font-weight:800;font-size:14px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(21,101,192,.08)}
+.auth-user-meta{grid-area:meta;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0}
+.auth-user-name{font-size:12px;font-weight:800;color:#fff;max-width:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.auth-user-role{font-size:10px;font-weight:700;color:rgba(255,255,255,.62);text-transform:uppercase;letter-spacing:.8px}
+.auth-user .btn{grid-area:logout;justify-content:center;width:100%;padding:7px 10px;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);color:#fff;border-radius:10px}
+.auth-user .btn:hover{border-color:rgba(255,255,255,.34);color:#fff;background:rgba(255,255,255,.12)}
 
 /* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 15px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:'Manrope',sans-serif;white-space:nowrap}
@@ -63,21 +72,67 @@ body{font-family:'Manrope',sans-serif;background:var(--gray6);color:var(--gray1)
 #content{flex:1;overflow-y:auto;padding:14px}
 .view{display:none}.view.on{display:block}
 
-/* KPI */
-.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
-.kpi{background:var(--white);border-radius:var(--r);padding:13px 14px;box-shadow:var(--sh);border-left:4px solid var(--blue)}
-.kpi.g{border-left-color:var(--green)}.kpi.r{border-left-color:var(--red)}.kpi.o{border-left-color:var(--orange)}.kpi.t{border-left-color:var(--teal)}.kpi.pu{border-left-color:var(--purple)}.kpi.go{border-left-color:var(--gold)}
-.kpi-lbl{font-size:9px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--gray3);margin-bottom:4px}
-.kpi-val{font-family:'Outfit',sans-serif;font-size:28px;font-weight:700;color:var(--navy);line-height:1}
-.kpi-sub{font-size:10px;color:var(--gray3);margin-top:3px}
-
-/* CHARTS */
-.ch-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.ch-grid.t3{grid-template-columns:1fr 1fr 1fr}
-.ch-card{background:var(--white);border-radius:var(--r);padding:14px;box-shadow:var(--sh)}
+/* DASHBOARD */
+.dash-shell{display:grid;gap:16px}
+.kpi-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.kpi{background:var(--white);border-radius:16px;padding:14px 14px 12px;box-shadow:var(--sh);border:1px solid #E8EEF6;min-height:100px}
+.kpi.g{box-shadow:inset 0 4px 0 var(--green),var(--sh)}
+.kpi.r{box-shadow:inset 0 4px 0 var(--red),var(--sh)}
+.kpi.o{box-shadow:inset 0 4px 0 var(--orange),var(--sh)}
+.kpi.t{box-shadow:inset 0 4px 0 var(--teal),var(--sh)}
+.kpi.pu{box-shadow:inset 0 4px 0 var(--purple),var(--sh)}
+.kpi.go{box-shadow:inset 0 4px 0 var(--gold),var(--sh)}
+.kpi-lbl{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gray3);margin-bottom:7px}
+.kpi-val{font-family:'Outfit',sans-serif;font-size:24px;font-weight:700;color:var(--navy);line-height:1.05;letter-spacing:-.4px}
+.kpi-sub{font-size:10px;color:var(--gray3);margin-top:8px;line-height:1.35}
+.kpi-note{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:5px 7px;border-radius:8px;background:#F5F8FD;font-size:10px;font-weight:700;color:var(--gray2)}
+.kpi-note.good{background:#EAF7EF;color:#1B5E20}
+.dash-grid-top{display:grid;grid-template-columns:minmax(320px,.95fr) minmax(420px,1.35fr);gap:16px}
+.dash-grid-bottom{display:grid;grid-template-columns:minmax(300px,.9fr) minmax(360px,1.1fr);gap:16px}
+.ch-card{background:var(--white);border-radius:18px;padding:18px;box-shadow:var(--sh);border:1px solid #E8EEF6}
 .ch-card.full{grid-column:1/-1}
-.ch-ttl{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px}
-.ch-wrap{position:relative;height:190px}.ch-wrap.lg{height:230px}
+.ch-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.ch-card-meta{display:grid;gap:3px}
+.ch-ttl{font-size:14px;font-weight:800;color:var(--navy)}
+.ch-sub{font-size:11px;color:var(--gray3);line-height:1.4}
+.ch-link{font-size:11px;font-weight:800;color:var(--blue);text-decoration:none}
+.ch-wrap{position:relative;height:190px}
+.ch-wrap.lg{height:250px}
+.dash-status-card{display:grid;grid-template-columns:140px minmax(0,1fr);gap:18px;align-items:center}
+.dash-status-visual{position:relative;background:linear-gradient(180deg,#F8FBFF 0%,#F1F6FD 100%);border:1px solid #E3EBF5;border-radius:16px;padding:12px;height:210px;display:flex;align-items:center;justify-content:center}
+.dash-status-total{position:absolute;inset:50% auto auto 50%;transform:translate(-50%,-50%);display:grid;justify-items:center;pointer-events:none}
+.dash-status-total strong{font-family:'Outfit',sans-serif;font-size:34px;color:var(--navy);line-height:1}
+.dash-status-total span{font-size:10px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--gray3)}
+.dash-status-list{display:grid;gap:10px}
+.dash-status-item{display:grid;grid-template-columns:12px minmax(0,1fr) auto;align-items:center;gap:10px;font-size:12px}
+.dash-status-dot{width:8px;height:8px;border-radius:50%}
+.dash-status-name{font-weight:700;color:var(--gray2)}
+.dash-status-count{font-weight:800;color:var(--navy)}
+.dash-portal-list{display:grid;gap:14px}
+.dash-portal-item{display:grid;gap:7px}
+.dash-portal-top{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.dash-portal-chip{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;background:#EDF4FF;color:var(--blue);font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+.dash-portal-name{font-size:12px;font-weight:800;color:var(--navy)}
+.dash-portal-value{font-size:12px;font-weight:800;color:var(--navy)}
+.dash-portal-bar{height:8px;border-radius:999px;background:#E8EEF7;overflow:hidden}
+.dash-portal-bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#1B56B1 0%,#0C4AA8 100%)}
+.dash-type-wrap{display:grid;grid-template-columns:200px minmax(0,1fr);gap:8px;align-items:center;min-height:270px}
+.dash-type-visual{position:relative;display:flex;align-items:center;justify-content:center;height:200px;width:200px}
+.dash-type-total{position:absolute;inset:50% auto auto 50%;transform:translate(-50%,-50%);display:grid;justify-items:center;pointer-events:none}
+.dash-type-total strong{font-family:'Outfit',sans-serif;font-size:32px;color:var(--navy);line-height:1}
+.dash-type-total span{font-size:10px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--gray3)}
+.dash-type-legend{display:grid;gap:12px}
+.dash-type-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+.dash-type-name{font-size:11px;font-weight:800;color:var(--gray2);text-transform:uppercase;letter-spacing:.7px}
+.dash-type-value{display:grid;justify-items:end;gap:3px}
+.dash-type-value strong{font-family:'Outfit',sans-serif;font-size:24px;font-weight:700;line-height:1}
+.dash-type-value span{font-size:10px;font-weight:700;color:var(--gray3);text-transform:uppercase;letter-spacing:.6px}
+.dash-entity-list{display:grid;gap:12px;min-height:270px;align-content:start}
+.dash-entity-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #EEF2F7}
+.dash-entity-item:last-child{border-bottom:none}
+.dash-entity-name{font-size:12px;font-weight:800;color:var(--navy);line-height:1.4}
+.dash-entity-meta{font-size:10px;font-weight:700;color:var(--gray3);text-transform:uppercase;letter-spacing:.6px;margin-top:3px}
+.dash-entity-count{font-family:'Outfit',sans-serif;font-size:24px;font-weight:700;color:var(--blue);line-height:1}
 
 /* TABLE CARD */
 .tc{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
@@ -178,6 +233,40 @@ textarea{resize:vertical;min-height:65px}
 #loading p{color:rgba(255,255,255,.6);font-size:14px;letter-spacing:1px}
 .spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.15);border-top-color:#4FC3F7;border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* AUTH */
+#auth-screen{display:none;position:fixed;inset:0;z-index:9998;background:radial-gradient(circle at top left,rgba(31,115,232,.12),transparent 32%),linear-gradient(135deg,#EFF4FA 0%,#F8FBFF 48%,#EEF3F9 100%);padding:28px;overflow:auto}
+#auth-screen.on{display:flex;align-items:center;justify-content:center}
+.auth-shell{width:min(1120px,100%);display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:stretch}
+.auth-hero{background:linear-gradient(145deg,#071937 0%,#0C2D61 55%,#0F3B7B 100%);border-radius:28px;padding:36px 34px;box-shadow:0 22px 70px rgba(13,27,62,.22);color:#fff;position:relative;overflow:hidden}
+.auth-hero::after{content:'';position:absolute;right:-120px;bottom:-120px;width:340px;height:340px;border-radius:50%;background:rgba(255,255,255,.06)}
+.auth-hero img{width:190px;border-radius:18px;display:block;margin-bottom:20px}
+.auth-hero h1{font-family:'Outfit',sans-serif;font-size:40px;line-height:1.02;letter-spacing:.4px;margin-bottom:14px}
+.auth-hero p{font-size:15px;line-height:1.65;color:rgba(255,255,255,.78);max-width:510px}
+.auth-points{margin-top:28px;display:grid;gap:14px}
+.auth-point{display:flex;gap:12px;align-items:flex-start;padding:13px 14px;border-radius:14px;background:rgba(255,255,255,.08);backdrop-filter:blur(5px)}
+.auth-point strong{display:block;font-size:13px}
+.auth-point span{display:block;font-size:12px;color:rgba(255,255,255,.72);margin-top:3px;line-height:1.45}
+.auth-card{background:#fff;border-radius:28px;padding:30px;box-shadow:0 22px 70px rgba(13,27,62,.12);border:1px solid #E5EDF6}
+.auth-card-head h2{font-family:'Outfit',sans-serif;font-size:30px;color:var(--navy);margin-bottom:8px}
+.auth-card-head p{font-size:13px;color:var(--gray3);line-height:1.5}
+.auth-tabs{display:flex;gap:8px;margin:22px 0 18px}
+.auth-tab{padding:8px 12px;border-radius:999px;border:1.5px solid #D6E1EE;background:#fff;color:var(--gray2);font-size:12px;font-weight:800;cursor:pointer}
+.auth-tab.on{background:#EDF4FF;border-color:#BFDAFF;color:var(--blue)}
+.auth-panel{display:none}
+.auth-panel.on{display:block}
+.auth-form{display:grid;gap:14px}
+.auth-field{display:grid;gap:6px}
+.auth-field label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.9px;color:var(--gray3)}
+.auth-hint{font-size:12px;color:var(--gray3);line-height:1.5}
+.auth-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.auth-note{margin-top:18px;padding-top:18px;border-top:1px solid #EDF2F7;font-size:12px;color:var(--gray3);line-height:1.55}
+.auth-status{min-height:19px;font-size:12px;font-weight:700}
+.auth-status.ok{color:var(--green)}
+.auth-status.err{color:var(--red)}
+.auth-status.warn{color:var(--orange)}
+body.auth-locked #sb,body.auth-locked #main{filter:blur(2px);pointer-events:none;user-select:none}
+body.auth-locked #loading{display:none!important}
 
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:#C5CFD6;border-radius:3px}
 
@@ -370,29 +459,64 @@ thead th{position:sticky;top:0;z-index:2}
 
 @media (max-width: 900px){
   body{flex-direction:column;height:auto;overflow:auto}
-  #sb{width:100%;height:auto;min-height:auto}
+  #sb{width:100%;height:auto;min-height:auto;position:sticky;top:0;z-index:95}
   .sb-logo{padding:12px 14px}
-  .sb-logo svg{width:132px}
+  .sb-logo img{width:132px}
   .sb-sec{display:none}
   #sb{overflow:visible}
-  #main{min-height:0}
+  .sb-bottom{margin-top:0}
+  .sb-user-wrap{padding:10px 12px}
+  .auth-user{max-width:100%}
+  #main{min-height:0;overflow:visible}
   .nav{padding:10px 14px;border-left:none;border-bottom:3px solid transparent}
   .nav.on{border-left-color:transparent;border-bottom-color:#4FC3F7}
   #topbar{padding:10px 14px;gap:10px}
   .tb-title{font-size:18px}
   .tb-right{margin-left:0;width:100%;justify-content:space-between;flex-wrap:wrap}
-  #content{padding:10px}
-  .ch-grid{grid-template-columns:1fr}
+  #content{padding:10px;overflow:visible}
+  .auth-shell{grid-template-columns:1fr;gap:16px}
+  .auth-hero,.auth-card{padding:24px}
+  .auth-hero h1{font-size:34px}
+  .auth-points{gap:10px}
+  .kpi-row,.dash-grid-top,.dash-grid-bottom{grid-template-columns:1fr}
+  .dash-status-card,.dash-type-wrap{grid-template-columns:1fr}
+  .dash-type-visual{margin:0 auto}
   .ch-card.full{grid-column:auto}
-  .fg,.fg3,.gd-body,.gara-detail-grid{grid-template-columns:1fr}
+  .fg,.fg3,.gara-detail-grid{grid-template-columns:1fr}
+  .gd-header{grid-template-columns:1fr;padding:20px 18px 14px;gap:16px}
+  .gd-header-title{font-size:24px;max-width:none}
+  .gd-header-sub{font-size:14px;max-width:none}
+  .gd-head-actions{justify-content:flex-start;flex-wrap:wrap}
+  .gd-head-actions .btn{min-width:0;flex:1 1 180px}
+  .gd-body{grid-template-columns:1fr;padding:8px 18px 20px;gap:16px}
+  .gd-main-card{padding:20px}
+  .gd-info-grid{grid-template-columns:1fr;gap:18px}
+  .gd-metrics{grid-template-columns:1fr}
+  .gd-metric+.gd-metric{border-left:none;border-top:1px solid #DDE6F1}
   .quote-layout,.quote-top-grid,.quote-kpis{grid-template-columns:1fr}
+  .quote-panel,.quote-workspace{min-height:0}
   .quote-panel{margin-right:0}
+  .quote-body{padding:12px}
+  .quote-actions{align-items:stretch}
+  .quote-actions-left,.quote-actions-right{width:100%}
+  .quote-actions-left .btn,.quote-actions-right .btn{flex:1 1 auto;justify-content:center}
   .quote-resizer{display:none}
+  .tw,.quote-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tw table{min-width:960px}
   .gd-summary{grid-template-columns:1fr 1fr}
   .gd-cell:nth-child(odd),.gd-field:nth-child(odd){border-right:none}
 }
 
 @media (max-width: 640px){
+  #auth-screen{padding:14px}
+  .auth-hero,.auth-card{padding:18px}
+  .auth-hero img{width:150px;margin-bottom:16px}
+  .auth-hero h1{font-size:28px}
+  .auth-hero p{font-size:14px}
+  .auth-tabs{flex-wrap:wrap;gap:6px}
+  .auth-tab{flex:1 1 calc(50% - 6px);text-align:center}
+  .auth-actions{flex-direction:column;align-items:stretch}
+  .auth-actions .btn{width:100%;justify-content:center}
   .kpi-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .kpi{padding:11px 12px}
   .kpi-val{font-size:24px}
@@ -407,6 +531,19 @@ thead th{position:sticky;top:0;z-index:2}
   .gara-row td{padding-top:13px;padding-bottom:13px}
   .gara-desc-main{font-size:13px}
   .gd-summary{grid-template-columns:1fr}
+  #m-detail .mdl{width:100vw;max-width:100vw;max-height:100dvh;border-radius:0}
+  .mdl{width:100%;max-width:none;max-height:100dvh;border-radius:12px 12px 0 0}
+  .mb,.mf,.mh{padding-left:16px;padding-right:16px}
+  .mf{flex-direction:column}
+  .mf .btn{width:100%;justify-content:center}
+  .dash-status-visual{height:180px}
+  .dash-portal-top{grid-template-columns:1fr auto}
+  .dash-portal-chip{grid-column:1/-1;justify-self:start}
+  .dash-type-wrap{min-height:auto}
+  .dash-type-value strong,.dash-entity-count{font-size:20px}
+  .quote-item-actions{flex-wrap:wrap}
+  .quote-item-actions .btn,.quote-item-actions .btn-del{flex:1 1 auto;justify-content:center}
+  .quote-table{min-width:1200px}
   #toasts{left:12px;right:12px;bottom:12px}
   .toast{width:100%}
 }
@@ -419,6 +556,67 @@ thead th{position:sticky;top:0;z-index:2}
   <img src="./logo.png" alt="Martec Distribuzione">
   <div class="spinner"></div>
   <p>Caricamento dati in corso...</p>
+</div>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-shell">
+    <div class="auth-hero">
+      <img src="./logo.png" alt="Martec Distribuzione">
+      <h1>Accesso sicuro al workspace condiviso</h1>
+      <p>Autenticazione con utenti separati, sincronizzazione cloud tra tutti i membri autorizzati e protezione dati con permessi e controlli lato database.</p>
+      <div class="auth-points">
+        <div class="auth-point"><div>📋</div><div><strong>Gestione gare centralizzata</strong><span>Il tracker organizza Lista Gare, Aggiudicate, Offerte, Portali e Scadenze in un unico spazio operativo sempre aggiornato.</span></div></div>
+        <div class="auth-point"><div>📊</div><div><strong>Dashboard e controllo attività</strong><span>Monitora stati, portali, trend mensili, tipologie gara e indicatori principali per avere subito il quadro completo del lavoro.</span></div></div>
+        <div class="auth-point"><div>🧾</div><div><strong>Quotazioni e dati condivisi</strong><span>Crea quotazioni, esporta il modello Excel e lavora su dati sincronizzati tra gli utenti autorizzati del workspace.</span></div></div>
+      </div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-card-head">
+        <h2 id="auth-card-title">Accedi</h2>
+        <p id="auth-card-subtitle">Entra con il tuo username o la tua email per continuare nel tracker.</p>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab on" type="button" data-auth-tab="login" onclick="switchAuthMode('login')">Login</button>
+        <button class="auth-tab" type="button" data-auth-tab="signup" onclick="switchAuthMode('signup')">Nuovo utente</button>
+      </div>
+      <div class="auth-status" id="auth-status"></div>
+
+      <div class="auth-panel on" id="auth-panel-login">
+        <div class="auth-form">
+          <div class="auth-field"><label>Username o Email</label><input id="auth-login-identifier" autocapitalize="off" autocomplete="username email" spellcheck="false"></div>
+          <div class="auth-field"><label>Password</label><input id="auth-login-password" type="password" autocomplete="current-password"></div>
+          <div class="auth-actions">
+            <button class="btn btn-p" type="button" onclick="handleLogin()">Accedi</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-panel" id="auth-panel-signup">
+        <div class="auth-form">
+          <div class="auth-field"><label>Nome completo</label><input id="auth-signup-name" autocomplete="name"></div>
+          <div class="auth-field"><label>Username</label><input id="auth-signup-username" autocapitalize="off" autocomplete="username" spellcheck="false"></div>
+          <div class="auth-field"><label>Email</label><input id="auth-signup-email" type="email" autocapitalize="off" autocomplete="email" spellcheck="false"></div>
+          <div class="auth-field"><label>Password</label><input id="auth-signup-password" type="password" autocomplete="new-password"></div>
+          <div class="auth-actions">
+            <button class="btn btn-p" type="button" onclick="handleSignup()">Crea account</button>
+          </div>
+          <div class="auth-hint">I nuovi utenti vengono creati con ruolo iniziale user. Un admin potrà poi promuoverli se necessario.</div>
+        </div>
+      </div>
+
+      <div class="auth-panel" id="auth-panel-recovery">
+        <div class="auth-form">
+          <div class="auth-field"><label>Nuova Password</label><input id="auth-recovery-password" type="password" autocomplete="new-password"></div>
+          <div class="auth-actions">
+            <button class="btn btn-p" type="button" onclick="handlePasswordUpdate()">Salva nuova password</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-note">Per una protezione corretta dei dati, l’accesso è consentito solo agli utenti autorizzati del workspace. Tutte le operazioni vengono salvate nel database condiviso e riallineate automaticamente.</div>
+    </div>
+  </div>
 </div>
 
 <!-- SIDEBAR -->
@@ -436,7 +634,19 @@ thead th{position:sticky;top:0;z-index:2}
   <div class="sb-sec">Gestione</div>
   <div class="nav" data-v="portali"><span class="ic">🌐</span>Portali</div>
   <div class="nav" data-v="scadenze"><span class="ic">⏰</span>Scadenze<span class="nb red" id="nb-s">0</span></div>
-  <div class="sb-footer"><span class="sync-dot"></span>Sincronizzato · v3.0</div>
+  <div class="sb-bottom">
+    <div class="sb-user-wrap">
+      <div class="auth-user" id="auth-user" style="display:none">
+        <div class="auth-user-avatar" id="auth-user-avatar">M</div>
+        <div class="auth-user-meta">
+          <div class="auth-user-name" id="auth-user-name">—</div>
+          <div class="auth-user-role" id="auth-user-role">user</div>
+        </div>
+        <button class="btn btn-o btn-sm" type="button" onclick="handleLogout()">Esci</button>
+      </div>
+    </div>
+    <div class="sb-footer"><span class="sync-dot"></span>Sincronizzato · v3.0</div>
+  </div>
 </nav>
 
 <!-- MAIN -->
@@ -446,19 +656,73 @@ thead th{position:sticky;top:0;z-index:2}
     <span class="tb-sub" id="tb-sub"></span>
     <div class="tb-right">
       <span id="sync-status">🔄 Connessione...</span>
-      <button class="btn btn-p" id="btn-add" style="display:none" onclick="openAdd()"></button>
     </div>
   </div>
 
   <div id="content">
     <!-- DASHBOARD -->
     <div class="view on" id="v-dashboard">
-      <div class="kpi-row" id="kpi-row"></div>
-      <div class="ch-grid">
-        <div class="ch-card"><div class="ch-ttl">🏷️ Distribuzione per Stato</div><div class="ch-wrap"><canvas id="c-stati"></canvas></div></div>
-        <div class="ch-card"><div class="ch-ttl">🌐 Gare per Portale (top 8)</div><div class="ch-wrap"><canvas id="c-portali"></canvas></div></div>
-        <div class="ch-card full"><div class="ch-ttl">📈 Trend Mensile</div><div class="ch-wrap lg"><canvas id="c-trend"></canvas></div></div>
-        <div class="ch-card"><div class="ch-ttl">📁 Tipologie Gara</div><div class="ch-wrap"><canvas id="c-tipo"></canvas></div></div>
+      <div class="dash-shell">
+        <div class="kpi-row" id="kpi-row"></div>
+        <div class="dash-grid-top">
+          <div class="ch-card">
+            <div class="ch-card-header">
+              <div class="ch-card-meta">
+                <div class="ch-ttl">Distribuzione per Stato</div>
+              </div>
+            </div>
+            <div class="dash-status-card">
+              <div class="dash-status-visual">
+                <div class="ch-wrap" style="height:140px;width:140px"><canvas id="c-stati"></canvas></div>
+                <div class="dash-status-total"><strong id="dash-status-total">0</strong><span>Totale</span></div>
+              </div>
+              <div class="dash-status-list" id="dash-status-list"></div>
+            </div>
+          </div>
+          <div class="ch-card">
+            <div class="ch-card-header">
+              <div class="ch-card-meta">
+                <div class="ch-ttl">Gare per Portale</div>
+              </div>
+              <a href="#" class="ch-link" onclick="setView('portali');return false;">Apri Portali</a>
+            </div>
+            <div class="dash-portal-list" id="dash-portal-list"></div>
+          </div>
+        </div>
+        <div class="ch-card full">
+          <div class="ch-card-header">
+            <div class="ch-card-meta">
+              <div class="ch-ttl">Trend Mensile</div>
+              <div class="ch-sub">Confronto mensile tra totale gare, aggiudicate e perse.</div>
+            </div>
+          </div>
+          <div class="ch-wrap lg"><canvas id="c-trend"></canvas></div>
+        </div>
+        <div class="dash-grid-bottom">
+          <div class="ch-card">
+            <div class="ch-card-header">
+              <div class="ch-card-meta">
+                <div class="ch-ttl">Tipologie Gara</div>
+              </div>
+            </div>
+            <div class="dash-type-wrap">
+              <div class="dash-type-visual">
+                <div class="ch-wrap" style="height:180px;width:180px"><canvas id="c-tipo"></canvas></div>
+                <div class="dash-type-total"><strong id="dash-type-total">0</strong><span>Totale</span></div>
+              </div>
+              <div class="dash-type-legend" id="dash-type-legend"></div>
+            </div>
+          </div>
+          <div class="ch-card">
+            <div class="ch-card-header">
+              <div class="ch-card-meta">
+                <div class="ch-ttl">Top Enti</div>
+                <div class="ch-sub">Enti con il maggior numero di gare aggiudicate presenti nel tracker.</div>
+              </div>
+            </div>
+            <div class="dash-entity-list" id="dash-entity-list"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -564,7 +828,7 @@ thead th{position:sticky;top:0;z-index:2}
           <h3>🌐 Portali</h3>
           <div class="srch"><span>🔍</span><input id="sp" placeholder="Cerca portale..." oninput="drawPortali()"></div>
           <div style="font-size:11px;color:var(--gray3);margin-left:auto">
-            Username e password restano salvati solo nel browser locale.
+            Credenziali condivise nel workspace autenticato.
           </div>
         </div>
         <div class="tw">
@@ -753,12 +1017,34 @@ const DEFAULT_REMOTE_CONFIG = {
   pollIntervalMs: 15000
 };
 const remoteCfg = Object.assign({}, DEFAULT_REMOTE_CONFIG, window.MARTEC_CONFIG || {});
+const AUTH_MODES = {
+  login: { title:'Accedi', subtitle:'Entra con il tuo username o la tua email per continuare nel tracker.' },
+  signup: { title:'Nuovo utente', subtitle:'Crea un account nel workspace condiviso. Il ruolo iniziale sara user.' },
+  reset: { title:'Recupero password', subtitle:'Invia un link di reset alla mail collegata al tuo account.' },
+  recovery: { title:'Nuova password', subtitle:'Imposta una nuova password per completare il recupero credenziali.' }
+};
+const ROLE_LABELS = { admin:'Admin', editor:'Editor', viewer:'User' };
+const ROLE_RANK = { viewer:1, editor:2, admin:3 };
+const AUTH_INACTIVITY_MS = 5 * 60 * 1000;
+const AUTH_ACTIVITY_EVENTS = ['pointerdown','keydown','mousemove','scroll','touchstart'];
 const remoteSync = {
   client: null,
   enabled: false,
   lastHash: '',
   pollingId: null,
-  initialized: false
+  initialized: false,
+  channel: null,
+  visibilityBound: false
+};
+const authState = {
+  session: null,
+  profile: null,
+  ready: false,
+  bootstrapped: false,
+  mode: 'login',
+  inactivityTimerId: null,
+  inactivityBound: false,
+  logoutReason: ''
 };
 const DEFAULT_UI_PREFS = {
   gareSort: 'scadenza-asc',
@@ -844,33 +1130,122 @@ function saveLocalSnapshot() {
   Object.entries(STATE_MAP).forEach(([key, col]) => lsSave(LS[key], state[col]));
 }
 
-function getLocalPortaliSecrets() {
-  return new Map(
-    (lsLoad(LS.port, state.portali) || []).map(p => [
-      p.id || p.nome,
-      { username: p.username || '', password: p.password || '' }
-    ])
-  );
-}
-
 function serializeRemoteState() {
   return {
     gare: state.gare,
     aggiudicate: state.aggiudicate,
     offerte: state.offerte,
-    portali: state.portali.map(({ username, password, ...rest }) => rest),
+    portali: state.portali,
     quotazioni: state.quotazioni
   };
 }
 
-function mergePortaliSecrets(portali) {
-  const secrets = getLocalPortaliSecrets();
-  return (portali || []).map(portale => {
-    const local = secrets.get(portale.id || portale.nome) || {};
-    return Object.assign({}, portale, {
-      username: local.username || '',
-      password: local.password || ''
-    });
+function getCurrentWorkspaceId() {
+  return (authState.profile && authState.profile.workspace_id) || remoteCfg.syncRowId || 'shared';
+}
+
+function getCurrentUserRole() {
+  return (authState.profile && authState.profile.role) || 'viewer';
+}
+
+function hasRole(minRole='viewer') {
+  return (ROLE_RANK[getCurrentUserRole()] || 0) >= (ROLE_RANK[minRole] || 0);
+}
+
+function canMutateData() {
+  return hasRole('editor');
+}
+
+function requireRole(minRole='editor', message='Non hai i permessi per questa operazione.') {
+  if(hasRole(minRole)) return true;
+  toast(message, 'err');
+  return false;
+}
+
+function buildProfileAvatar(name) {
+  const base = String(name || 'M').trim();
+  return (base[0] || 'M').toUpperCase();
+}
+
+function setAuthStatus(message='', tone='') {
+  const el = document.getElementById('auth-status');
+  if(!el) return;
+  el.className = 'auth-status' + (tone ? ' ' + tone : '');
+  el.textContent = message || '';
+}
+
+async function handleInactivityLogout() {
+  if(!authState.session || !remoteSync.client) return;
+  authState.logoutReason = 'Sessione chiusa dopo 5 minuti di inattivita.';
+  await remoteSync.client.auth.signOut();
+}
+
+function clearInactivityTimer() {
+  if(authState.inactivityTimerId) {
+    window.clearTimeout(authState.inactivityTimerId);
+    authState.inactivityTimerId = null;
+  }
+}
+
+function resetInactivityTimer() {
+  clearInactivityTimer();
+  if(!authState.session) return;
+  authState.inactivityTimerId = window.setTimeout(() => {
+    void handleInactivityLogout();
+  }, AUTH_INACTIVITY_MS);
+}
+
+function bindInactivityTracking() {
+  if(authState.inactivityBound) return;
+  AUTH_ACTIVITY_EVENTS.forEach(eventName => {
+    document.addEventListener(eventName, () => {
+      if(authState.session) resetInactivityTimer();
+    }, { passive:true });
+  });
+  authState.inactivityBound = true;
+}
+
+function switchAuthMode(mode) {
+  authState.mode = AUTH_MODES[mode] ? mode : 'login';
+  document.querySelectorAll('.auth-tab').forEach(btn => btn.classList.toggle('on', btn.dataset.authTab === authState.mode));
+  document.querySelectorAll('.auth-panel').forEach(panel => panel.classList.remove('on'));
+  const activePanel = document.getElementById('auth-panel-' + authState.mode);
+  if(activePanel) activePanel.classList.add('on');
+  const copy = AUTH_MODES[authState.mode] || AUTH_MODES.login;
+  document.getElementById('auth-card-title').textContent = copy.title;
+  document.getElementById('auth-card-subtitle').textContent = copy.subtitle;
+  setAuthStatus('');
+}
+
+function lockAppForAuth() {
+  document.body.classList.add('auth-locked');
+  document.getElementById('auth-screen').classList.add('on');
+  document.getElementById('auth-user').style.display = 'none';
+}
+
+function unlockAppAfterAuth() {
+  document.body.classList.remove('auth-locked');
+  document.getElementById('auth-screen').classList.remove('on');
+  document.getElementById('auth-user').style.display = '';
+}
+
+function syncAuthUserUi() {
+  const userBox = document.getElementById('auth-user');
+  if(!authState.profile) {
+    userBox.style.display = 'none';
+    return;
+  }
+  document.getElementById('auth-user-avatar').textContent = buildProfileAvatar(authState.profile.full_name || authState.profile.username || authState.profile.email);
+  document.getElementById('auth-user-name').textContent = authState.profile.full_name || authState.profile.username || authState.profile.email || 'Utente';
+  document.getElementById('auth-user-role').textContent = ROLE_LABELS[getCurrentUserRole()] || getCurrentUserRole();
+  userBox.style.display = '';
+}
+
+function syncPermissionUi() {
+  const addBtn = document.getElementById('btn-add');
+  if(addBtn) addBtn.style.display = canMutateData() ? '' : 'none';
+  document.querySelectorAll('[data-admin-only]').forEach(el => {
+    el.style.display = hasRole('admin') ? '' : 'none';
   });
 }
 
@@ -879,7 +1254,7 @@ function applyState(nextState) {
     gare: Array.isArray(nextState.gare) ? nextState.gare : [],
     aggiudicate: Array.isArray(nextState.aggiudicate) ? nextState.aggiudicate : [],
     offerte: Array.isArray(nextState.offerte) ? nextState.offerte : [],
-    portali: mergePortaliSecrets(Array.isArray(nextState.portali) ? nextState.portali : []),
+    portali: Array.isArray(nextState.portali) ? nextState.portali : [],
     quotazioni: Array.isArray(nextState.quotazioni) ? nextState.quotazioni : []
   };
   normalizeStateOperatori();
@@ -898,30 +1273,30 @@ function setSyncStatus(label, tone='neutral') {
 }
 
 async function pushRemoteState(reason='manual') {
-  if(!remoteSync.enabled || !remoteSync.client) return false;
+  if(!remoteSync.enabled || !remoteSync.client || !authState.session) return false;
   const payload = serializeRemoteState();
   const payloadHash = hashState(payload);
   if(reason !== 'force' && payloadHash === remoteSync.lastHash) return true;
   setSyncStatus('Sincronizzazione cloud...', 'warn');
   const { error } = await remoteSync.client
     .from(remoteCfg.syncTable)
-    .upsert({ id: remoteCfg.syncRowId, payload }, { onConflict: 'id' });
+    .upsert({ workspace_id: getCurrentWorkspaceId(), payload, updated_by: authState.session.user.id }, { onConflict: 'workspace_id' });
   if(error) {
     console.error('Errore sync remoto', error);
     setSyncStatus('Cloud non raggiungibile, uso locale', 'err');
     return false;
   }
   remoteSync.lastHash = payloadHash;
-  setSyncStatus('Cloud attivo · credenziali portali solo locali', 'ok');
+  setSyncStatus('Cloud attivo · workspace sincronizzato', 'ok');
   return true;
 }
 
 async function pullRemoteState(silent=false) {
-  if(!remoteSync.enabled || !remoteSync.client) return false;
+  if(!remoteSync.enabled || !remoteSync.client || !authState.session) return false;
   const { data, error } = await remoteSync.client
     .from(remoteCfg.syncTable)
     .select('payload')
-    .eq('id', remoteCfg.syncRowId)
+    .eq('workspace_id', getCurrentWorkspaceId())
     .maybeSingle();
 
   if(error) {
@@ -944,7 +1319,7 @@ async function pullRemoteState(silent=false) {
 
   const incomingHash = hashState(data.payload);
   if(incomingHash === remoteSync.lastHash) {
-    if(!silent) setSyncStatus('Cloud attivo · credenziali portali solo locali', 'ok');
+    if(!silent) setSyncStatus('Cloud attivo · workspace sincronizzato', 'ok');
     return true;
   }
 
@@ -958,25 +1333,73 @@ async function pullRemoteState(silent=false) {
     redrawCurrent();
     toast('Dati aggiornati dal cloud','ok');
   }
-  if(!silent) setSyncStatus('Cloud attivo · credenziali portali solo locali', 'ok');
+  if(!silent) setSyncStatus('Cloud attivo · workspace sincronizzato', 'ok');
   return true;
+}
+
+function teardownRemoteRealtime() {
+  if(remoteSync.channel && remoteSync.client) {
+    remoteSync.client.removeChannel(remoteSync.channel);
+  }
+  remoteSync.channel = null;
+}
+
+function setupRemoteRealtime() {
+  teardownRemoteRealtime();
+  if(!remoteSync.client || !authState.session) return;
+  remoteSync.channel = remoteSync.client
+    .channel('workspace-state-' + getCurrentWorkspaceId())
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: remoteCfg.syncTable,
+      filter: 'workspace_id=eq.' + getCurrentWorkspaceId()
+    }, payload => {
+      if(payload && payload.new && payload.new.payload) {
+        const incomingHash = hashState(payload.new.payload);
+        if(incomingHash === remoteSync.lastHash) return;
+        applyState(payload.new.payload);
+        remoteSync.lastHash = incomingHash;
+        if(remoteSync.initialized) {
+          updateBadges();
+          fillPortSel('xg-port','');
+          fillPortSel('xa-port','');
+          fillOffYearFilter();
+          redrawCurrent();
+          toast('Workspace aggiornato in tempo reale', 'ok');
+        }
+      }
+    })
+    .subscribe();
 }
 
 async function setupRemoteSync() {
   if(!remoteCfg.supabaseUrl || !remoteCfg.supabaseAnonKey || !window.supabase || !window.supabase.createClient) {
-    setSyncStatus('Solo locale · configura Supabase per condividere i dati', 'warn');
+    setSyncStatus('Auth cloud non configurata', 'warn');
     return false;
   }
 
   try {
-    remoteSync.client = window.supabase.createClient(remoteCfg.supabaseUrl, remoteCfg.supabaseAnonKey);
+    if(!remoteSync.client) {
+      remoteSync.client = window.supabase.createClient(remoteCfg.supabaseUrl, remoteCfg.supabaseAnonKey, {
+        auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+      });
+    }
+    if(!authState.session) {
+      setSyncStatus('Accedi per sincronizzare il workspace', 'warn');
+      return false;
+    }
     remoteSync.enabled = true;
     await pullRemoteState();
+    setupRemoteRealtime();
     if(remoteSync.pollingId) clearInterval(remoteSync.pollingId);
     remoteSync.pollingId = window.setInterval(() => { pullRemoteState(true); }, remoteCfg.pollIntervalMs);
-    document.addEventListener('visibilitychange', () => {
-      if(!document.hidden) pullRemoteState(true);
-    });
+    if(!remoteSync.visibilityBound) {
+      document.addEventListener('visibilitychange', () => {
+        if(!document.hidden) pullRemoteState(true);
+      });
+      remoteSync.visibilityBound = true;
+    }
     return true;
   } catch(error) {
     console.error('Init sync remoto fallita', error);
@@ -999,6 +1422,221 @@ function remoteInitWithTimeout(ms=5000) {
       }, ms);
     })
   ]);
+}
+
+async function resolveLoginEmail(identifier) {
+  const value = String(identifier || '').trim().toLowerCase();
+  if(!value) return '';
+  if(value.includes('@')) return value;
+  if(!remoteSync.client) return '';
+  const { data, error } = await remoteSync.client.rpc('login_email_for_identifier', { identifier: value });
+  if(error) {
+    console.error('Errore risoluzione username', error);
+    return '';
+  }
+  return typeof data === 'string' ? data : '';
+}
+
+async function loadCurrentProfile() {
+  if(!remoteSync.client || !authState.session) return null;
+  const { data, error } = await remoteSync.client
+    .from('profiles')
+    .select('user_id, email, username, full_name, role, workspace_id, is_active')
+    .eq('user_id', authState.session.user.id)
+    .maybeSingle();
+  if(error) {
+    console.error('Errore caricamento profilo', error);
+    throw error;
+  }
+  if(!data || !data.is_active) {
+    throw new Error('Profilo utente non attivo o mancante.');
+  }
+  authState.profile = data;
+  syncAuthUserUi();
+  syncPermissionUi();
+  return data;
+}
+
+async function completeAuthenticatedBootstrap() {
+  await loadCurrentProfile();
+  await remoteInitWithTimeout(5000);
+  if(normalizeStateOperatori()) {
+    saveLocalSnapshot();
+    if(remoteSync.enabled) await pushRemoteState('force');
+  }
+  syncUiControls();
+  updateBadges();
+  fillPortSel('xg-port','');
+  fillPortSel('xa-port','');
+  redrawCurrent();
+  remoteSync.initialized = true;
+  authState.bootstrapped = true;
+  authState.logoutReason = '';
+  resetInactivityTimer();
+  unlockAppAfterAuth();
+  setSyncStatus(remoteSync.enabled ? 'Cloud attivo · workspace sincronizzato' : 'Sessione attiva · uso locale', remoteSync.enabled ? 'ok' : 'warn');
+}
+
+async function bootstrapSession(session, modeOnFail='login') {
+  authState.session = session || null;
+  if(!authState.session) {
+    authState.profile = null;
+    authState.bootstrapped = false;
+    clearInactivityTimer();
+    teardownRemoteRealtime();
+    if(remoteSync.pollingId) clearInterval(remoteSync.pollingId);
+    remoteSync.pollingId = null;
+    remoteSync.enabled = false;
+    remoteSync.initialized = false;
+    remoteSync.lastHash = '';
+    syncAuthUserUi();
+    lockAppForAuth();
+    switchAuthMode(modeOnFail);
+    if(authState.logoutReason) {
+      setAuthStatus(authState.logoutReason, 'warn');
+      authState.logoutReason = '';
+    }
+    setSyncStatus('Accesso richiesto', 'warn');
+    return false;
+  }
+  try {
+    await completeAuthenticatedBootstrap();
+    return true;
+  } catch(error) {
+    console.error('Bootstrap sessione fallito', error);
+    setAuthStatus(error.message || 'Impossibile avviare la sessione.', 'err');
+    lockAppForAuth();
+    switchAuthMode(modeOnFail);
+    return false;
+  }
+}
+
+async function initAuth() {
+  if(!remoteCfg.supabaseUrl || !remoteCfg.supabaseAnonKey || !window.supabase || !window.supabase.createClient) {
+    throw new Error('Configurazione Supabase mancante.');
+  }
+  bindInactivityTracking();
+  if(!remoteSync.client) {
+    remoteSync.client = window.supabase.createClient(remoteCfg.supabaseUrl, remoteCfg.supabaseAnonKey, {
+      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+    });
+  }
+  remoteSync.client.auth.onAuthStateChange((event, session) => {
+    authState.session = session || null;
+    window.setTimeout(() => {
+      if(event === 'PASSWORD_RECOVERY') {
+        lockAppForAuth();
+        switchAuthMode('recovery');
+        setAuthStatus('Imposta la nuova password per completare il recupero.', 'warn');
+        return;
+      }
+      if(event === 'SIGNED_OUT') {
+        void bootstrapSession(null, 'login');
+        return;
+      }
+      if(session && ['SIGNED_IN', 'TOKEN_REFRESHED', 'INITIAL_SESSION', 'USER_UPDATED'].includes(event)) {
+        void bootstrapSession(session, 'login');
+      }
+    }, 0);
+  });
+  const { data } = await remoteSync.client.auth.getSession();
+  return bootstrapSession(data.session || null, 'login');
+}
+
+async function handleLogin() {
+  const identifier = document.getElementById('auth-login-identifier').value.trim();
+  const password = document.getElementById('auth-login-password').value;
+  if(!identifier || !password) {
+    setAuthStatus('Inserisci username/email e password.', 'err');
+    return;
+  }
+  setAuthStatus('Accesso in corso...', 'warn');
+  const email = await resolveLoginEmail(identifier);
+  const loginEmail = email || (identifier.includes('@') ? identifier.trim().toLowerCase() : '');
+  if(!loginEmail) {
+    setAuthStatus('Utente non trovato.', 'err');
+    return;
+  }
+  const { error } = await remoteSync.client.auth.signInWithPassword({ email: loginEmail, password });
+  if(error) {
+    setAuthStatus(error.message || 'Accesso non riuscito.', 'err');
+    return;
+  }
+  setAuthStatus('Accesso completato.', 'ok');
+}
+
+async function handleSignup() {
+  const fullName = document.getElementById('auth-signup-name').value.trim();
+  const username = document.getElementById('auth-signup-username').value.trim().toLowerCase();
+  const email = document.getElementById('auth-signup-email').value.trim().toLowerCase();
+  const password = document.getElementById('auth-signup-password').value;
+  if(!fullName || !username || !email || !password) {
+    setAuthStatus('Compila tutti i campi per creare l’account.', 'err');
+    return;
+  }
+  setAuthStatus('Creazione account in corso...', 'warn');
+  const { error } = await remoteSync.client.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name: fullName,
+        username,
+        workspace_id: remoteCfg.syncRowId || 'shared'
+      }
+    }
+  });
+  if(error) {
+    setAuthStatus(error.message || 'Creazione account non riuscita.', 'err');
+    return;
+  }
+  setAuthStatus('Account creato. Controlla l’email per confermare l’accesso.', 'ok');
+  switchAuthMode('login');
+}
+
+async function handlePasswordReset() {
+  const identifier = document.getElementById('auth-reset-identifier').value.trim();
+  if(!identifier) {
+    setAuthStatus('Inserisci username o email.', 'err');
+    return;
+  }
+  setAuthStatus('Invio link di reset...', 'warn');
+  const email = await resolveLoginEmail(identifier);
+  const targetEmail = email || (identifier.includes('@') ? identifier.trim().toLowerCase() : '');
+  if(!targetEmail) {
+    setAuthStatus('Utente non trovato.', 'err');
+    return;
+  }
+  const { error } = await remoteSync.client.auth.resetPasswordForEmail(targetEmail, {
+    redirectTo: window.location.href.split('#')[0]
+  });
+  if(error) {
+    setAuthStatus(error.message || 'Invio reset non riuscito.', 'err');
+    return;
+  }
+  setAuthStatus('Email di reset inviata con successo.', 'ok');
+}
+
+async function handlePasswordUpdate() {
+  const password = document.getElementById('auth-recovery-password').value;
+  if(!password) {
+    setAuthStatus('Inserisci la nuova password.', 'err');
+    return;
+  }
+  setAuthStatus('Aggiornamento password...', 'warn');
+  const { error } = await remoteSync.client.auth.updateUser({ password });
+  if(error) {
+    setAuthStatus(error.message || 'Aggiornamento password non riuscito.', 'err');
+    return;
+  }
+  setAuthStatus('Password aggiornata. Ora puoi accedere.', 'ok');
+  switchAuthMode('login');
+}
+
+async function handleLogout() {
+  if(!remoteSync.client) return;
+  authState.logoutReason = 'Hai effettuato il logout. Accedi di nuovo per continuare.';
+  await remoteSync.client.auth.signOut();
 }
 
 function save(key) {
@@ -1316,12 +1954,15 @@ document.querySelectorAll('.nav').forEach(n => {
     document.getElementById('tb-ttl').textContent = c.ttl;
     document.getElementById('tb-sub').textContent = c.sub;
     const ba = document.getElementById('btn-add');
-    if(c.add){ ba.textContent=c.add; ba.style.display=''; } else { ba.style.display='none'; }
+    if(ba) {
+      if(c.add && canMutateData()){ ba.textContent=c.add; ba.style.display=''; } else { ba.style.display='none'; }
+    }
     redrawCurrent();
   });
 });
 
 function openAdd() {
+  if(!requireRole('editor')) return;
   if(curView==='quotazioni') { newQuote(); return; }
   const m={dashboard:'gara',gare:'gara',aggiudicate:'agg',offerte:'off',portali:'port',scadenze:'gara'};
   openM(m[curView]||'gara');
@@ -1528,6 +2169,7 @@ function setActiveQuote(id) {
 }
 
 function newQuote() {
+  if(!requireRole('editor')) return;
   if(activeQuoteId && isQuoteDirty() && !confirm('Ci sono modifiche non salvate. Vuoi scartarle e creare una nuova quotazione?')) return;
   const quote = createEmptyQuote();
   state.quotazioni.unshift(quote);
@@ -1538,6 +2180,7 @@ function newQuote() {
 }
 
 function deleteQuote(id) {
+  if(!requireRole('editor')) return;
   if(!confirm('Eliminare questa quotazione?')) return;
   state.quotazioni = state.quotazioni.filter(q => q.id !== id);
   if(activeQuoteId === id) activeQuoteId = state.quotazioni[0] ? state.quotazioni[0].id : null;
@@ -1546,6 +2189,7 @@ function deleteQuote(id) {
 }
 
 function duplicateQuote(id) {
+  if(!requireRole('editor')) return;
   if(activeQuoteId && isQuoteDirty() && id === activeQuoteId && !confirm('Duplico l’ultima versione salvata. Le modifiche non salvate verranno ignorate. Continuare?')) return;
   const source = state.quotazioni.find(q => q.id === id);
   if(!source) return;
@@ -1572,6 +2216,7 @@ function updateActiveQuoteDraft(mutator, options={ redraw:false }) {
 }
 
 function saveCurrentQuote() {
+  if(!requireRole('editor')) return;
   const index = getQuoteIndex();
   if(index < 0 || !activeQuoteDraft) return;
   const quote = cloneQuote(activeQuoteDraft);
@@ -1584,6 +2229,7 @@ function saveCurrentQuote() {
 }
 
 function discardCurrentQuoteChanges() {
+  if(!requireRole('editor')) return;
   if(!isQuoteDirty()) return;
   if(!confirm('Annullare le modifiche non salvate?')) return;
   resetQuoteDraft();
@@ -1591,6 +2237,7 @@ function discardCurrentQuoteChanges() {
 }
 
 function updateQuoteMeta(field, value) {
+  if(!canMutateData()) return;
   updateActiveQuoteDraft(quote => {
     quote[field] = value;
     if(field === 'margine_globale') {
@@ -1610,6 +2257,7 @@ function syncQuoteTableFieldHeights() {
 }
 
 function updateQuoteRow(rowIndex, field, value) {
+  if(!canMutateData()) return;
   updateActiveQuoteDraft(quote => {
     if(!quote.rows[rowIndex]) return;
     quote.rows[rowIndex][field] = value;
@@ -1617,6 +2265,7 @@ function updateQuoteRow(rowIndex, field, value) {
 }
 
 function addQuoteRow() {
+  if(!requireRole('editor')) return;
   updateActiveQuoteDraft(quote => {
     if(quote.rows.length >= QUOTE_MAX_ROWS) return;
     const row = createQuoteRow(quote.rows.length + 1);
@@ -1626,6 +2275,7 @@ function addQuoteRow() {
 }
 
 function removeQuoteRow(rowIndex) {
+  if(!requireRole('editor')) return;
   updateActiveQuoteDraft(quote => {
     if(quote.rows.length === 1) {
       quote.rows = [createQuoteRow(1)];
@@ -1754,13 +2404,20 @@ function drawQuotePage() {
   const listEl = document.getElementById('quote-list');
   const bodyEl = document.getElementById('quote-body');
   if(!listEl || !bodyEl) return;
+  const editable = canMutateData();
   if(!state.quotazioni.length) {
-    newQuote();
+    if(editable) {
+      newQuote();
+    } else {
+      listEl.innerHTML = '<div class="empty" style="margin:14px"><div class="ei">🧾</div><h4>Nessuna quotazione salvata</h4></div>';
+      bodyEl.innerHTML = '<div class="empty" style="margin:16px"><div class="ei">🔒</div><h4>Accesso in sola lettura</h4><p style="color:var(--gray3);font-size:13px">Un utente con ruolo editor o admin puo creare la prima quotazione del workspace.</p></div>';
+    }
     return;
   }
   const active = getActiveQuote();
   const computed = computeQuote(active);
   const dirty = isQuoteDirty();
+  const lockAttr = editable ? '' : ' disabled';
   listEl.innerHTML = state.quotazioni.map(rawQuote => {
     const q = computeQuote(rawQuote);
     return '<div class="quote-item'+(q.quote.id===activeQuoteId?' on':'')+'" onclick="setActiveQuote(\''+q.quote.id+'\')">'
@@ -1768,20 +2425,19 @@ function drawQuotePage() {
       +'<div class="quote-item-meta"><span>'+(q.rows.filter(r=>r.descrizione||r.codice||r.quantita).length)+' righe</span><span>'+formatDateTime(q.quote.updatedAt)+'</span></div>'
       +'<div class="quote-item-total">'+eur(q.offertaFinale)+'</div>'
       +'<div class="quote-item-actions">'
-      +'<button class="btn btn-o btn-sm" onclick="event.stopPropagation();duplicateQuote(\''+q.quote.id+'\')">Duplica</button>'
-      +'<button class="btn-del" onclick="event.stopPropagation();deleteQuote(\''+q.quote.id+'\')">🗑️</button>'
+      +(editable?'<button class="btn btn-o btn-sm" onclick="event.stopPropagation();duplicateQuote(\''+q.quote.id+'\')">Duplica</button><button class="btn-del" onclick="event.stopPropagation();deleteQuote(\''+q.quote.id+'\')">🗑️</button>':'')
       +'</div>'
       +'</div>';
   }).join('');
 
   bodyEl.innerHTML =
     '<div class="quote-top-grid">'
-      +'<div class="quote-field"><label>Titolo Quotazione</label><input value="'+escHtml(computed.quote.titolo)+'" oninput="updateQuoteMeta(\'titolo\', this.value)"></div>'
-      +'<div class="quote-field"><label>Cliente</label><input value="'+escHtml(computed.quote.cliente)+'" oninput="updateQuoteMeta(\'cliente\', this.value)"></div>'
-      +'<div class="quote-field"><label>Riferimento</label><div class="quote-input-suffix"><input type="number" step="0.01" value="'+escHtml(computed.quote.riferimento_importo)+'" oninput="updateQuoteMeta(\'riferimento_importo\', this.value)"><span>€</span></div></div>'
-      +'<div class="quote-field"><label>Margine Globale %</label><input type="number" step="0.01" value="'+escHtml(computed.quote.margine_globale)+'" oninput="updateQuoteMeta(\'margine_globale\', this.value)"></div>'
-      +'<div class="quote-field"><label>Trasporto</label><div class="quote-input-suffix"><input type="number" step="0.01" min="0" value="'+escHtml(computed.quote.trasporto)+'" oninput="updateQuoteMeta(\'trasporto\', this.value)"><span>€</span></div></div>'
-      +'<div class="quote-field full"><label>Note Quotazione</label><textarea oninput="updateQuoteMeta(\'note\', this.value)">'+escHtml(computed.quote.note)+'</textarea></div>'
+      +'<div class="quote-field"><label>Titolo Quotazione</label><input value="'+escHtml(computed.quote.titolo)+'" oninput="updateQuoteMeta(\'titolo\', this.value)"'+lockAttr+'></div>'
+      +'<div class="quote-field"><label>Cliente</label><input value="'+escHtml(computed.quote.cliente)+'" oninput="updateQuoteMeta(\'cliente\', this.value)"'+lockAttr+'></div>'
+      +'<div class="quote-field"><label>Riferimento</label><div class="quote-input-suffix"><input type="number" step="0.01" value="'+escHtml(computed.quote.riferimento_importo)+'" oninput="updateQuoteMeta(\'riferimento_importo\', this.value)"'+lockAttr+'><span>€</span></div></div>'
+      +'<div class="quote-field"><label>Margine Globale %</label><input type="number" step="0.01" value="'+escHtml(computed.quote.margine_globale)+'" oninput="updateQuoteMeta(\'margine_globale\', this.value)"'+lockAttr+'></div>'
+      +'<div class="quote-field"><label>Trasporto</label><div class="quote-input-suffix"><input type="number" step="0.01" min="0" value="'+escHtml(computed.quote.trasporto)+'" oninput="updateQuoteMeta(\'trasporto\', this.value)"'+lockAttr+'><span>€</span></div></div>'
+      +'<div class="quote-field full"><label>Note Quotazione</label><textarea oninput="updateQuoteMeta(\'note\', this.value)"'+lockAttr+'>'+escHtml(computed.quote.note)+'</textarea></div>'
     +'</div>'
     +'<div class="quote-kpis">'
       +'<div class="quote-kpi"><div class="quote-kpi-l">Valore acquisto</div><div class="quote-kpi-v quote-acquisto" id="quote-kpi-acquisto">'+eur(computed.totaleAcquisto)+'</div></div>'
@@ -1791,13 +2447,11 @@ function drawQuotePage() {
     +'</div>'
     +'<div class="quote-actions">'
       +'<div class="quote-actions-left">'
-        +'<button class="btn btn-p" onclick="addQuoteRow()"'+(computed.quote.rows.length>=QUOTE_MAX_ROWS?' disabled':'')+'>＋ Riga</button>'
-        +'<button class="btn btn-o" onclick="saveCurrentQuote()">💾 Salva Quotazione</button>'
-        +'<button class="btn btn-o" onclick="discardCurrentQuoteChanges()"'+(dirty?'':' disabled')+'>↺ Annulla modifiche</button>'
+        +(editable?'<button class="btn btn-p" onclick="addQuoteRow()"'+(computed.quote.rows.length>=QUOTE_MAX_ROWS?' disabled':'')+'>＋ Riga</button><button class="btn btn-o" onclick="saveCurrentQuote()">💾 Salva Quotazione</button><button class="btn btn-o" onclick="discardCurrentQuoteChanges()"'+(dirty?'':' disabled')+'>↺ Annulla modifiche</button>':'')
         +'<span class="quote-status" id="quote-dirty-status">'+(dirty?'Modifiche non salvate':'Tutto salvato')+' · Template Excel: 97 righe disponibili</span>'
       +'</div>'
       +'<div class="quote-actions-right">'
-        +'<button class="btn btn-o" onclick="duplicateQuote(\''+computed.quote.id+'\')">Duplica</button>'
+        +(editable?'<button class="btn btn-o" onclick="duplicateQuote(\''+computed.quote.id+'\')">Duplica</button>':'')
         +'<button class="btn btn-g" onclick="exportQuoteXlsx()">⬇︎ Esporta Excel</button>'
       +'</div>'
     +'</div>'
@@ -1807,19 +2461,19 @@ function drawQuotePage() {
     +computed.rows.map((row, index) =>
       '<tr>'
       +'<td class="quote-num">'+row.posizione+'</td>'
-      +'<td><textarea rows="1" oninput="autoResizeQuoteField(this);updateQuoteRow('+index+', \'codice\', this.value)">'+escHtml(computed.quote.rows[index].codice)+'</textarea></td>'
-      +'<td><textarea rows="1" oninput="autoResizeQuoteField(this);updateQuoteRow('+index+', \'descrizione\', this.value)">'+escHtml(computed.quote.rows[index].descrizione)+'</textarea></td>'
-      +'<td><input type="number" step="1" min="0" value="'+escHtml(computed.quote.rows[index].quantita)+'" oninput="updateQuoteRow('+index+', \'quantita\', this.value)"></td>'
-      +'<td><input value="'+escHtml(computed.quote.rows[index].fornitore)+'" oninput="updateQuoteRow('+index+', \'fornitore\', this.value)"></td>'
-      +'<td><input value="'+escHtml(computed.quote.rows[index].note)+'" oninput="updateQuoteRow('+index+', \'note\', this.value)"></td>'
-      +'<td><div class="quote-input-suffix"><input type="number" step="0.01" min="0" value="'+escHtml(computed.quote.rows[index].costo_unitario)+'" oninput="updateQuoteRow('+index+', \'costo_unitario\', this.value)"><span>€</span></div></td>'
+      +'<td><textarea rows="1" oninput="autoResizeQuoteField(this);updateQuoteRow('+index+', \'codice\', this.value)"'+lockAttr+'>'+escHtml(computed.quote.rows[index].codice)+'</textarea></td>'
+      +'<td><textarea rows="1" oninput="autoResizeQuoteField(this);updateQuoteRow('+index+', \'descrizione\', this.value)"'+lockAttr+'>'+escHtml(computed.quote.rows[index].descrizione)+'</textarea></td>'
+      +'<td><input type="number" step="1" min="0" value="'+escHtml(computed.quote.rows[index].quantita)+'" oninput="updateQuoteRow('+index+', \'quantita\', this.value)"'+lockAttr+'></td>'
+      +'<td><input value="'+escHtml(computed.quote.rows[index].fornitore)+'" oninput="updateQuoteRow('+index+', \'fornitore\', this.value)"'+lockAttr+'></td>'
+      +'<td><input value="'+escHtml(computed.quote.rows[index].note)+'" oninput="updateQuoteRow('+index+', \'note\', this.value)"'+lockAttr+'></td>'
+      +'<td><div class="quote-input-suffix"><input type="number" step="0.01" min="0" value="'+escHtml(computed.quote.rows[index].costo_unitario)+'" oninput="updateQuoteRow('+index+', \'costo_unitario\', this.value)"'+lockAttr+'><span>€</span></div></td>'
       +'<td><span class="quote-money quote-acquisto" id="quote-row-total-cost-'+index+'">'+eur(row.totale_costo)+'</span></td>'
-      +'<td><input value="'+escHtml(computed.quote.rows[index].lead_time)+'" oninput="updateQuoteRow('+index+', \'lead_time\', this.value)"></td>'
+      +'<td><input value="'+escHtml(computed.quote.rows[index].lead_time)+'" oninput="updateQuoteRow('+index+', \'lead_time\', this.value)"'+lockAttr+'></td>'
       +'<td><span class="quote-money" id="quote-row-offer-unit-'+index+'">'+eur(row.prezzo_unitario_offerto)+'</span></td>'
       +'<td><span class="quote-money" id="quote-row-offer-total-'+index+'">'+eur(row.valore_totale_offerto)+'</span></td>'
       +'<td><span class="quote-money quote-margine" id="quote-row-margin-total-'+index+'">'+eur(row.margine_totale)+'</span></td>'
-      +'<td><input type="number" step="0.01" min="0" value="'+escHtml(computed.quote.rows[index].margine)+'" oninput="updateQuoteRow('+index+', \'margine\', this.value)"></td>'
-      +'<td><button class="btn-del" onclick="removeQuoteRow('+index+')">🗑️</button></td>'
+      +'<td><input type="number" step="0.01" min="0" value="'+escHtml(computed.quote.rows[index].margine)+'" oninput="updateQuoteRow('+index+', \'margine\', this.value)"'+lockAttr+'></td>'
+      +'<td>'+(editable?'<button class="btn-del" onclick="removeQuoteRow('+index+')">🗑️</button>':'')+'</td>'
       +'</tr>'
     ).join('')
     +'</tbody></table></div>';
@@ -2158,6 +2812,7 @@ document.addEventListener('click', function(e) {
 
 function showDetail(type, id) {
   let rec, title, badge, subtitle, fields, metrics, progress, progressLabel, place, note, dangerState=false;
+  const editable = canMutateData();
   if(type==='gara') {
     rec=state.gare.find(x=>x.id===id); if(!rec) return;
     const d=daysTo(rec.scadenza);
@@ -2205,6 +2860,8 @@ function showDetail(type, id) {
     document.getElementById('gd-btn-edit').onclick=()=>{closeM('detail');editAgg(id);};
     document.getElementById('gd-btn-del').onclick=()=>{closeM('detail');delItem('aggiudicate',id);};
   }
+  document.getElementById('gd-btn-edit').style.display = editable ? '' : 'none';
+  document.getElementById('gd-btn-del').style.display = editable ? '' : 'none';
   const progressBlock = dangerState
     ? '<div class="gd-status-word">'+escHtml(progressLabel)+'</div>'
     : '<div class="gd-progress-row"><div class="gd-progress-value">'+progress+'%</div><div class="gd-progress-label">'+escHtml(progressLabel)+'</div></div><div class="gd-progress"><span style="width:'+progress+'%"></span></div>';
@@ -2277,35 +2934,113 @@ function drawDash() {
       const d = daysTo(x.scadenza);
       return d!==null&&d>=0&&d<=7&&!['PERSA','AGGIUDICATA','SCARTATA'].includes(x.stato);
     }).length,
-    pct=tot?((agg/tot)*100).toFixed(1)+' %':'0 %',
-    val=ag.reduce((s,a)=>s+(a.valore_offerto||0),0);
+    val=ag.reduce((s,a)=>s+(Number(a.valore_offerto)||0),0);
   document.getElementById('kpi-row').innerHTML=[
-    {l:'Totale Gare',      v:tot,      s:'archiviate',          c:''},
-    {l:'Aggiudicate',      v:agg,      s:'gare vinte',          c:'g'},
-    {l:'In Lavorazione',   v:pre+dl,   s:'presentate o attive', c:'t'},
-    {l:'Scadenze 7 gg',    v:att,      s:'da monitorare',       c:'o'},
-    {l:'Valore Acquisito', v:eur(val), s:'offerte vinte',       c:'go'},
-    {l:'Offerte Inviate',  v:of.length,s:'totale invii',        c:'pu'},
-  ].map(k=>'<div class="kpi '+k.c+'"><div class="kpi-lbl">'+k.l+'</div><div class="kpi-val">'+k.v+'</div><div class="kpi-sub">'+k.s+'</div></div>').join('');
+    {l:'Totale Gare',      v:tot,      c:''},
+    {l:'Aggiudicate',      v:agg,      c:'g'},
+    {l:'In Lavorazione',   v:pre+dl,   c:'t'},
+    {l:'Scadenze 7 gg',    v:att,      c:'o'},
+    {l:'Valore Acquisito', v:eur(val), c:'go'},
+    {l:'Offerte Inviate',  v:of.length,c:'pu'},
+  ].map(k=>'<div class="kpi '+k.c+'"><div class="kpi-lbl">'+k.l+'</div><div class="kpi-val">'+k.v+'</div>'+(k.note?'<div class="kpi-note '+(k.noteClass||'')+'">'+k.note+'</div>':'')+'</div>').join('');
+  document.getElementById('dash-status-total').textContent = String(tot);
+  document.getElementById('dash-type-total').textContent = String(tot);
+  renderDashboardStatusList(g);
+  renderDashboardPortals(g);
+  renderDashboardTypeLegend(g);
+  renderDashboardEntityList(g);
   drawCharts(g);
 }
 
 const CC=['#1565C0','#2E7D32','#C62828','#E65100','#546E7A','#00838F','#6A1B9A','#F9A825','#0288D1','#388E3C'];
 function dChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
+function renderDashboardStatusList(g) {
+  const items = [
+    { label:'Aggiudicata', count:g.filter(x=>x.stato==='AGGIUDICATA').length, color:'#2E7D32' },
+    { label:'Presentata', count:g.filter(x=>x.stato==='PRESENTATA').length, color:'#1565C0' },
+    { label:'Da Lavorare', count:g.filter(x=>x.stato==='DA LAVORARE').length, color:'#E65100' },
+    { label:'Persa', count:g.filter(x=>x.stato==='PERSA').length, color:'#C62828' },
+    { label:'Scartata', count:g.filter(x=>x.stato==='SCARTATA').length, color:'#546E7A' }
+  ];
+  const el = document.getElementById('dash-status-list');
+  if(!el) return;
+  el.innerHTML = items.map(item =>
+    '<div class="dash-status-item">'
+      +'<span class="dash-status-dot" style="background:'+item.color+'"></span>'
+      +'<span class="dash-status-name">'+item.label+'</span>'
+      +'<span class="dash-status-count">'+item.count+'</span>'
+    +'</div>'
+  ).join('');
+}
+
+function renderDashboardPortals(g) {
+  const counts = {};
+  g.forEach(item => {
+    const key = item.portale || 'ALTRO';
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const max = top.length ? top[0][1] : 1;
+  const el = document.getElementById('dash-portal-list');
+  if(!el) return;
+  el.innerHTML = top.map(([name, value]) =>
+    '<div class="dash-portal-item">'
+      +'<div class="dash-portal-top">'
+        +'<span class="dash-portal-chip">'+escHtml(name)+'</span>'
+        +'<span class="dash-portal-name"></span>'
+        +'<span class="dash-portal-value">'+value+' gare</span>'
+      +'</div>'
+      +'<div class="dash-portal-bar"><span style="width:'+((value/max)*100)+'%"></span></div>'
+    +'</div>'
+  ).join('');
+}
+
+function renderDashboardTypeLegend(g) {
+  const counts = {};
+  g.forEach(item => {
+    const key = item.tipologia || 'Altro';
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const total = g.length || 1;
+  const el = document.getElementById('dash-type-legend');
+  if(!el) return;
+  el.innerHTML = entries.map(([name, value], index) => {
+    const color = CC[index % CC.length];
+    const pct = ((value / total) * 100).toFixed(1).replace('.', ',');
+    return '<div class="dash-type-item">'
+      +'<div><div class="dash-type-name">'+escHtml(name)+'</div></div>'
+      +'<div class="dash-type-value" style="color:'+color+'"><strong>'+pct+'%</strong><span>'+value+' gare</span></div>'
+    +'</div>';
+  }).join('');
+}
+
+function renderDashboardEntityList(g) {
+  const counts = {};
+  g.filter(item => item.stato === 'AGGIUDICATA').forEach(item => {
+    const key = item.ente || 'Non indicato';
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const total = entries.reduce((sum, [,value]) => sum + value, 0) || 1;
+  const el = document.getElementById('dash-entity-list');
+  if(!el) return;
+  el.innerHTML = entries.slice(0,5).map(([name, value]) => {
+    const pct = ((value / total) * 100).toFixed(1).replace('.', ',');
+    return '<div class="dash-entity-item">'
+      +'<div><div class="dash-entity-name">'+escHtml(name)+'</div><div class="dash-entity-meta">'+pct+'% del totale aggiudicate</div></div>'
+      +'<div class="dash-entity-count">'+value+'</div>'
+    +'</div>';
+  }).join('');
+}
+
 function drawCharts(g) {
   dChart('stati');
   const sL=['AGGIUDICATA','PRESENTATA','DA LAVORARE','PERSA','SCARTATA'];
   charts['stati']=new Chart(document.getElementById('c-stati'),{type:'doughnut',
-    data:{labels:sL,datasets:[{data:sL.map(s=>g.filter(x=>x.stato===s).length),backgroundColor:['#2E7D32','#1565C0','#E65100','#C62828','#546E7A'],borderWidth:2,borderColor:'#fff'}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10}}}}});
-
-  dChart('portali');
-  const pc={};g.forEach(x=>{if(x.portale)pc[x.portale]=(pc[x.portale]||0)+1;});
-  const ps=Object.entries(pc).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  charts['portali']=new Chart(document.getElementById('c-portali'),{type:'bar',
-    data:{labels:ps.map(x=>x[0]),datasets:[{data:ps.map(x=>x[1]),backgroundColor:CC,borderRadius:5}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{ticks:{font:{size:10}}}}}});
+    data:{labels:sL,datasets:[{data:sL.map(s=>g.filter(x=>x.stato===s).length),backgroundColor:['#2E7D32','#1565C0','#E65100','#C62828','#546E7A'],borderWidth:0,hoverOffset:3,cutout:'72%'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:true}}}});
 
   dChart('trend');
   const mo={};g.forEach(x=>{if(!x.data_creazione)return;const k=x.data_creazione.slice(0,7);if(!mo[k])mo[k]={t:0,a:0,p:0};mo[k].t++;if(x.stato==='AGGIUDICATA')mo[k].a++;if(x.stato==='PERSA')mo[k].p++;});
@@ -2317,14 +3052,14 @@ function drawCharts(g) {
       {label:'Aggiudicate',data:mk.map(k=>mo[k].a),backgroundColor:'rgba(46,125,50,.75)',borderRadius:4},
       {label:'Perse',data:mk.map(k=>mo[k].p),backgroundColor:'rgba(198,40,40,.55)',borderRadius:4},
     ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{beginAtZero:true},x:{ticks:{font:{size:10}}}}}});
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',align:'end',labels:{usePointStyle:true,pointStyle:'circle',font:{size:11,weight:'700'},boxWidth:8,boxHeight:8}}},scales:{y:{beginAtZero:true,grid:{color:'rgba(13,27,62,.08)'},ticks:{stepSize:2}},x:{grid:{display:false},ticks:{font:{size:10}}}}}});
 
   dChart('tipo');
   const tc={};g.forEach(x=>{if(x.tipologia)tc[x.tipologia]=(tc[x.tipologia]||0)+1;});
   const te=Object.entries(tc).sort((a,b)=>b[1]-a[1]).slice(0,7);
   charts['tipo']=new Chart(document.getElementById('c-tipo'),{type:'doughnut',
-    data:{labels:te.map(x=>x[0]),datasets:[{data:te.map(x=>x[1]),backgroundColor:CC,borderWidth:2,borderColor:'#fff'}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10}}}}});
+    data:{labels:te.map(x=>x[0]),datasets:[{data:te.map(x=>x[1]),backgroundColor:CC,borderWidth:0,cutout:'80%'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2401,6 +3136,7 @@ function drawAgg() {
 // OFFERTE
 // ═══════════════════════════════════════════════════════
 function drawOff() {
+  const editable = canMutateData();
   const q=(document.getElementById('so').value||'').toLowerCase();
   const year=uiPrefs.offYear || '';
   const f=tblFilters.off||{};
@@ -2425,7 +3161,7 @@ function drawOff() {
     +'<td style="font-weight:600">'+o.oggetto+'</td>'
     +'<td style="font-size:11px">'+o.ente+'</td>'
     +'<td>'+opBd(o.operatore)+'</td>'
-    +'<td style="white-space:nowrap"><button class="btn btn-o btn-ic btn-sm" onclick="event.stopPropagation();editOff(\''+o.id+'\')">✏️</button> <button class="btn-del" onclick="event.stopPropagation();delItem(\'offerte\',\''+o.id+'\')">🗑️</button></td>'
+    +'<td style="white-space:nowrap">'+(editable?'<button class="btn btn-o btn-ic btn-sm" onclick="event.stopPropagation();editOff(\''+o.id+'\')">✏️</button> <button class="btn-del" onclick="event.stopPropagation();delItem(\'offerte\',\''+o.id+'\')">🗑️</button>':'—')+'</td>'
     +'</tr>'
   ).join(''):'<tr><td colspan="6"><div class="empty"><div class="ei">📬</div><h4>Nessuna offerta</h4></div></td></tr>';
   document.getElementById('cnt-o').textContent=tot+' offerte';
@@ -2438,12 +3174,14 @@ function drawOff() {
 function maskPwd(p){return p?'●'.repeat(Math.min(p.length,8)):'—';}
 function togglePwd(id){const el=document.getElementById(id);el.textContent=el.textContent.includes('●')?(el.dataset.p||'—'):maskPwd(el.dataset.p);}
 function toggleFav(id){
+  if(!requireRole('editor')) return;
   const p=state.portali.find(x=>x.id===id);if(!p)return;
   p.preferito=p.preferito==='⭐'?'':'⭐';
   save('port');drawPortali();toast('Preferito aggiornato','ok');
 }
 
 function drawPortali() {
+  const editable = canMutateData();
   const q=(document.getElementById('sp')||{value:''}).value.toLowerCase();
   const f=tblFilters.port||{};
   const statusFilter = uiPrefs.portStatus || '';
@@ -2462,7 +3200,7 @@ function drawPortali() {
   const tbody=document.getElementById('tb-portali'); if(!tbody) return;
   tbody.innerHTML=sorted.length?sorted.map(p=>
     '<tr class="'+(p.preferito==='⭐'?'port-fav':'')+'">'
-    +'<td class="star-cell" onclick="event.stopPropagation();toggleFav(\''+p.id+'\')">'+(p.preferito==='⭐'?'⭐':'☆')+'</td>'
+    +'<td class="star-cell"'+(editable?' onclick="event.stopPropagation();toggleFav(\''+p.id+'\')"':'')+'>'+(p.preferito==='⭐'?'⭐':'☆')+'</td>'
     +'<td style="font-weight:700;color:var(--navy)">'+p.nome+'</td>'
     +'<td>'+(p.url?'<a href="'+p.url+'" target="_blank" style="color:var(--blue);font-size:12px;text-decoration:none" onclick="event.stopPropagation()">🔗 '+p.url+'</a>':'—')+'</td>'
     +'<td style="font-family:monospace;font-size:12px">'+(p.username||'—')+'</td>'
@@ -2470,10 +3208,7 @@ function drawPortali() {
     +(p.password?'<button class="eye" onclick="event.stopPropagation();togglePwd(\'pw-'+p.id+'\')">👁️</button>':'')+'</td>'
     +'<td>'+bdAcc(p.stato)+'</td>'
     +'<td style="font-size:11px;color:var(--gray3);max-width:200px">'+(p.note||'')+'</td>'
-    +'<td style="white-space:nowrap">'
-    +'<button class="btn btn-o btn-ic btn-sm" onclick="event.stopPropagation();editPort(\''+p.id+'\')">✏️</button> '
-    +'<button class="btn-del" onclick="event.stopPropagation();delItem(\'portali\',\''+p.id+'\')">🗑️</button>'
-    +'</td>'
+    +'<td style="white-space:nowrap">'+(editable?'<button class="btn btn-o btn-ic btn-sm" onclick="event.stopPropagation();editPort(\''+p.id+'\')">✏️</button> <button class="btn-del" onclick="event.stopPropagation();delItem(\'portali\',\''+p.id+'\')">🗑️</button>':'—')+'</td>'
     +'</tr>'
   ).join(''):'<tr><td colspan="8"><div class="empty"><div class="ei">🌐</div><h4>Nessun portale</h4></div></td></tr>';
 }
@@ -2514,6 +3249,7 @@ function drawScad() {
 // MODALS
 // ═══════════════════════════════════════════════════════
 function openM(type) {
+  if(!requireRole('editor')) return;
   const ev=editId[type];
   if(type==='gara') {
     fillPortSel('xg-port',ev?ev.portale:'');
@@ -2597,6 +3333,7 @@ function editPort(id){editId.port=state.portali.find(x=>x.id===id);openM('port')
 // SAVE / DELETE
 // ═══════════════════════════════════════════════════════
 function saveGara(){
+  if(!requireRole('editor')) return;
   const desc=document.getElementById('xg-desc').value.trim();
   if(!desc){toast('Inserisci la descrizione','err');return;}
   const obj={id:editId.gara?editId.gara.id:uid('g'),stato:document.getElementById('xg-stato').value,portale:up(document.getElementById('xg-port').value),num_rdo:up(document.getElementById('xg-rdo').value),tipologia:document.getElementById('xg-tipo').value,descrizione:up(desc),ente:up(document.getElementById('xg-ente').value),base_asta:parseFloat(document.getElementById('xg-asta').value)||0,operatore:up(document.getElementById('xg-op').value),data_creazione:document.getElementById('xg-crea').value,scadenza:buildScadenzaValue(document.getElementById('xg-scad-date').value, document.getElementById('xg-scad-time').value),note:up(document.getElementById('xg-note').value)};
@@ -2607,6 +3344,7 @@ function saveGara(){
   closeM('gara');updateBadges();redrawCurrent();toast(aggiudicateChanged?'Gara salvata e aggiudicata aggiornata':'Gara salvata','ok');
 }
 function saveAgg(){
+  if(!requireRole('editor')) return;
   const desc=document.getElementById('xa-desc').value.trim();
   if(!desc){toast('Inserisci la descrizione','err');return;}
   const obj={id:editId.agg?editId.agg.id:uid('a'),gara_id:editId.agg?editId.agg.gara_id||'':'',portale:up(document.getElementById('xa-port').value),num_rdo:up(document.getElementById('xa-rdo').value),descrizione:up(desc),ente:up(document.getElementById('xa-ente').value),base_asta:parseFloat(document.getElementById('xa-asta').value)||0,valore_offerto:parseFloat(document.getElementById('xa-val').value)||0,tipologia:document.getElementById('xa-tipo').value,stato_proc:document.getElementById('xa-stp').value,scadenza:document.getElementById('xa-scad').value,stipula:document.getElementById('xa-stip').value,data_stipula:document.getElementById('xa-dstip').value,num_ordine:up(document.getElementById('xa-nord').value),fornitore:up(document.getElementById('xa-forn').value),consegna:up(document.getElementById('xa-cons').value),note:up(document.getElementById('xa-note').value),operatore:editId.agg?editId.agg.operatore||'':''};
@@ -2614,6 +3352,7 @@ function saveAgg(){
   save('agg');closeM('agg');updateBadges();drawAgg();toast('Salvata','ok');
 }
 function saveOff(){
+  if(!requireRole('editor')) return;
   const ogg=document.getElementById('xo-ogg').value.trim();
   if(!ogg){toast("Inserisci l'oggetto",'err');return;}
   const obj={id:editId.off?editId.off.id:uid('o'),num:document.getElementById('xo-num').value,data:document.getElementById('xo-data').value,oggetto:up(ogg),ente:up(document.getElementById('xo-ente').value),operatore:up(document.getElementById('xo-op').value)};
@@ -2621,6 +3360,7 @@ function saveOff(){
   save('off');closeM('off');updateBadges();drawOff();toast('Offerta salvata','ok');
 }
 function savePort(){
+  if(!requireRole('editor')) return;
   const nome=document.getElementById('xp-nome').value.trim();
   if(!nome){toast('Inserisci il nome del portale','err');return;}
   const obj={id:editId.port?editId.port.id:uid('p'),nome:up(nome),url:document.getElementById('xp-url').value.trim(),username:document.getElementById('xp-user').value.trim(),password:document.getElementById('xp-pass').value,operatore:up(document.getElementById('xp-op').value),stato:document.getElementById('xp-stato').value,note:document.getElementById('xp-note').value,preferito:document.getElementById('xp-fav').checked?'⭐':''};
@@ -2629,6 +3369,7 @@ function savePort(){
   fillPortSel('xg-port','');fillPortSel('xa-port','');
 }
 function delItem(col,id){
+  if(!requireRole('editor')) return;
   if(!confirm('Eliminare questo elemento?')) return;
   state[col]=state[col].filter(x=>x.id!==id);
   save({gare:'gare',aggiudicate:'agg',offerte:'off',portali:'port'}[col]);
@@ -2643,20 +3384,15 @@ async function init(){
     setSyncStatus('Avvio applicazione...', 'warn');
     applyQuotePanelWidth();
     saveLocalSnapshot();
-    await remoteInitWithTimeout(5000);
-    if(normalizeStateOperatori()) {
-      saveLocalSnapshot();
-      if(remoteSync.enabled) await pushRemoteState('force');
-    }
-    syncUiControls();
-    updateBadges();
     fillPortSel('xg-port','');
     fillPortSel('xa-port','');
-    drawDash();
-    remoteSync.initialized = true;
+    await initAuth();
   } catch(error) {
     console.error('Errore inizializzazione app', error);
-    setSyncStatus('Errore cloud, avvio locale completato', 'warn');
+    setAuthStatus(error.message || 'Configurazione autenticazione non disponibile.', 'err');
+    lockAppForAuth();
+    switchAuthMode('login');
+    setSyncStatus('Configurazione cloud non disponibile', 'err');
     applyQuotePanelWidth();
     syncUiControls();
     updateBadges();
