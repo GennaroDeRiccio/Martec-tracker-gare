@@ -656,6 +656,7 @@ thead th{position:sticky;top:0;z-index:2}
     <span class="tb-sub" id="tb-sub"></span>
     <div class="tb-right">
       <span id="sync-status">🔄 Connessione...</span>
+      <button class="btn btn-p" id="btn-add" type="button" onclick="openAdd()" style="display:none">＋ Nuova Gara</button>
     </div>
   </div>
 
@@ -1242,11 +1243,22 @@ function syncAuthUserUi() {
 }
 
 function syncPermissionUi() {
-  const addBtn = document.getElementById('btn-add');
-  if(addBtn) addBtn.style.display = canMutateData() ? '' : 'none';
+  updateTopbarAddButton();
   document.querySelectorAll('[data-admin-only]').forEach(el => {
     el.style.display = hasRole('admin') ? '' : 'none';
   });
+}
+
+function updateTopbarAddButton() {
+  const addBtn = document.getElementById('btn-add');
+  if(!addBtn) return;
+  const cfg = viewCfg[curView] || {};
+  if(cfg.add && canMutateData()) {
+    addBtn.textContent = cfg.add;
+    addBtn.style.display = '';
+  } else {
+    addBtn.style.display = 'none';
+  }
 }
 
 function applyState(nextState) {
@@ -1945,7 +1957,7 @@ const viewCfg = {
   aggiudicate: {ttl:'Gare Aggiudicate',    sub:'',                       add:'＋ Aggiungi'},
   offerte:     {ttl:'Offerte Presentate',  sub:'',                       add:'＋ Nuova Offerta'},
   portali:     {ttl:'Portali',              sub:'Credenziali & accessi',  add:'＋ Portale'},
-  scadenze:    {ttl:'Scadenze',             sub:'Gare in scadenza',       add:''},
+  scadenze:    {ttl:'Scadenze',             sub:'Gare in scadenza',       add:'＋ Nuova Gara'},
 };
 
 document.querySelectorAll('.nav').forEach(n => {
@@ -1959,10 +1971,7 @@ document.querySelectorAll('.nav').forEach(n => {
     const c = viewCfg[v];
     document.getElementById('tb-ttl').textContent = c.ttl;
     document.getElementById('tb-sub').textContent = c.sub;
-    const ba = document.getElementById('btn-add');
-    if(ba) {
-      if(c.add && canMutateData()){ ba.textContent=c.add; ba.style.display=''; } else { ba.style.display='none'; }
-    }
+    updateTopbarAddButton();
     redrawCurrent();
   });
 });
