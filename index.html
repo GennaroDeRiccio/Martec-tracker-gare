@@ -584,8 +584,8 @@ thead th{position:sticky;top:0;z-index:2}
 
       <div class="auth-panel on" id="auth-panel-login">
         <div class="auth-form">
-          <div class="auth-field"><label>Username o Email</label><input id="auth-login-identifier" autocapitalize="off" autocomplete="username email" spellcheck="false"></div>
-          <div class="auth-field"><label>Password</label><input id="auth-login-password" type="password" autocomplete="current-password"></div>
+          <div class="auth-field"><label>Username o Email</label><input id="auth-login-identifier" autocapitalize="off" autocomplete="username email" spellcheck="false" onkeydown="handleLoginKeydown(event)"></div>
+          <div class="auth-field"><label>Password</label><input id="auth-login-password" type="password" autocomplete="current-password" onkeydown="handleLoginKeydown(event)"></div>
           <div class="auth-actions">
             <button class="btn btn-p" type="button" onclick="handleLogin()">Accedi</button>
           </div>
@@ -1563,6 +1563,12 @@ async function handleLogin() {
     return;
   }
   setAuthStatus('Accesso completato.', 'ok');
+}
+
+function handleLoginKeydown(event) {
+  if(event.key !== 'Enter') return;
+  event.preventDefault();
+  handleLogin();
 }
 
 async function handleSignup() {
