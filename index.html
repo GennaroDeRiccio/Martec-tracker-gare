@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Martec — Tracker Gare Pubbliche</title>
 <link rel="icon" type="image/png" href="./logo.png">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -48,6 +48,11 @@ body{font-family:'Manrope',sans-serif;background:var(--gray6);color:var(--gray1)
 .tb-title{font-family:'Outfit',sans-serif;font-size:20px;font-weight:700;color:var(--navy);letter-spacing:.1px}
 .tb-sub{font-size:11px;color:var(--gray3)}
 .tb-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.mobile-only{display:none}
+.mobile-top-trigger{display:none}
+.mobile-menu-btn{display:none;width:42px;height:42px;border:none;border-radius:14px;background:#EDF4FF;color:var(--blue);font-size:18px;font-weight:800;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(21,101,192,.08);cursor:pointer}
+.mobile-backdrop{display:none}
+.mobile-dock{display:none}
 #sync-status{font-size:11px;color:var(--gray3);display:flex;align-items:center;gap:4px}
 .auth-user{display:grid;grid-template-columns:42px minmax(0,1fr);grid-template-areas:'avatar meta' 'logout logout';gap:10px 12px;padding:12px;border:1px solid rgba(255,255,255,.09);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,.04) 100%);box-shadow:0 10px 28px rgba(3,10,25,.18);backdrop-filter:blur(6px)}
 .auth-user-avatar{grid-area:avatar;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#F8FBFF 0%,#DCEAFF 100%);color:var(--blue);font-weight:800;font-size:14px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(21,101,192,.08)}
@@ -458,31 +463,87 @@ thead th{position:sticky;top:0;z-index:2}
 .quote-status{font-size:11px;color:var(--gray3)}
 
 @media (max-width: 900px){
-  body{flex-direction:column;height:auto;overflow:auto}
-  #sb{width:100%;height:auto;min-height:auto;position:sticky;top:0;z-index:95}
-  .sb-logo{padding:12px 14px}
-  .sb-logo img{width:132px}
-  .sb-sec{display:none}
-  #sb{overflow:visible}
-  .sb-bottom{margin-top:0}
-  .sb-user-wrap{padding:10px 12px}
+  body{display:block;height:auto;overflow:auto;background:linear-gradient(180deg,#EEF4FC 0%,#F7FAFF 180px,#F5F7FA 100%)}
+  .mobile-only{display:flex}
+  .mobile-top-trigger{display:flex}
+  .mobile-menu-btn{display:inline-flex}
+  #sb{
+    position:fixed;left:0;top:0;bottom:0;width:min(86vw,340px);height:100dvh;z-index:120;
+    transform:translateX(-104%);transition:transform .22s ease, box-shadow .22s ease;overflow-y:auto;overflow-x:hidden;
+    box-shadow:none;border-radius:0 24px 24px 0
+  }
+  body.mobile-menu-open{overflow:hidden}
+  body.mobile-menu-open #sb{transform:translateX(0);box-shadow:0 20px 50px rgba(8,16,35,.34)}
+  .mobile-backdrop{
+    display:block;position:fixed;inset:0;background:rgba(9,20,46,.42);backdrop-filter:blur(3px);
+    opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:110
+  }
+  body.mobile-menu-open .mobile-backdrop{opacity:1;pointer-events:auto}
+  .sb-logo{padding:18px 18px 14px}
+  .sb-logo img{width:150px}
+  .sb-sec{padding:18px 18px 6px}
+  .nav{padding:13px 18px;border-left:none;border-right:3px solid transparent;font-size:14px}
+  .nav.on{border-left-color:transparent;border-right-color:#4FC3F7}
+  .sb-bottom{padding-bottom:calc(88px + env(safe-area-inset-bottom, 0px))}
+  .sb-user-wrap{padding:14px 14px 10px}
   .auth-user{max-width:100%}
-  #main{min-height:0;overflow:visible}
-  .nav{padding:10px 14px;border-left:none;border-bottom:3px solid transparent}
-  .nav.on{border-left-color:transparent;border-bottom-color:#4FC3F7}
-  #topbar{padding:10px 14px;gap:10px}
-  .tb-title{font-size:18px}
-  .tb-right{margin-left:0;width:100%;justify-content:space-between;flex-wrap:wrap}
-  #content{padding:10px;overflow:visible}
+  #main{min-height:100dvh;overflow:visible}
+  #topbar{
+    position:sticky;top:0;z-index:90;min-height:72px;padding:12px 14px;
+    display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:
+      "menu title"
+      "sub sub"
+      "right right";
+    align-items:center;gap:8px 10px;border-bottom:1px solid #DCE6F2;background:rgba(255,255,255,.92);backdrop-filter:blur(14px)
+  }
+  .tb-title{grid-area:title;font-size:22px;line-height:1.05}
+  .tb-sub{grid-area:sub;font-size:12px}
+  .tb-right{grid-area:right;margin-left:0;width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:nowrap}
+  #btn-add{padding:10px 14px;border-radius:12px;font-size:12px}
+  #sync-status{font-size:11px;max-width:52vw;line-height:1.35}
+  #content{padding:12px 12px calc(92px + env(safe-area-inset-bottom, 0px));overflow:visible}
+  .mobile-dock{
+    display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;position:fixed;left:10px;right:10px;
+    bottom:calc(10px + env(safe-area-inset-bottom, 0px));z-index:115;padding:8px;border-radius:22px;
+    background:rgba(13,27,62,.94);box-shadow:0 18px 40px rgba(13,27,62,.28);backdrop-filter:blur(12px)
+  }
+  .mobile-dock-btn{
+    min-width:0;border:none;background:transparent;color:rgba(255,255,255,.58);display:grid;justify-items:center;gap:5px;
+    padding:8px 4px;border-radius:16px;font-family:'Manrope',sans-serif;cursor:pointer
+  }
+  .mobile-dock-btn strong{font-size:10px;font-weight:800;line-height:1.1}
+  .mobile-dock-btn span{font-size:16px;line-height:1}
+  .mobile-dock-btn.on{background:rgba(255,255,255,.1);color:#fff}
+  .mobile-dock-btn.more{color:#9EC6FF}
   .auth-shell{grid-template-columns:1fr;gap:16px}
   .auth-hero,.auth-card{padding:24px}
   .auth-hero h1{font-size:34px}
   .auth-points{gap:10px}
-  .kpi-row,.dash-grid-top,.dash-grid-bottom{grid-template-columns:1fr}
+  .dash-shell{gap:14px}
+  .kpi-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .kpi{min-height:0;padding:14px 13px}
+  .kpi-val{font-size:26px}
+  .dash-grid-top,.dash-grid-bottom{grid-template-columns:1fr;gap:14px}
   .dash-status-card,.dash-type-wrap{grid-template-columns:1fr}
-  .dash-type-visual{margin:0 auto}
+  .dash-status-visual,.dash-type-visual{margin:0 auto}
+  .dash-status-card{gap:16px}
+  .dash-type-wrap{gap:18px;min-height:auto}
+  .ch-card{padding:16px;border-radius:20px}
   .ch-card.full{grid-column:auto}
+  .ch-card-header{align-items:flex-start;gap:10px}
   .fg,.fg3,.gara-detail-grid{grid-template-columns:1fr}
+  .tc{border-radius:18px;overflow:hidden}
+  .tc-hdr{
+    display:grid;grid-template-columns:1fr;gap:10px;padding:14px 14px 12px;position:sticky;top:72px;z-index:8
+  }
+  .tc-hdr h3{width:100%;font-size:15px}
+  .srch,.flt,.sortbar{width:100%}
+  .srch input{width:100%}
+  .tw,.quote-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:16px}
+  .tw table{min-width:1080px}
+  table td,table th{white-space:nowrap}
+  .gara-row td{padding-top:14px;padding-bottom:14px}
+  .gara-desc-main{font-size:13px;line-height:1.35}
   .gd-header{grid-template-columns:1fr;padding:20px 18px 14px;gap:16px}
   .gd-header-title{font-size:24px;max-width:none}
   .gd-header-sub{font-size:14px;max-width:none}
@@ -490,21 +551,26 @@ thead th{position:sticky;top:0;z-index:2}
   .gd-head-actions .btn{min-width:0;flex:1 1 180px}
   .gd-body{grid-template-columns:1fr;padding:8px 18px 20px;gap:16px}
   .gd-main-card{padding:20px}
-  .gd-info-grid{grid-template-columns:1fr;gap:18px}
-  .gd-metrics{grid-template-columns:1fr}
+  .gd-info-grid,.gd-metrics,.gd-summary{grid-template-columns:1fr;gap:16px}
   .gd-metric+.gd-metric{border-left:none;border-top:1px solid #DDE6F1}
+  .gd-cell:nth-child(odd),.gd-field:nth-child(odd){border-right:none}
   .quote-layout,.quote-top-grid,.quote-kpis{grid-template-columns:1fr}
-  .quote-panel,.quote-workspace{min-height:0}
+  .quote-panel,.quote-workspace{min-height:0;border-radius:18px}
   .quote-panel{margin-right:0}
-  .quote-body{padding:12px}
+  .quote-body{padding:14px}
+  .quote-panel-hd,.quote-workspace-hd{padding:14px}
+  .quote-list{padding:10px}
+  .quote-item{padding:14px}
   .quote-actions{align-items:stretch}
   .quote-actions-left,.quote-actions-right{width:100%}
-  .quote-actions-left .btn,.quote-actions-right .btn{flex:1 1 auto;justify-content:center}
+  .quote-actions-left .btn,.quote-actions-right .btn{flex:1 1 calc(50% - 8px);justify-content:center}
   .quote-resizer{display:none}
-  .tw,.quote-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .tw table{min-width:960px}
-  .gd-summary{grid-template-columns:1fr 1fr}
-  .gd-cell:nth-child(odd),.gd-field:nth-child(odd){border-right:none}
+  .quote-table{min-width:1320px}
+  #m-detail .mdl{width:100vw;max-width:100vw;max-height:100dvh;border-radius:0}
+  .mdl{width:100%;max-width:none;max-height:100dvh;border-radius:24px 24px 0 0}
+  .mb,.mf,.mh{padding-left:16px;padding-right:16px}
+  .mf{flex-direction:column}
+  .mf .btn{width:100%;justify-content:center}
 }
 
 @media (max-width: 640px){
@@ -517,20 +583,25 @@ thead th{position:sticky;top:0;z-index:2}
   .auth-tab{flex:1 1 calc(50% - 6px);text-align:center}
   .auth-actions{flex-direction:column;align-items:stretch}
   .auth-actions .btn{width:100%;justify-content:center}
+  .mobile-menu-btn{width:40px;height:40px;border-radius:13px}
+  #topbar{padding:10px 12px 12px;min-height:68px}
+  .tb-title{font-size:20px}
+  .tb-right{align-items:flex-start;gap:8px}
+  #sync-status{max-width:45vw;font-size:10px}
+  #btn-add{padding:10px 12px;font-size:11px}
+  .mobile-dock{left:8px;right:8px;gap:6px;padding:7px}
+  .mobile-dock-btn{padding:7px 2px}
+  .mobile-dock-btn strong{font-size:9px}
+  #content{padding:10px 10px calc(88px + env(safe-area-inset-bottom, 0px))}
   .kpi-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .kpi{padding:11px 12px}
-  .kpi-val{font-size:24px}
+  .kpi-val{font-size:22px}
+  .kpi-sub{font-size:9px}
   .ch-wrap{height:170px}
-  .ch-wrap.lg{height:200px}
-  .srch{width:100%}
-  .srch input{width:100%}
-  .flt{width:100%}
-  .sortbar{width:100%}
-  .tc-hdr h3{width:100%}
+  .ch-wrap.lg{height:210px}
   .tc-ftr{flex-direction:column;align-items:flex-start;gap:8px}
   .gara-row td{padding-top:13px;padding-bottom:13px}
   .gara-desc-main{font-size:13px}
-  .gd-summary{grid-template-columns:1fr}
   #m-detail .mdl{width:100vw;max-width:100vw;max-height:100dvh;border-radius:0}
   .mdl{width:100%;max-width:none;max-height:100dvh;border-radius:12px 12px 0 0}
   .mb,.mf,.mh{padding-left:16px;padding-right:16px}
@@ -541,6 +612,11 @@ thead th{position:sticky;top:0;z-index:2}
   .dash-portal-chip{grid-column:1/-1;justify-self:start}
   .dash-type-wrap{min-height:auto}
   .dash-type-value strong,.dash-entity-count{font-size:20px}
+  .dash-type-legend,.dash-entity-list,.dash-status-list,.dash-portal-list{gap:10px}
+  .dash-type-item,.dash-entity-item,.dash-status-item{gap:10px}
+  .quote-top-grid{gap:10px}
+  .quote-kpis{gap:10px}
+  .quote-kpi-v{font-size:21px}
   .quote-item-actions{flex-wrap:wrap}
   .quote-item-actions .btn,.quote-item-actions .btn-del{flex:1 1 auto;justify-content:center}
   .quote-table{min-width:1200px}
@@ -649,9 +725,20 @@ thead th{position:sticky;top:0;z-index:2}
   </div>
 </nav>
 
+<button class="mobile-backdrop" type="button" aria-label="Chiudi menu" onclick="closeMobileMenu()"></button>
+
+<nav class="mobile-dock mobile-only" aria-label="Navigazione rapida smartphone">
+  <button class="mobile-dock-btn on" type="button" data-mobile-nav="dashboard" onclick="goToView('dashboard')"><span>📊</span><strong>Home</strong></button>
+  <button class="mobile-dock-btn" type="button" data-mobile-nav="gare" onclick="goToView('gare')"><span>📋</span><strong>Gare</strong></button>
+  <button class="mobile-dock-btn" type="button" data-mobile-nav="aggiudicate" onclick="goToView('aggiudicate')"><span>✅</span><strong>Vinte</strong></button>
+  <button class="mobile-dock-btn" type="button" data-mobile-nav="quotazioni" onclick="goToView('quotazioni')"><span>🧾</span><strong>Quote</strong></button>
+  <button class="mobile-dock-btn more" type="button" onclick="toggleMobileMenu()" aria-label="Apri menu"><span>☰</span><strong>Altro</strong></button>
+</nav>
+
 <!-- MAIN -->
 <div id="main">
   <div id="topbar">
+    <button class="mobile-menu-btn mobile-top-trigger" type="button" aria-label="Apri menu" onclick="toggleMobileMenu()">☰</button>
     <span class="tb-title" id="tb-ttl">Dashboard</span>
     <span class="tb-sub" id="tb-sub"></span>
     <div class="tb-right">
@@ -1026,8 +1113,6 @@ const AUTH_MODES = {
 };
 const ROLE_LABELS = { admin:'Admin', editor:'Editor', viewer:'User' };
 const ROLE_RANK = { viewer:1, editor:2, admin:3 };
-const AUTH_INACTIVITY_MS = 5 * 60 * 1000;
-const AUTH_ACTIVITY_EVENTS = ['pointerdown','keydown','mousemove','scroll','touchstart'];
 const remoteSync = {
   client: null,
   enabled: false,
@@ -1043,8 +1128,6 @@ const authState = {
   ready: false,
   bootstrapped: false,
   mode: 'login',
-  inactivityTimerId: null,
-  inactivityBound: false,
   logoutReason: ''
 };
 const DEFAULT_UI_PREFS = {
@@ -1175,37 +1258,6 @@ function setAuthStatus(message='', tone='') {
   el.textContent = message || '';
 }
 
-async function handleInactivityLogout() {
-  if(!authState.session || !remoteSync.client) return;
-  authState.logoutReason = 'Sessione chiusa dopo 5 minuti di inattivita.';
-  await remoteSync.client.auth.signOut();
-}
-
-function clearInactivityTimer() {
-  if(authState.inactivityTimerId) {
-    window.clearTimeout(authState.inactivityTimerId);
-    authState.inactivityTimerId = null;
-  }
-}
-
-function resetInactivityTimer() {
-  clearInactivityTimer();
-  if(!authState.session) return;
-  authState.inactivityTimerId = window.setTimeout(() => {
-    void handleInactivityLogout();
-  }, AUTH_INACTIVITY_MS);
-}
-
-function bindInactivityTracking() {
-  if(authState.inactivityBound) return;
-  AUTH_ACTIVITY_EVENTS.forEach(eventName => {
-    document.addEventListener(eventName, () => {
-      if(authState.session) resetInactivityTimer();
-    }, { passive:true });
-  });
-  authState.inactivityBound = true;
-}
-
 function switchAuthMode(mode) {
   authState.mode = AUTH_MODES[mode] ? mode : 'login';
   document.querySelectorAll('.auth-tab').forEach(btn => btn.classList.toggle('on', btn.dataset.authTab === authState.mode));
@@ -1259,6 +1311,30 @@ function updateTopbarAddButton() {
   } else {
     addBtn.style.display = 'none';
   }
+}
+
+function isMobileViewport() {
+  return window.matchMedia('(max-width: 900px)').matches;
+}
+
+function closeMobileMenu() {
+  document.body.classList.remove('mobile-menu-open');
+}
+
+function openMobileMenu() {
+  if(!isMobileViewport()) return;
+  document.body.classList.add('mobile-menu-open');
+}
+
+function toggleMobileMenu() {
+  if(!isMobileViewport()) return;
+  document.body.classList.toggle('mobile-menu-open');
+}
+
+function syncMobileNavigationUi() {
+  document.querySelectorAll('[data-mobile-nav]').forEach(btn => {
+    btn.classList.toggle('on', btn.dataset.mobileNav === curView);
+  });
 }
 
 function applyState(nextState) {
@@ -1394,7 +1470,7 @@ async function setupRemoteSync() {
   try {
     if(!remoteSync.client) {
       remoteSync.client = window.supabase.createClient(remoteCfg.supabaseUrl, remoteCfg.supabaseAnonKey, {
-        auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+        auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, storage: window.sessionStorage }
       });
     }
     if(!authState.session) {
@@ -1484,7 +1560,6 @@ async function completeAuthenticatedBootstrap() {
   remoteSync.initialized = true;
   authState.bootstrapped = true;
   authState.logoutReason = '';
-  resetInactivityTimer();
   unlockAppAfterAuth();
   setSyncStatus(remoteSync.enabled ? 'Cloud attivo · workspace sincronizzato' : 'Sessione attiva · uso locale', remoteSync.enabled ? 'ok' : 'warn');
 }
@@ -1494,7 +1569,6 @@ async function bootstrapSession(session, modeOnFail='login') {
   if(!authState.session) {
     authState.profile = null;
     authState.bootstrapped = false;
-    clearInactivityTimer();
     teardownRemoteRealtime();
     if(remoteSync.pollingId) clearInterval(remoteSync.pollingId);
     remoteSync.pollingId = null;
@@ -1527,10 +1601,9 @@ async function initAuth() {
   if(!remoteCfg.supabaseUrl || !remoteCfg.supabaseAnonKey || !window.supabase || !window.supabase.createClient) {
     throw new Error('Configurazione Supabase mancante.');
   }
-  bindInactivityTracking();
   if(!remoteSync.client) {
     remoteSync.client = window.supabase.createClient(remoteCfg.supabaseUrl, remoteCfg.supabaseAnonKey, {
-      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, storage: window.sessionStorage }
     });
   }
   remoteSync.client.auth.onAuthStateChange((event, session) => {
@@ -1668,6 +1741,8 @@ function syncUiControls() {
   fillScadRangeBar();
   syncGareSortControls();
   syncAggSortControls();
+  updateTopbarAddButton();
+  syncMobileNavigationUi();
 }
 
 function setGareSort(value) {
@@ -1960,20 +2035,25 @@ const viewCfg = {
   scadenze:    {ttl:'Scadenze',             sub:'Gare in scadenza',       add:'＋ Nuova Gara'},
 };
 
+function goToView(v) {
+  if(!viewCfg[v]) return;
+  curView = v;
+  document.querySelectorAll('.nav').forEach(x => x.classList.toggle('on', x.dataset.v === v));
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+  const viewEl = document.getElementById('v-'+v);
+  if(viewEl) viewEl.classList.add('on');
+  const c = viewCfg[v];
+  document.getElementById('tb-ttl').textContent = c.ttl;
+  document.getElementById('tb-sub').textContent = c.sub;
+  updateTopbarAddButton();
+  syncMobileNavigationUi();
+  closeMobileMenu();
+  redrawCurrent();
+  if(isMobileViewport()) window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 document.querySelectorAll('.nav').forEach(n => {
-  n.addEventListener('click', () => {
-    const v = n.dataset.v;
-    curView = v;
-    document.querySelectorAll('.nav').forEach(x=>x.classList.remove('on'));
-    document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
-    n.classList.add('on');
-    document.getElementById('v-'+v).classList.add('on');
-    const c = viewCfg[v];
-    document.getElementById('tb-ttl').textContent = c.ttl;
-    document.getElementById('tb-sub').textContent = c.sub;
-    updateTopbarAddButton();
-    redrawCurrent();
-  });
+  n.addEventListener('click', () => goToView(n.dataset.v));
 });
 
 function openAdd() {
@@ -3418,6 +3498,9 @@ async function init(){
     document.getElementById('loading').style.display='none';
   }
 }
+window.addEventListener('resize', () => {
+  if(!isMobileViewport()) closeMobileMenu();
+});
 window.addEventListener('load', init);
 </script>
 </body>
