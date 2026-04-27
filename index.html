@@ -413,12 +413,27 @@ thead th{position:sticky;top:0;z-index:2}
 .col-dd-clear:hover{background:#FFF0F0}
 
 /* QUOTAZIONI */
-.quote-layout{display:grid;grid-template-columns:minmax(280px,var(--quote-panel-w)) 10px minmax(0,1fr);gap:0;align-items:stretch}
+.quote-layout{display:grid;grid-template-columns:minmax(280px,var(--quote-panel-w)) 10px minmax(0,1fr);gap:0;align-items:stretch;transition:grid-template-columns .58s cubic-bezier(.16,1,.3,1)}
+.quote-layout.quote-collapsed{grid-template-columns:0 38px minmax(0,1fr)}
 .quote-panel,.quote-workspace{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
-.quote-panel{display:flex;flex-direction:column;min-height:720px;margin-right:14px}
+.quote-panel{display:flex;flex-direction:column;min-height:720px;margin-right:14px;transition:opacity .42s ease, margin .58s cubic-bezier(.16,1,.3,1), transform .58s cubic-bezier(.16,1,.3,1);transform:translateX(0)}
+.quote-layout.quote-collapsed .quote-panel{opacity:0;margin-right:0;pointer-events:none;overflow:hidden;background:transparent;box-shadow:none;transform:translateX(-12px)}
+.quote-layout.quote-collapsed .quote-panel .quote-list,
+.quote-layout.quote-collapsed .quote-panel .quote-panel-hd > div{display:none}
 .quote-resizer{position:relative;cursor:col-resize;touch-action:none}
 .quote-resizer::before{content:'';position:absolute;left:50%;top:16px;bottom:16px;width:3px;transform:translateX(-50%);border-radius:999px;background:linear-gradient(180deg,#D9E5F3 0%,#C6D7EC 100%);transition:background .15s, box-shadow .15s}
 .quote-resizer:hover::before,.quote-resizer.dragging::before{background:linear-gradient(180deg,#90CAF9 0%,#42A5F5 100%);box-shadow:0 0 0 5px rgba(66,165,245,.12)}
+.quote-layout.quote-collapsed .quote-resizer{cursor:default;display:block}
+.quote-layout.quote-collapsed .quote-resizer::before{display:none}
+.quote-toggle{display:none}
+.quote-layout.quote-collapsed .quote-toggle{position:absolute;left:50%;top:14px;transform:translateX(-50%);width:30px;height:30px;border:none;border-radius:9px;background:#EDF4FF;color:var(--blue);font-size:18px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(21,101,192,.12);z-index:2;animation:quoteToggleIn .24s ease both}
+.quote-layout.quote-collapsed .quote-toggle:hover{background:#DCEBFF}
+@keyframes quoteToggleIn{from{opacity:0;transform:translateX(-50%) scale(.9)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+.quote-panel-hd{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start}
+.quote-panel-close{width:30px;height:30px;border:none;border-radius:9px;background:#EEF3F8;color:var(--gray2);font-size:18px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.quote-panel-close:hover{background:#E1EBF5;color:var(--blue)}
+.quote-workspace{transition:transform .58s cubic-bezier(.16,1,.3,1), box-shadow .58s ease}
+.quote-layout.quote-collapsed .quote-workspace{transform:translateX(-2px);box-shadow:0 6px 24px rgba(13,27,62,.1)}
 .quote-panel-hd,.quote-workspace-hd{padding:14px 16px;border-bottom:1px solid #EEF2F7;background:#FBFCFE}
 .quote-panel-hd h3,.quote-workspace-hd h3{font-size:15px;font-weight:700;color:var(--navy)}
 .quote-panel-sub,.quote-workspace-sub{font-size:11px;color:var(--gray3);margin-top:3px}
@@ -843,12 +858,17 @@ thead th{position:sticky;top:0;z-index:2}
       <div class="quote-layout">
         <div class="quote-panel">
           <div class="quote-panel-hd">
-            <h3>🧾 Quotazioni Salvate</h3>
-            <div class="quote-panel-sub">Bozze locali sincronizzate con il tracker</div>
+            <div>
+              <h3>🧾 Quotazioni Salvate</h3>
+              <div class="quote-panel-sub">Bozze locali sincronizzate con il tracker</div>
+            </div>
+            <button class="quote-panel-close" type="button" onclick="toggleQuotePanel(true)" title="Chiudi elenco quotazioni" aria-label="Chiudi elenco quotazioni">‹</button>
           </div>
           <div class="quote-list" id="quote-list"></div>
         </div>
-        <div class="quote-resizer" id="quote-resizer" onpointerdown="startQuotePanelResize(event)" aria-hidden="true"></div>
+        <div class="quote-resizer" id="quote-resizer" onpointerdown="startQuotePanelResize(event)">
+          <button class="quote-toggle" id="quote-panel-toggle" type="button" onclick="event.stopPropagation();toggleQuotePanel(false)" title="Apri elenco quotazioni" aria-label="Apri elenco quotazioni">›</button>
+        </div>
         <div class="quote-workspace">
           <div class="quote-workspace-hd">
             <h3>⚙️ Editor Quotazione</h3>
@@ -1160,7 +1180,8 @@ const DEFAULT_UI_PREFS = {
   offYear: '',
   portStatus: '',
   scadRange: '30',
-  quotePanelWidth: 320
+  quotePanelWidth: 320,
+  quotePanelCollapsed: false
 };
 
 function lsLoad(key, seed) {
@@ -2488,10 +2509,36 @@ function formatDateTime(value) {
 function applyQuotePanelWidth() {
   const width = Math.max(280, Math.min(520, Number(uiPrefs.quotePanelWidth) || DEFAULT_UI_PREFS.quotePanelWidth));
   document.documentElement.style.setProperty('--quote-panel-w', width + 'px');
+  syncQuotePanelCollapsed();
+}
+
+function syncQuotePanelCollapsed() {
+  const layout = document.querySelector('.quote-layout');
+  const closeBtn = document.querySelector('.quote-panel-close');
+  const openBtn = document.getElementById('quote-panel-toggle');
+  const collapsed = !!uiPrefs.quotePanelCollapsed;
+  if(layout) layout.classList.toggle('quote-collapsed', collapsed);
+  if(closeBtn) {
+    closeBtn.textContent = '‹';
+    closeBtn.title = 'Chiudi elenco quotazioni';
+    closeBtn.setAttribute('aria-label', closeBtn.title);
+  }
+  if(openBtn) {
+    openBtn.textContent = '›';
+    openBtn.title = 'Apri elenco quotazioni';
+    openBtn.setAttribute('aria-label', openBtn.title);
+  }
+}
+
+function toggleQuotePanel(forceCollapsed) {
+  uiPrefs.quotePanelCollapsed = typeof forceCollapsed === 'boolean' ? forceCollapsed : !uiPrefs.quotePanelCollapsed;
+  saveUiPrefs();
+  syncQuotePanelCollapsed();
 }
 
 function startQuotePanelResize(event) {
   if(window.innerWidth <= 980) return;
+  if(uiPrefs.quotePanelCollapsed) return;
   const layout = event.target.closest('.quote-layout');
   const handle = document.getElementById('quote-resizer');
   if(!layout || !handle) return;
@@ -2523,6 +2570,7 @@ function drawQuotePage() {
   const listEl = document.getElementById('quote-list');
   const bodyEl = document.getElementById('quote-body');
   if(!listEl || !bodyEl) return;
+  syncQuotePanelCollapsed();
   const editable = canMutateData();
   if(!state.quotazioni.length) {
     if(editable) {
