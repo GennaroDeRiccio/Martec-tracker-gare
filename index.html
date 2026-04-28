@@ -392,6 +392,54 @@ tbody .row-click{cursor:pointer}
 .gd-note-card{padding:20px 22px}
 .gd-note-text{font-size:14px;line-height:1.55;color:var(--gray2);font-weight:600}
 
+/* ACTIVITY HISTORY */
+.gd-activity-card{margin-top:18px;background:#fff;border:1px solid #EAF0F6;border-radius:12px;box-shadow:0 8px 28px rgba(13,27,62,.06);overflow:hidden}
+.gd-activity-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:18px 22px;border-bottom:1px solid #EEF2F7}
+.gd-activity-head h3{font-size:16px;font-weight:800;color:var(--navy)}
+.gd-activity-head p{font-size:12px;color:var(--gray3);margin-top:3px}
+.gd-activity-form{display:grid;grid-template-columns:1fr;gap:10px;padding:16px 22px;border-bottom:1px solid #EEF2F7;background:#FBFCFE}
+.gd-activity-form textarea{min-height:78px}
+.gd-activity-list{display:grid;gap:12px;padding:18px 22px}
+.gd-activity-item{display:grid;grid-template-columns:38px minmax(0,1fr);gap:12px}
+.gd-activity-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#EDF4FF;color:var(--blue);font-weight:900}
+.gd-activity-bubble{border:1px solid #E3EBF5;border-radius:12px;padding:12px 14px;background:#fff}
+.gd-activity-meta{display:flex;justify-content:space-between;gap:12px;color:var(--gray3);font-size:11px;font-weight:700;margin-bottom:6px}
+.gd-activity-subject{font-size:14px;font-weight:800;color:var(--navy);margin-bottom:5px}
+.gd-activity-text{font-size:13px;line-height:1.55;color:var(--gray2);white-space:pre-wrap}
+.gd-activity-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.gd-activity-attachment{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:9px 10px;border-radius:10px;background:#F5F9FF;border:1px solid #DCEBFF}
+.gd-activity-attachment strong{font-size:12px;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gd-activity-attachment span{font-size:11px;color:var(--gray3);font-weight:700}
+.gd-activity-attachment .btn{padding:5px 8px;font-size:11px}
+.gd-activity-file-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.gd-activity-file-row input[type=file]{max-width:360px}
+.attachment-preview{width:min(92vw,980px);height:min(88vh,760px);display:flex;flex-direction:column}
+.attachment-preview-frame{flex:1;border:0;width:100%;background:#F5F7FA}
+.attachment-preview-empty{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:26px;color:var(--gray3);font-size:14px;line-height:1.5}
+
+/* CALENDAR */
+.calendar-shell{background:#fff;border-radius:var(--r);box-shadow:var(--sh);border:1px solid #E8EEF6;overflow:hidden}
+.calendar-toolbar{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:18px;border-bottom:1px solid #EEF2F7;background:#FBFCFE}
+.calendar-toolbar h3{font-size:18px;font-weight:800;color:var(--navy)}
+.calendar-toolbar p{font-size:12px;color:var(--gray3);margin-top:4px}
+.calendar-nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.calendar-nav strong{font-family:'Outfit',sans-serif;font-size:20px;color:var(--navy);min-width:190px;text-align:center}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:#EAF0F6;gap:1px}
+.calendar-day-name{background:#0D1B3E;color:#fff;padding:10px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;text-align:center}
+.calendar-cell{min-height:132px;background:#fff;padding:9px;display:flex;flex-direction:column;gap:7px}
+.calendar-cell.muted{background:#F7FAFD;color:var(--gray4)}
+.calendar-cell.today{background:linear-gradient(180deg,#F2F7FF 0%,#E4F0FF 100%);box-shadow:inset 0 0 0 2px var(--blue)}
+.calendar-cell.today .calendar-date span{background:var(--blue);color:#fff;border-radius:999px;min-width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center}
+.calendar-date{font-size:12px;font-weight:800;color:var(--navy);display:flex;justify-content:space-between;align-items:center}
+.calendar-add-mini{border:none;background:#EDF4FF;color:var(--blue);border-radius:8px;width:23px;height:23px;cursor:pointer;font-weight:900}
+.calendar-event{border-left:4px solid var(--blue);border-radius:8px;padding:7px;background:#F5F9FF;font-size:11px;line-height:1.35;cursor:pointer}
+.calendar-event strong{display:block;color:var(--navy);font-size:11px;margin-bottom:2px}
+.calendar-event span{color:var(--gray3);font-weight:700}
+.calendar-event.deadline{border-left-color:var(--orange);background:#FFF8F0}
+.calendar-event.follow{border-left-color:var(--blue)}
+.calendar-event.meeting{border-left-color:var(--green);background:#F0FBF2}
+.calendar-event.memo{border-left-color:var(--purple);background:#F8F0FF}
+
 /* TH sticky */
 thead th{position:sticky;top:0;z-index:2}
 .th-click{cursor:pointer;user-select:none}
@@ -591,6 +639,13 @@ thead th{position:sticky;top:0;z-index:2}
   .gd-info-grid,.gd-metrics,.gd-summary{grid-template-columns:1fr;gap:16px}
   .gd-metric+.gd-metric{border-left:none;border-top:1px solid #DDE6F1}
   .gd-cell:nth-child(odd),.gd-field:nth-child(odd){border-right:none}
+  .gd-activity-head{flex-direction:column}
+  .calendar-toolbar{flex-direction:column}
+  .calendar-nav{justify-content:flex-start;width:100%}
+  .calendar-grid{display:flex;flex-direction:column;gap:8px;background:transparent;padding:12px}
+  .calendar-day-name{display:none}
+  .calendar-cell{min-height:0;border:1px solid #E8EEF6;border-radius:14px}
+  .calendar-cell.muted{display:none}
   .quote-layout,.quote-top-grid,.quote-kpis{grid-template-columns:1fr}
   .quote-panel,.quote-workspace{min-height:0;border-radius:18px}
   .quote-panel{margin-right:0}
@@ -742,13 +797,13 @@ thead th{position:sticky;top:0;z-index:2}
   </div>
   <div class="sb-sec">Principale</div>
   <div class="nav on" data-v="dashboard"><span class="ic">📊</span>Dashboard</div>
+  <div class="nav" data-v="calendario"><span class="ic">📅</span>Calendario<span class="nb" id="nb-c">0</span></div>
   <div class="nav" data-v="gare"><span class="ic">📋</span>Lista Gare<span class="nb" id="nb-g">—</span></div>
   <div class="nav" data-v="aggiudicate"><span class="ic">✅</span>Aggiudicate<span class="nb" id="nb-a">—</span></div>
   <div class="nav" data-v="quotazioni"><span class="ic">🧾</span>Quotazioni<span class="nb" id="nb-q">0</span></div>
   <div class="nav" data-v="offerte"><span class="ic">📬</span>Offerte<span class="nb" id="nb-o">—</span></div>
   <div class="sb-sec">Gestione</div>
   <div class="nav" data-v="portali"><span class="ic">🌐</span>Portali</div>
-  <div class="nav" data-v="scadenze"><span class="ic">⏰</span>Scadenze<span class="nb red" id="nb-s">0</span></div>
   <div class="sb-bottom">
     <div class="sb-user-wrap">
       <div class="auth-user" id="auth-user" style="display:none">
@@ -978,23 +1033,24 @@ thead th{position:sticky;top:0;z-index:2}
       </div>
     </div>
 
-    <!-- SCADENZE -->
-    <div class="view" id="v-scadenze">
-      <div class="tc">
-        <div class="tc-hdr">
-          <h3>⏰ Scadenze Imminenti</h3>
+    <!-- CALENDARIO -->
+    <div class="view" id="v-calendario">
+      <div class="calendar-shell">
+        <div class="calendar-toolbar">
+          <div>
+            <h3>📅 Calendario operativo</h3>
+            <p>Scadenze gare, eventi e task condivisi.</p>
+          </div>
+          <div class="calendar-nav">
+            <button class="btn btn-o btn-sm" type="button" onclick="shiftCalendarMonth(-1)">‹ Mese precedente</button>
+            <strong id="calendar-title">—</strong>
+            <button class="btn btn-o btn-sm" type="button" onclick="shiftCalendarMonth(1)">Mese successivo ›</button>
+          </div>
         </div>
-        <div class="tw"><table><thead><tr>
-          <th class="th-click" data-tbl="scad" data-tbl="gare" data-col="stato">Stato ▾</th>
-          <th class="th-click" data-tbl="scad" data-tbl="gare" data-col="portale">Portale ▾</th>
-          <th>N° RDO</th><th>Descrizione</th>
-          <th class="th-click" data-tbl="scad" data-col="ente">Ente ▾</th>
-          <th>Scadenza</th><th>Giorni</th>
-          <th class="th-click" data-tbl="scad" data-tbl="gare" data-col="operatore">Operatore ▾</th>
-        </tr></thead><tbody id="tb-sc"></tbody></table></div>
-        <div class="tc-ftr"><span id="cnt-sc"></span></div>
+        <div class="calendar-grid" id="calendar-grid"></div>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -1129,6 +1185,37 @@ thead th{position:sticky;top:0;z-index:2}
   </div>
 </div>
 
+<!-- MODAL EVENTO CALENDARIO -->
+<div class="ovl" id="m-cal">
+  <div class="mdl" style="max-width:520px">
+    <div class="mh"><h3 id="m-cal-ttl">📅 Nuovo evento</h3><button class="mcl" onclick="closeM('cal')">✕</button></div>
+    <div class="mb">
+      <div class="fg">
+        <div class="fi full"><label>Oggetto *</label><input id="xc-title" placeholder="Inserisci evento/task"></div>
+        <div class="fi"><label>Tipo</label><select id="xc-type">
+          <option>EVENTO</option><option>TASK</option>
+        </select></div>
+        <div class="fi"><label>Data *</label><input type="date" id="xc-date"></div>
+        <div class="fi"><label>Ora</label><input type="time" id="xc-time"></div>
+        <div class="fi full"><label>Note</label><textarea id="xc-notes" placeholder="Dettagli operativi..."></textarea></div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn btn-r" id="m-cal-del" style="display:none" onclick="deleteCalendarEvent(editId.cal && editId.cal.id)">🗑️ Elimina</button><button class="btn btn-p" onclick="saveCalendarEvent()">💾 Salva evento</button></div>
+  </div>
+</div>
+
+<!-- MODAL ANTEPRIMA ALLEGATO -->
+<div class="ovl" id="m-attachment">
+  <div class="mdl attachment-preview">
+    <div class="mh">
+      <h3 id="attachment-title">📎 Allegato</h3>
+      <button class="mcl" onclick="closeAttachmentPreview()">✕</button>
+    </div>
+    <iframe class="attachment-preview-frame" id="attachment-frame" title="Anteprima allegato"></iframe>
+    <div class="mf"><button class="btn btn-o" id="attachment-download" type="button">Scarica</button></div>
+  </div>
+</div>
+
 <div id="toasts"></div>
 
 <script>
@@ -1140,9 +1227,9 @@ const SEED = {"gare": [{"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": 
 // ═══════════════════════════════════════════════════════
 // STATE — persistenza locale + sync remoto opzionale
 // ═══════════════════════════════════════════════════════
-const LS = {gare:'mg_gare', agg:'mg_agg', off:'mg_off', port:'mg_port', quote:'mg_quote'};
+const LS = {gare:'mg_gare', agg:'mg_agg', off:'mg_off', port:'mg_port', quote:'mg_quote', activity:'mg_activity', cal:'mg_calendar'};
 const UI_LS = 'mg_ui_prefs';
-const STATE_MAP = {gare:'gare', agg:'aggiudicate', off:'offerte', port:'portali', quote:'quotazioni'};
+const STATE_MAP = {gare:'gare', agg:'aggiudicate', off:'offerte', port:'portali', quote:'quotazioni', activity:'attivitaGare', cal:'calendarEvents'};
 const DEFAULT_REMOTE_CONFIG = {
   syncTable: 'app_state',
   syncRowId: 'shared',
@@ -1181,7 +1268,8 @@ const DEFAULT_UI_PREFS = {
   portStatus: '',
   scadRange: '30',
   quotePanelWidth: 320,
-  quotePanelCollapsed: false
+  quotePanelCollapsed: false,
+  calendarMonth: ''
 };
 
 function lsLoad(key, seed) {
@@ -1213,6 +1301,8 @@ let state = {
   offerte:     lsLoad(LS.off,   SEED.offerte),
   portali:     lsLoad(LS.port,  SEED.portali),
   quotazioni:  lsLoad(LS.quote, []),
+  attivitaGare: lsLoad(LS.activity, []),
+  calendarEvents: lsLoad(LS.cal, []),
 };
 let uiPrefs = loadUiPrefs();
 
@@ -1245,7 +1335,9 @@ function normalizeStateOperatori() {
       aggiudicate: aggiudicate.rows,
       offerte: offerte.rows,
       portali: portali.rows,
-      quotazioni: state.quotazioni
+      quotazioni: state.quotazioni,
+      attivitaGare: state.attivitaGare,
+      calendarEvents: state.calendarEvents
     };
   }
   return changed;
@@ -1265,7 +1357,9 @@ function serializeRemoteState() {
     aggiudicate: state.aggiudicate,
     offerte: state.offerte,
     portali: state.portali,
-    quotazioni: state.quotazioni
+    quotazioni: state.quotazioni,
+    attivitaGare: state.attivitaGare,
+    calendarEvents: state.calendarEvents
   };
 }
 
@@ -1388,7 +1482,9 @@ function applyState(nextState) {
     aggiudicate: Array.isArray(nextState.aggiudicate) ? nextState.aggiudicate : [],
     offerte: Array.isArray(nextState.offerte) ? nextState.offerte : [],
     portali: Array.isArray(nextState.portali) ? nextState.portali : [],
-    quotazioni: Array.isArray(nextState.quotazioni) ? nextState.quotazioni : []
+    quotazioni: Array.isArray(nextState.quotazioni) ? nextState.quotazioni : [],
+    attivitaGare: Array.isArray(nextState.attivitaGare) ? nextState.attivitaGare : [],
+    calendarEvents: Array.isArray(nextState.calendarEvents) ? nextState.calendarEvents : []
   };
   normalizeStateOperatori();
   saveLocalSnapshot();
@@ -1463,6 +1559,7 @@ async function pullRemoteState(silent=false) {
     fillPortSel('xg-port','');
     fillPortSel('xa-port','');
     fillOffYearFilter();
+    fillCalendarGaraSelects();
     redrawCurrent();
     toast('Dati aggiornati dal cloud','ok');
   }
@@ -1498,6 +1595,7 @@ function setupRemoteRealtime() {
           fillPortSel('xg-port','');
           fillPortSel('xa-port','');
           fillOffYearFilter();
+          fillCalendarGaraSelects();
           redrawCurrent();
           toast('Workspace aggiornato in tempo reale', 'ok');
         }
@@ -1783,7 +1881,7 @@ function save(key) {
 function syncUiControls() {
   fillOffYearFilter();
   fillPortaliStatusBar();
-  fillScadRangeBar();
+  fillCalendarGaraSelects();
   syncGareSortControls();
   syncAggSortControls();
   updateTopbarAddButton();
@@ -1909,6 +2007,7 @@ let pg={cur:1}, pa={cur:1}, po={cur:1};
 let activeQuoteId = null;
 let activeQuoteDraft = null;
 let activeDropdown = null;
+let activeAttachmentPreviewUrl = '';
 const tblFilters = {gare:{}, agg:{}, off:{}, port:{}, scad:{}};
 
 // ═══════════════════════════════════════════════════════
@@ -2077,7 +2176,7 @@ const viewCfg = {
   aggiudicate: {ttl:'Gare Aggiudicate',    sub:'',                       add:'＋ Aggiungi'},
   offerte:     {ttl:'Offerte Presentate',  sub:'',                       add:'＋ Nuova Offerta'},
   portali:     {ttl:'Portali',              sub:'Credenziali & accessi',  add:'＋ Portale'},
-  scadenze:    {ttl:'Scadenze',             sub:'Gare in scadenza',       add:'＋ Nuova Gara'},
+  calendario:  {ttl:'Calendario',           sub:'Scadenze e promemoria',  add:'＋ Nuovo Evento'},
 };
 
 function goToView(v) {
@@ -2104,12 +2203,13 @@ document.querySelectorAll('.nav').forEach(n => {
 function openAdd() {
   if(!requireRole('editor')) return;
   if(curView==='quotazioni') { newQuote(); return; }
-  const m={dashboard:'gara',gare:'gara',aggiudicate:'agg',offerte:'off',portali:'port',scadenze:'gara'};
+  if(curView==='calendario') { openCalendarEventModal(); return; }
+  const m={dashboard:'gara',gare:'gara',aggiudicate:'agg',offerte:'off',portali:'port'};
   openM(m[curView]||'gara');
 }
 
 function redrawCurrent() {
-  ({dashboard:drawDash,quotazioni:drawQuotePage,gare:drawGare,aggiudicate:drawAgg,offerte:drawOff,portali:drawPortali,scadenze:drawScad}[curView]||drawDash)();
+  ({dashboard:drawDash,quotazioni:drawQuotePage,gare:drawGare,aggiudicate:drawAgg,offerte:drawOff,portali:drawPortali,calendario:drawCalendar}[curView]||drawDash)();
 }
 
 function updateBadges() {
@@ -2118,7 +2218,9 @@ function updateBadges() {
   document.getElementById('nb-a').textContent = state.aggiudicate.length;
   document.getElementById('nb-o').textContent = state.offerte.length;
   const s = state.gare.filter(g=>{const d=daysTo(g.scadenza);return d!==null&&d>=0&&d<=7&&!['PERSA','AGGIUDICATA','SCARTATA'].includes(g.stato);}).length;
-  document.getElementById('nb-s').textContent = s;
+  const c = state.calendarEvents.filter(e => e.date && new Date(e.date+'T23:59:59') >= new Date()).length;
+  const cb = document.getElementById('nb-c');
+  if(cb) cb.textContent = c;
 }
 
 function fillPortSel(id, sel) {
@@ -2172,29 +2274,6 @@ function setPortaliStatus(status) {
   saveUiPrefs();
   fillPortaliStatusBar();
   drawPortali();
-}
-
-function fillScadRangeBar() {
-  const bar = document.getElementById('s-rangebar');
-  if(!bar) return;
-  const current = uiPrefs.scadRange || '30';
-  const options = [
-    { value: '7', label: '7 giorni' },
-    { value: '15', label: '15 giorni' },
-    { value: '30', label: '30 giorni' },
-    { value: '60', label: '60 giorni' },
-    { value: '999', label: 'Tutte' }
-  ];
-  bar.innerHTML = options.map(opt =>
-    '<button type="button" class="sortchip'+(opt.value===current?' on':'')+'" onclick="setScadRange(\''+opt.value+'\')">'+opt.label+'</button>'
-  ).join('');
-}
-
-function setScadRange(value) {
-  uiPrefs.scadRange = value || '30';
-  saveUiPrefs();
-  fillScadRangeBar();
-  drawScad();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2941,7 +3020,7 @@ function setFilter(tbl, col, val) {
 
 function redrawTable(tbl) {
   ({gare:()=>{pg.cur=1;drawGare();},agg:()=>{pa.cur=1;drawAgg();},
-    off:()=>{po.cur=1;drawOff();},port:drawPortali,scad:drawScad}[tbl]||drawGare)();
+    off:()=>{po.cur=1;drawOff();},port:drawPortali}[tbl]||drawGare)();
 }
 
 function updateThHeaders(tbl) {
@@ -2965,6 +3044,349 @@ function updateFilterChips() {
   bar.querySelectorAll('[data-col]').forEach(c=>c.addEventListener('click',()=>setFilter('gare',c.dataset.col,'')));
   const ca=bar.querySelector('#chip-clr');
   if(ca) ca.addEventListener('click',()=>{tblFilters.gare={};updateThHeaders('gare');updateFilterChips();pg.cur=1;drawGare();});
+}
+
+// ═══════════════════════════════════════════════════════
+// ACTIVITY HISTORY
+// ═══════════════════════════════════════════════════════
+function getCurrentUserName() {
+  return (authState.profile && (authState.profile.full_name || authState.profile.username || authState.profile.email)) || 'Utente';
+}
+
+function getGaraActivities(garaId) {
+  return (state.attivitaGare || [])
+    .filter(item => item.gara_id === garaId)
+    .sort((a,b) => (b.created_at || '').localeCompare(a.created_at || ''));
+}
+
+function renderGaraActivitySection(garaId) {
+  const editable = canMutateData();
+  const items = getGaraActivities(garaId);
+  const editing = editId.activity && items.find(item => item.id === editId.activity);
+  const editingItem = editing ? items.find(item => item.id === editId.activity) : null;
+  return '<div class="gd-activity-card">'
+    +'<div class="gd-activity-head">'
+      +'<div><h3>Storico attività</h3><p>Ogni aggiornamento contiene oggetto, testo, autore e data.</p></div>'
+      +'<span class="bd bd-INCORSO">'+items.length+' messaggi</span>'
+    +'</div>'
+    +(editable
+      ? '<div class="gd-activity-form">'
+          +'<input id="ga-subject-'+garaId+'" placeholder="Oggetto del messaggio" value="'+escHtml(editingItem ? editingItem.subject || '' : '')+'">'
+          +'<textarea id="ga-text-'+garaId+'" placeholder="Scrivi il dettaglio dell’attività...">'+escHtml(editingItem ? editingItem.text || '' : '')+'</textarea>'
+          +'<div class="gd-activity-file-row"><input type="file" id="ga-file-'+garaId+'"><span class="quote-muted">'+(editingItem && editingItem.attachment ? 'Allegato attuale: '+escHtml(editingItem.attachment.name) : 'Allegato facoltativo')+'</span></div>'
+          +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-p btn-sm" type="button" onclick="saveGaraActivity(\''+garaId+'\')">'+(editingItem?'💾 Salva modifica':'＋ Aggiungi messaggio')+'</button>'+(editingItem?'<button class="btn btn-o btn-sm" type="button" onclick="cancelGaraActivityEdit(\''+garaId+'\')">Annulla modifica</button>':'')+'</div>'
+        +'</div>'
+      : '')
+    +'<div class="gd-activity-list">'
+      +(items.length ? items.map(item =>
+        '<div class="gd-activity-item">'
+          +'<div class="gd-activity-avatar">'+escHtml(buildProfileAvatar(item.author))+'</div>'
+          +'<div class="gd-activity-bubble">'
+            +'<div class="gd-activity-meta"><span>'+escHtml(item.author || 'Utente')+'</span><span>'+formatDateTime(item.created_at)+'</span></div>'
+            +'<div class="gd-activity-subject">'+escHtml(item.subject || 'Aggiornamento')+'</div>'
+            +'<div class="gd-activity-text">'+escHtml(item.text || '')+'</div>'
+            +(item.attachment ? renderActivityAttachment(item) : '')
+            +(editable ? '<div class="gd-activity-actions"><button class="btn btn-o btn-sm" type="button" onclick="editGaraActivity(\''+item.id+'\', \''+garaId+'\')">✏️ Modifica</button><button class="btn-del" type="button" onclick="deleteGaraActivity(\''+item.id+'\', \''+garaId+'\')">🗑️ Cancella</button></div>' : '')
+          +'</div>'
+        +'</div>'
+      ).join('') : '<div class="empty" style="padding:24px"><div class="ei">🕘</div><h4>Nessun messaggio nello storico</h4><p>Inserisci il primo aggiornamento operativo per questa gara.</p></div>')
+    +'</div>'
+  +'</div>';
+}
+
+function renderActivityAttachment(item) {
+  const att = item.attachment || {};
+  return '<div class="gd-activity-attachment">'
+    +'<div><strong>📎 '+escHtml(att.name || 'Allegato')+'</strong><span>'+formatFileSize(att.size)+'</span></div>'
+    +'<div style="display:flex;gap:6px"><button class="btn btn-o btn-sm" type="button" onclick="openActivityAttachment(\''+item.id+'\')">Visualizza</button><button class="btn btn-o btn-sm" type="button" onclick="downloadActivityAttachment(\''+item.id+'\')">Scarica</button></div>'
+  +'</div>';
+}
+
+function formatFileSize(bytes) {
+  const value = Number(bytes) || 0;
+  if(!value) return '';
+  if(value < 1024) return value + ' B';
+  if(value < 1024 * 1024) return (value / 1024).toFixed(1).replace('.', ',') + ' KB';
+  return (value / (1024 * 1024)).toFixed(1).replace('.', ',') + ' MB';
+}
+
+function findActivityById(id) {
+  return (state.attivitaGare || []).find(item => item.id === id) || null;
+}
+
+async function readActivityAttachment(garaId) {
+  const input = document.getElementById('ga-file-'+garaId);
+  const file = input && input.files ? input.files[0] : null;
+  if(!file) return null;
+  const content = await fileToBase64(file);
+  return { name:file.name, type:file.type || 'application/octet-stream', size:file.size, content };
+}
+
+async function saveGaraActivity(garaId) {
+  if(!requireRole('editor')) return;
+  const subjectEl = document.getElementById('ga-subject-'+garaId);
+  const textEl = document.getElementById('ga-text-'+garaId);
+  const subject = subjectEl ? subjectEl.value.trim() : '';
+  const text = textEl ? textEl.value.trim() : '';
+  if(!subject || !text) {
+    toast('Inserisci oggetto e testo dello storico', 'err');
+    return;
+  }
+  const attachment = await readActivityAttachment(garaId);
+  const editingId = editId.activity || '';
+  if(editingId) {
+    const idx = state.attivitaGare.findIndex(item => item.id === editingId);
+    if(idx >= 0) {
+      state.attivitaGare[idx] = Object.assign({}, state.attivitaGare[idx], {
+        subject,
+        text,
+        attachment: attachment || state.attivitaGare[idx].attachment || null,
+        updated_at: new Date().toISOString(),
+        updated_by: getCurrentUserName()
+      });
+    }
+    delete editId.activity;
+  } else {
+    state.attivitaGare.unshift({
+      id: uid('act'),
+      gara_id: garaId,
+      subject,
+      text,
+      attachment,
+      author: getCurrentUserName(),
+      author_role: getCurrentUserRole(),
+      created_at: new Date().toISOString()
+    });
+  }
+  save('activity');
+  showDetail('gara', garaId);
+  toast(editingId ? 'Messaggio aggiornato' : 'Messaggio aggiunto allo storico', 'ok');
+}
+
+function editGaraActivity(activityId, garaId) {
+  if(!requireRole('editor')) return;
+  editId.activity = activityId;
+  showDetail('gara', garaId);
+}
+
+function cancelGaraActivityEdit(garaId) {
+  delete editId.activity;
+  showDetail('gara', garaId);
+}
+
+function deleteGaraActivity(activityId, garaId) {
+  if(!requireRole('editor')) return;
+  if(!confirm('Eliminare questo messaggio e il relativo allegato?')) return;
+  state.attivitaGare = state.attivitaGare.filter(item => item.id !== activityId);
+  if(editId.activity === activityId) delete editId.activity;
+  save('activity');
+  showDetail('gara', garaId);
+  toast('Messaggio eliminato', 'ok');
+}
+
+function activityAttachmentUrl(att) {
+  if(!att || !att.content) return '';
+  const blob = new Blob([base64ToUint8Array(att.content)], { type:att.type || 'application/octet-stream' });
+  return URL.createObjectURL(blob);
+}
+
+function openActivityAttachment(activityId) {
+  const item = findActivityById(activityId);
+  if(!item || !item.attachment) return;
+  const url = activityAttachmentUrl(item.attachment);
+  if(!url) return;
+  window.open(url, '_blank', 'noopener');
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+function closeAttachmentPreview(revoke=true) {
+  const modal = document.getElementById('m-attachment');
+  const frame = document.getElementById('attachment-frame');
+  if(modal) modal.classList.remove('on');
+  if(frame) frame.removeAttribute('src');
+  if(revoke && activeAttachmentPreviewUrl) URL.revokeObjectURL(activeAttachmentPreviewUrl);
+  activeAttachmentPreviewUrl = '';
+}
+
+function downloadActivityAttachment(activityId) {
+  const item = findActivityById(activityId);
+  if(!item || !item.attachment) return;
+  downloadBlob(new Blob([base64ToUint8Array(item.attachment.content)], { type:item.attachment.type || 'application/octet-stream' }), item.attachment.name || 'allegato');
+}
+
+// ═══════════════════════════════════════════════════════
+// CALENDAR
+// ═══════════════════════════════════════════════════════
+function getCalendarBaseMonth() {
+  const now = new Date();
+  const fallback = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2,'0');
+  const raw = uiPrefs.calendarMonth || fallback;
+  const [year, month] = raw.split('-').map(Number);
+  if(!year || !month) return new Date();
+  return new Date(year, month - 1, 1);
+}
+
+function setCalendarMonth(date) {
+  uiPrefs.calendarMonth = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2,'0');
+  saveUiPrefs();
+}
+
+function shiftCalendarMonth(delta) {
+  const d = getCalendarBaseMonth();
+  d.setMonth(d.getMonth() + delta);
+  setCalendarMonth(d);
+  drawCalendar();
+}
+
+function calendarDateKey(date) {
+  return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
+}
+
+function fillCalendarGaraSelects(selected='') {
+  const el = document.getElementById('xc-gara');
+  if(!el) return;
+  el.innerHTML = '<option value="">Nessuna gara collegata</option>' + state.gare.map(g =>
+    '<option value="'+g.id+'"'+(g.id===selected?' selected':'')+'>'+escHtml((g.descrizione || 'Gara senza titolo').slice(0,80))+'</option>'
+  ).join('');
+}
+
+function collectCalendarItems() {
+  const deadlines = state.gare
+    .filter(g => g.scadenza && g.stato !== 'SCARTATA')
+    .map(g => ({
+      id: 'deadline-'+g.id,
+      source: 'deadline',
+      date: splitScadenzaValue(g.scadenza).date,
+      time: splitScadenzaValue(g.scadenza).time,
+      type: 'SCADENZA',
+      title: g.descrizione || 'Scadenza gara',
+      subtitle: g.ente || g.portale || '',
+      gara_id: g.id
+    }));
+  const events = (state.calendarEvents || []).map(e => Object.assign({ source:'manual' }, e));
+  return deadlines.concat(events).filter(item => item.date);
+}
+
+function openCalendarEventModal(dateValue='', eventId='') {
+  if(!requireRole('editor')) return;
+  const ev = eventId ? state.calendarEvents.find(x => x.id === eventId) : null;
+  editId.cal = ev || null;
+  document.getElementById('m-cal-ttl').textContent = ev ? '✏️ Modifica evento' : '📅 Nuovo evento';
+  const delBtn = document.getElementById('m-cal-del');
+  if(delBtn) delBtn.style.display = ev ? '' : 'none';
+  document.getElementById('xc-title').value = ev ? ev.title || '' : '';
+  const eventType = ev && ['EVENTO','TASK'].includes(ev.type) ? ev.type : 'EVENTO';
+  document.getElementById('xc-type').value = eventType;
+  document.getElementById('xc-date').value = ev ? ev.date || '' : (dateValue || calendarDateKey(new Date()));
+  document.getElementById('xc-time').value = ev ? ev.time || '' : '';
+  document.getElementById('xc-notes').value = ev ? ev.notes || '' : '';
+  document.getElementById('m-cal').classList.add('on');
+}
+
+function saveCalendarEvent() {
+  if(!requireRole('editor')) return;
+  const title = document.getElementById('xc-title').value.trim();
+  const date = document.getElementById('xc-date').value;
+  if(!title || !date) {
+    toast('Inserisci oggetto e data evento', 'err');
+    return;
+  }
+  const obj = {
+    id: editId.cal ? editId.cal.id : uid('cal'),
+    title,
+    type: document.getElementById('xc-type').value,
+    gara_id: '',
+    date,
+    time: document.getElementById('xc-time').value,
+    notes: document.getElementById('xc-notes').value.trim(),
+    author: editId.cal ? editId.cal.author || getCurrentUserName() : getCurrentUserName(),
+    updated_at: new Date().toISOString()
+  };
+  const idx = state.calendarEvents.findIndex(x => x.id === obj.id);
+  if(idx >= 0) state.calendarEvents[idx] = obj; else state.calendarEvents.unshift(obj);
+  save('cal');
+  closeM('cal');
+  updateBadges();
+  drawCalendar();
+  toast('Evento salvato', 'ok');
+}
+
+function deleteCalendarEvent(id) {
+  if(!requireRole('editor')) return;
+  if(!id) return;
+  if(!confirm('Eliminare questo evento?')) return;
+  state.calendarEvents = state.calendarEvents.filter(e => e.id !== id);
+  save('cal');
+  closeM('cal');
+  updateBadges();
+  drawCalendar();
+  toast('Evento eliminato', 'ok');
+}
+
+function drawCalendar() {
+  const titleEl = document.getElementById('calendar-title');
+  const grid = document.getElementById('calendar-grid');
+  if(!titleEl || !grid) return;
+  const base = getCalendarBaseMonth();
+  titleEl.textContent = base.toLocaleDateString('it-IT', { month:'long', year:'numeric' });
+  const year = base.getFullYear();
+  const month = base.getMonth();
+  const first = new Date(year, month, 1);
+  const start = new Date(first);
+  const offset = (first.getDay() + 6) % 7;
+  start.setDate(first.getDate() - offset);
+  const items = collectCalendarItems();
+  const days = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+  const todayKey = calendarDateKey(new Date());
+  let html = days.map(d => '<div class="calendar-day-name">'+d+'</div>').join('');
+  for(let i=0;i<42;i++) {
+    const current = new Date(start);
+    current.setDate(start.getDate() + i);
+    const key = calendarDateKey(current);
+    const dayItems = items.filter(item => item.date === key).sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
+    const muted = current.getMonth() !== month;
+    html += '<div class="calendar-cell'+(muted?' muted':'')+(key===todayKey?' today':'')+'">'
+      +'<div class="calendar-date"><span>'+current.getDate()+'</span><button class="calendar-add-mini" type="button" onclick="openCalendarEventModal(\''+key+'\')">+</button></div>'
+      +dayItems.map(item => {
+        const cls = item.source === 'deadline' ? 'deadline' : item.type === 'TASK' ? 'memo' : 'meeting';
+        const action = item.source === 'manual' ? ' onclick="openCalendarEventModal(\'\', \''+item.id+'\')"' : ' onclick="showDetail(\'gara\', \''+item.gara_id+'\')"';
+        return '<div class="calendar-event '+cls+'"'+action+'>'
+          +'<strong>'+escHtml((item.time ? item.time+' · ' : '') + item.type)+'</strong>'
+          +'<span>'+escHtml(item.title || 'Evento')+'</span>'
+        +'</div>';
+      }).join('')
+    +'</div>';
+  }
+  grid.innerHTML = html;
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function xmlEscape(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -3057,6 +3479,7 @@ function showDetail(type, id) {
         +'<div class="gd-lbl">Note</div>'
         +'<div class="gd-note-text">'+escHtml(note)+'</div>'
       +'</div>'
+      +(type==='gara' ? renderGaraActivitySection(id) : '')
     +'</div>'
     +'<div class="gd-side">'
       +'<div class="gd-side-card'+(dangerState?' danger':'')+'">'
@@ -3381,38 +3804,6 @@ function drawPortali() {
 }
 
 // ═══════════════════════════════════════════════════════
-// SCADENZE
-// ═══════════════════════════════════════════════════════
-function drawScad() {
-  const gg=parseInt(uiPrefs.scadRange || '30', 10);
-  const f=tblFilters.scad||{};
-  const fl=state.gare.filter(g=>{
-    const d=daysTo(g.scadenza);
-    if(d===null||d<0||d>gg) return false;
-    if(['PERSA','AGGIUDICATA','SCARTATA'].includes(g.stato)) return false;
-    if(f.stato    &&g.stato    !==f.stato)    return false;
-    if(f.portale  &&g.portale  !==f.portale)  return false;
-    if(f.ente     &&g.ente     !==f.ente)     return false;
-    if(f.operatore&&g.operatore!==f.operatore) return false;
-    return true;
-  }).sort((a,b)=>new Date(a.scadenza)-new Date(b.scadenza));
-  document.getElementById('tb-sc').innerHTML=fl.length?fl.map(g=>{
-    const d=daysTo(g.scadenza);
-    return '<tr>'
-      +'<td>'+bdSt(g.stato)+'</td>'
-      +'<td style="font-weight:700;color:var(--teal)">'+g.portale+'</td>'
-      +'<td style="font-family:monospace;font-size:11px">'+g.num_rdo+'</td>'
-      +'<td style="font-weight:600">'+g.descrizione+'</td>'
-      +'<td style="font-size:11px">'+g.ente+'</td>'
-      +'<td>'+fmtD(g.scadenza)+'</td>'
-      +'<td><span class="'+(d<=3?'scad-urg':d<=10?'scad-att':'scad-ok')+'">'+d+' gg</span></td>'
-      +'<td>'+opBd(g.operatore)+'</td>'
-      +'</tr>';
-  }).join(''):'<tr><td colspan="8"><div class="empty"><div class="ei">✅</div><h4>Nessuna scadenza entro '+gg+' giorni</h4></div></td></tr>';
-  document.getElementById('cnt-sc').textContent=fl.length+' scadenze';
-}
-
-// ═══════════════════════════════════════════════════════
 // MODALS
 // ═══════════════════════════════════════════════════════
 function openM(type) {
@@ -3488,7 +3879,10 @@ function openM(type) {
   }
   document.getElementById('m-'+type).classList.add('on');
 }
-function closeM(type){document.getElementById('m-'+type).classList.remove('on');delete editId[type];}
+function closeM(type){
+  if(type === 'attachment') { closeAttachmentPreview(); return; }
+  document.getElementById('m-'+type).classList.remove('on');delete editId[type];
+}
 document.querySelectorAll('.ovl').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('on');}));
 
 function editGara(id){editId.gara=state.gare.find(x=>x.id===id);openM('gara');}
@@ -3539,6 +3933,12 @@ function delItem(col,id){
   if(!requireRole('editor')) return;
   if(!confirm('Eliminare questo elemento?')) return;
   state[col]=state[col].filter(x=>x.id!==id);
+  if(col === 'gare') {
+    state.attivitaGare = state.attivitaGare.filter(x => x.gara_id !== id);
+    state.calendarEvents = state.calendarEvents.filter(x => x.gara_id !== id);
+    save('activity');
+    save('cal');
+  }
   save({gare:'gare',aggiudicate:'agg',offerte:'off',portali:'port'}[col]);
   updateBadges();redrawCurrent();toast('Eliminato','ok');
 }
