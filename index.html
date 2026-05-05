@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Martec — Tracker Gare Pubbliche</title>
 <link rel="icon" type="image/png" href="./logo.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
@@ -4622,6 +4622,15 @@ window.addEventListener('resize', () => {
   }
   if(curView === 'calendario') drawCalendar();
 });
+document.addEventListener('gesturestart', event => event.preventDefault(), { passive:false });
+document.addEventListener('gesturechange', event => event.preventDefault(), { passive:false });
+document.addEventListener('gestureend', event => event.preventDefault(), { passive:false });
+let lastTouchEndAt = 0;
+document.addEventListener('touchend', event => {
+  const now = Date.now();
+  if(now - lastTouchEndAt <= 300) event.preventDefault();
+  lastTouchEndAt = now;
+}, { passive:false });
 window.addEventListener('load', init);
 </script>
 </body>
