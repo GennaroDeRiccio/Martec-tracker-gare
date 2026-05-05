@@ -5,7 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Martec — Tracker Gare Pubbliche</title>
 <link rel="icon" type="image/png" href="./logo.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Martec Tracker">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,0&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -13,6 +18,8 @@
 <script src="./quote-template.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+.material-symbols-rounded,.mi{font-family:'Material Symbols Rounded';font-weight:500;font-style:normal;font-size:1.15em;line-height:1;letter-spacing:normal;text-transform:none;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased;font-feature-settings:'liga';vertical-align:-.18em}
+.mi.white{color:#fff}.mi.fill{font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 24}
 :root{
   --navy:#0D1B3E;--navy2:#152550;--blue:#1565C0;--blue2:#1976D2;
   --teal:#00838F;--green:#2E7D32;--green2:#388E3C;
@@ -33,7 +40,7 @@ body{font-family:'Manrope',sans-serif;background:var(--gray6);color:var(--gray1)
 .nav{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;border-left:3px solid transparent;transition:all .15s;user-select:none}
 .nav:hover{background:rgba(255,255,255,.05);color:#fff}
 .nav.on{background:rgba(21,101,192,.22);color:#fff;border-left-color:#4FC3F7}
-.nav .ic{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nav .ic{font-size:18px;width:20px;text-align:center;flex-shrink:0;color:#fff}
 .nb{margin-left:auto;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;font-family:'JetBrains Mono',monospace}
 .nb.red{background:var(--red)}
 .sb-bottom{margin-top:auto;display:flex;flex-direction:column}
@@ -53,6 +60,7 @@ body{font-family:'Manrope',sans-serif;background:var(--gray6);color:var(--gray1)
 .mobile-menu-btn{display:none;width:42px;height:42px;border:none;border-radius:14px;background:#EDF4FF;color:var(--blue);font-size:18px;font-weight:800;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(21,101,192,.08);cursor:pointer}
 .mobile-backdrop{display:none}
 .mobile-dock{display:none}
+.mobile-more-screen{display:none}
 #sync-status{font-size:11px;color:var(--gray3);display:flex;align-items:center;gap:4px}
 .auth-user{display:grid;grid-template-columns:42px minmax(0,1fr);grid-template-areas:'avatar meta' 'logout logout';gap:10px 12px;padding:12px;border:1px solid rgba(255,255,255,.09);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,.04) 100%);box-shadow:0 10px 28px rgba(3,10,25,.18);backdrop-filter:blur(6px)}
 .auth-user-avatar{grid-area:avatar;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#F8FBFF 0%,#DCEAFF 100%);color:var(--blue);font-weight:800;font-size:14px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(21,101,192,.08)}
@@ -64,6 +72,7 @@ body{font-family:'Manrope',sans-serif;background:var(--gray6);color:var(--gray1)
 
 /* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 15px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:'Manrope',sans-serif;white-space:nowrap}
+.btn .mi{font-size:17px}
 .btn-p{background:var(--blue);color:#fff}.btn-p:hover{background:var(--blue2)}
 .btn-g{background:var(--green);color:#fff}.btn-g:hover{background:var(--green2)}
 .btn-t{background:var(--teal);color:#fff}.btn-t:hover{filter:brightness(1.1)}
@@ -412,7 +421,15 @@ tbody .row-click{cursor:pointer}
 .gd-activity-attachment span{font-size:11px;color:var(--gray3);font-weight:700}
 .gd-activity-attachment .btn{padding:5px 8px;font-size:11px}
 .gd-activity-file-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.gd-activity-file-row input[type=file]{max-width:360px}
+.file-upload-input{position:absolute;inline-size:1px;block-size:1px;opacity:0;pointer-events:none}
+.file-upload-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:9px 14px;border:1.5px solid #D6E2EF;border-radius:12px;
+  background:linear-gradient(135deg,#fff 0%,#F5F9FF 100%);color:var(--navy);font-family:'Manrope',sans-serif;font-size:13px;font-weight:800;
+  box-shadow:0 8px 18px rgba(13,27,62,.06);cursor:pointer;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease,background .15s ease
+}
+.file-upload-btn:hover{border-color:#9CCBFF;background:#EDF4FF;box-shadow:0 10px 22px rgba(21,101,192,.12);transform:translateY(-1px)}
+.file-upload-btn .mi{font-size:18px;color:var(--blue)}
+.file-upload-name{display:inline-flex;align-items:center;min-height:40px;max-width:360px;padding:8px 12px;border:1px solid #E3ECF6;border-radius:12px;background:#fff;color:var(--gray3);font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .attachment-preview{width:min(92vw,980px);height:min(88vh,760px);display:flex;flex-direction:column}
 .attachment-preview-frame{flex:1;border:0;width:100%;background:#F5F7FA}
 .attachment-preview-empty{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:26px;color:var(--gray3);font-size:14px;line-height:1.5}
@@ -424,6 +441,7 @@ tbody .row-click{cursor:pointer}
 .calendar-toolbar p{font-size:12px;color:var(--gray3);margin-top:4px}
 .calendar-nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 .calendar-nav strong{font-family:'Outfit',sans-serif;font-size:20px;color:var(--navy);min-width:190px;text-align:center}
+.mobile-today-btn{display:none}
 .calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:#EAF0F6;gap:1px}
 .calendar-day-name{background:#0D1B3E;color:#fff;padding:10px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;text-align:center}
 .calendar-cell{min-height:132px;background:#fff;padding:9px;display:flex;flex-direction:column;gap:7px}
@@ -536,20 +554,15 @@ thead th{position:sticky;top:0;z-index:2}
 @media (max-width: 900px){
   body{display:block;height:auto;overflow:auto;background:linear-gradient(180deg,#EEF4FC 0%,#F7FAFF 180px,#F5F7FA 100%)}
   .mobile-only{display:flex}
-  .mobile-top-trigger{display:flex}
-  .mobile-menu-btn{display:inline-flex}
-  #sb{
-    position:fixed;left:0;top:0;bottom:0;width:min(86vw,340px);height:100dvh;z-index:120;
-    transform:translateX(-104%);transition:transform .22s ease, box-shadow .22s ease;overflow-y:auto;overflow-x:hidden;
-    box-shadow:none;border-radius:0 24px 24px 0
-  }
-  body.mobile-menu-open{overflow:hidden}
-  body.mobile-menu-open #sb{transform:translateX(0);box-shadow:0 20px 50px rgba(8,16,35,.34)}
+  .mobile-top-trigger{display:none!important}
+  .mobile-menu-btn{display:none!important}
+  #sb{display:none!important}
+  body.mobile-menu-open{overflow:auto}
   .mobile-backdrop{
-    display:block;position:fixed;inset:0;background:rgba(9,20,46,.42);backdrop-filter:blur(3px);
+    display:none;position:fixed;inset:0;background:rgba(9,20,46,.42);backdrop-filter:blur(3px);
     opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:110
   }
-  body.mobile-menu-open .mobile-backdrop{opacity:1;pointer-events:auto}
+  body.mobile-menu-open .mobile-backdrop{opacity:0;pointer-events:none}
   .sb-logo{padding:18px 18px 14px}
   .sb-logo img{width:150px}
   .sb-sec{padding:18px 18px 6px}
@@ -560,21 +573,24 @@ thead th{position:sticky;top:0;z-index:2}
   .auth-user{max-width:100%}
   #main{min-height:100dvh;overflow:visible}
   #topbar{
-    position:sticky;top:0;z-index:90;min-height:72px;padding:12px 14px;
-    display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:
-      "menu title"
-      "sub sub"
-      "right right";
-    align-items:center;gap:8px 10px;border-bottom:1px solid #DCE6F2;background:rgba(255,255,255,.92);backdrop-filter:blur(14px)
+    position:sticky;top:0;z-index:90;min-height:0;margin:0;padding:16px 16px 10px;
+    display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:
+      "title add"
+      "sub add"
+      "status status";
+    align-items:center;gap:4px 12px;border:none;border-radius:0;background:#F4F8FD;box-shadow:none;backdrop-filter:none
   }
-  .tb-title{grid-area:title;font-size:22px;line-height:1.05}
-  .tb-sub{grid-area:sub;font-size:12px}
-  .tb-right{grid-area:right;margin-left:0;width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:nowrap}
-  #btn-add{padding:10px 14px;border-radius:12px;font-size:12px}
-  #sync-status{font-size:11px;max-width:52vw;line-height:1.35}
-  #content{padding:12px 12px calc(92px + env(safe-area-inset-bottom, 0px));overflow:visible}
+  #topbar::before{display:none}
+  .tb-title{grid-area:title;font-size:28px;line-height:1;font-family:'Outfit',sans-serif;letter-spacing:-.45px}
+  .tb-sub{grid-area:sub;font-size:13px;color:var(--gray3);line-height:1.25;min-height:0}
+  .tb-sub:empty{display:none}
+  .tb-right{display:contents}
+  #btn-add{grid-area:add;position:relative;z-index:1;padding:11px 14px;border-radius:999px;font-size:12px;box-shadow:0 10px 22px rgba(21,101,192,.22)}
+  #btn-add[style*="display: none"]{display:none!important}
+  #sync-status{display:none}
+  #content{padding:6px 12px calc(92px + env(safe-area-inset-bottom, 0px));overflow:visible}
   .mobile-dock{
-    display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;position:fixed;left:10px;right:10px;
+    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;position:fixed;left:10px;right:10px;
     bottom:calc(10px + env(safe-area-inset-bottom, 0px));z-index:115;padding:8px;border-radius:22px;
     background:rgba(13,27,62,.94);box-shadow:0 18px 40px rgba(13,27,62,.28);backdrop-filter:blur(12px)
   }
@@ -586,6 +602,24 @@ thead th{position:sticky;top:0;z-index:2}
   .mobile-dock-btn span{font-size:16px;line-height:1}
   .mobile-dock-btn.on{background:rgba(255,255,255,.1);color:#fff}
   .mobile-dock-btn.more{color:#9EC6FF}
+  .mobile-more-screen{
+    display:block;position:fixed;inset:0;z-index:130;background:linear-gradient(180deg,#F6FAFF 0%,#EEF4FC 100%);
+    transform:translateY(104%);transition:transform .28s cubic-bezier(.16,1,.3,1);padding:16px 14px calc(100px + env(safe-area-inset-bottom,0px));overflow:auto
+  }
+  body.mobile-more-open{overflow:hidden}
+  body.mobile-more-open .mobile-more-screen{transform:translateY(0)}
+  .mobile-more-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+  .mobile-more-head h2{font-family:'Outfit',sans-serif;font-size:26px;color:var(--navy)}
+  .mobile-more-head p{font-size:12px;color:var(--gray3);margin-top:2px}
+  .mobile-more-close{width:44px;height:44px;border:none;border-radius:15px;background:#fff;color:var(--gray2);font-size:22px;box-shadow:var(--sh)}
+  .mobile-more-grid{display:grid;gap:10px}
+  .mobile-more-card{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;border:none;border-radius:20px;background:#fff;padding:14px;text-align:left;box-shadow:0 10px 26px rgba(13,27,62,.07);font-family:'Manrope',sans-serif;color:var(--navy)}
+  .mobile-more-card .mi{width:44px;height:44px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:#EDF4FF;font-size:21px}
+  .mobile-more-card strong{display:block;font-size:15px;font-weight:900}
+  .mobile-more-card span{display:block;font-size:11px;color:var(--gray3);margin-top:2px}
+  .mobile-more-card em{font-style:normal;color:var(--blue);font-size:22px;font-weight:900}
+  .mobile-more-user{margin-top:18px;border-radius:24px;background:linear-gradient(135deg,#0D1B3E 0%,#162957 100%);padding:14px;box-shadow:0 16px 34px rgba(13,27,62,.18)}
+  .mobile-more-user .auth-user{display:grid!important;box-shadow:none;border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.06)}
   #auth-screen.on{align-items:center;justify-content:center}
   .auth-shell{width:min(440px,100%);grid-template-columns:1fr;gap:18px;align-items:center}
   .auth-card{order:2;width:100%;padding:30px 22px 24px;border-radius:26px;box-shadow:none}
@@ -618,17 +652,221 @@ thead th{position:sticky;top:0;z-index:2}
   .ch-card-header{align-items:flex-start;gap:10px}
   .fg,.fg3,.gara-detail-grid{grid-template-columns:1fr}
   .tc{border-radius:18px;overflow:hidden}
-  .tc-hdr{
-    display:grid;grid-template-columns:1fr;gap:10px;padding:14px 14px 12px;position:sticky;top:72px;z-index:8
-  }
+  .tc-hdr{display:grid;grid-template-columns:1fr;gap:10px;padding:14px 14px 12px;position:relative;top:auto;z-index:8}
   .tc-hdr h3{width:100%;font-size:15px}
   .srch,.flt,.sortbar{width:100%}
   .srch input{width:100%}
   .tw,.quote-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:16px}
   .tw table{min-width:1080px}
   table td,table th{white-space:nowrap}
+  #v-gare .tc,#v-aggiudicate .tc,#v-offerte .tc,#v-portali .tc{background:transparent;box-shadow:none;border-radius:0;overflow:visible}
+  #v-gare .tc-hdr,#v-aggiudicate .tc-hdr,#v-offerte .tc-hdr,#v-portali .tc-hdr{
+    position:relative;top:auto;border:1px solid #E1EAF5;border-radius:22px;padding:12px;background:rgba(255,255,255,.74);
+    box-shadow:0 10px 24px rgba(13,27,62,.06);margin-bottom:14px;backdrop-filter:blur(12px)
+  }
+  #v-gare .tc-hdr h3,#v-aggiudicate .tc-hdr h3,#v-offerte .tc-hdr h3,#v-portali .tc-hdr h3{display:none}
+  #v-gare .srch,#v-aggiudicate .srch,#v-offerte .srch,#v-portali .srch{
+    height:52px;border-radius:999px;background:#fff;border:1px solid #D9E6F5;padding:8px 14px 8px 16px;
+    box-shadow:0 8px 20px rgba(13,27,62,.05)
+  }
+  #v-gare .srch:focus-within,#v-aggiudicate .srch:focus-within,#v-offerte .srch:focus-within,#v-portali .srch:focus-within{border-color:#9CCBFF;box-shadow:0 0 0 4px rgba(25,103,210,.1),0 10px 24px rgba(13,27,62,.07)}
+  #v-gare .srch span,#v-aggiudicate .srch span,#v-offerte .srch span,#v-portali .srch span{font-size:18px;width:30px;height:30px;border-radius:999px;background:#F1F6FF;display:flex;align-items:center;justify-content:center}
+  #v-gare .srch input,#v-aggiudicate .srch input,#v-offerte .srch input,#v-portali .srch input{font-size:16px;font-weight:700;color:var(--navy)}
+  #v-gare .srch input::placeholder,#v-aggiudicate .srch input::placeholder,#v-offerte .srch input::placeholder,#v-portali .srch input::placeholder{color:#92A1B2;font-weight:700}
+  #v-gare .sortbar,#v-aggiudicate .sortbar,#v-offerte .sortbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
+  #v-gare .sortbar-label{grid-column:1/-1;margin:0;font-size:10px}
+  #v-gare .sortchip,#v-gare .sortdir,#v-aggiudicate .sortchip,#v-aggiudicate .sortdir,#v-offerte .sortchip,#v-offerte .sortdir{width:100%;border-radius:14px;padding:11px 12px;text-align:center}
+  #v-portali .tc-hdr>div:not(.srch){margin:0!important;font-size:11px!important;text-align:center;color:var(--gray3)!important}
+  #v-gare #active-filters-bar{gap:7px!important}
+  #v-gare .filter-chip{border-radius:999px;padding:7px 11px;font-size:11px;background:#fff}
+  #v-gare .tw{overflow:visible;border-radius:0}
+  #v-gare table,#v-gare thead,#v-gare tbody,#v-gare tr,#v-gare td{display:block;width:100%}
+  #v-gare table{min-width:0;border-collapse:separate}
+  #v-gare thead{display:none}
+  #v-gare tbody{display:grid;gap:9px}
+  #v-gare tbody tr{
+    position:relative;border:1px solid #E2EBF5;border-radius:22px;background:#fff!important;box-shadow:0 10px 26px rgba(13,27,62,.07);
+    padding:11px 12px;overflow:hidden;transition:transform .15s ease, box-shadow .15s ease
+  }
+  #v-gare tbody tr::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:#B0BEC5}
+  #v-gare tbody tr.rAG::before{background:var(--green)}
+  #v-gare tbody tr.rPR::before{background:var(--blue)}
+  #v-gare tbody tr.rDL::before{background:var(--orange)}
+  #v-gare tbody tr.rPE::before{background:var(--red)}
+  #v-gare tbody tr.rSC::before{background:#546E7A}
+  #v-gare tbody tr:hover{transform:translateY(-1px);box-shadow:0 14px 32px rgba(13,27,62,.1)}
+  #v-gare tbody tr:hover td{background:transparent!important}
+  #v-gare tbody td{padding:0;white-space:normal;border:none}
+  #v-gare tbody td:nth-child(1){display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;padding-left:3px}
+  #v-gare tbody td:nth-child(2){
+    position:absolute;right:12px;top:11px;width:auto;color:var(--teal);font-size:10px;font-weight:900;letter-spacing:.5px;background:#EAF7F8;
+    padding:4px 8px;border-radius:999px
+  }
+  #v-gare tbody td:nth-child(3){font-family:'JetBrains Mono',monospace;color:var(--gray3);font-size:10px;margin:2px 0 6px;padding-left:3px}
+  #v-gare tbody td:nth-child(3)::before{content:'RDO ';font-family:'Manrope',sans-serif;color:var(--gray4);font-weight:800;letter-spacing:.7px}
+  #v-gare tbody td:nth-child(4){padding-left:3px;margin-bottom:8px}
+  #v-gare .gara-desc{min-width:0;gap:4px}
+  #v-gare .gara-desc-main{font-family:'Outfit',sans-serif;font-size:16px;line-height:1.12;font-weight:800;color:var(--navy);padding-right:68px}
+  #v-gare .gara-desc-sub{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.65px;color:var(--gray3)}
+  #v-gare tbody td:nth-child(5){display:inline-flex;margin:0 0 8px 3px}
+  #v-gare .gara-asta{font-size:17px;padding:5px 9px;background:#EDF4FF}
+  #v-gare tbody td:nth-child(6){display:none}
+  #v-gare tbody td:nth-child(7),#v-gare tbody td:nth-child(8),#v-gare tbody td:nth-child(10){display:none}
+  #v-gare tbody td:nth-child(9){
+    display:grid;grid-template-columns:84px minmax(0,1fr);gap:8px;align-items:start;padding:6px 3px;border-top:1px solid #EEF3F8;
+    font-size:11px;line-height:1.32;color:var(--gray2)
+  }
+  #v-gare tbody td:nth-child(9)::before{content:'Scadenza';font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--gray3)}
+  #v-gare .gara-scad{font-size:11px;min-width:0;max-width:none;white-space:normal}
+  #v-gare .tc-ftr{background:transparent;border:none;padding:14px 4px 0;color:var(--gray3);font-weight:800}
+  #v-aggiudicate .tw{overflow:visible;border-radius:0}
+  #v-aggiudicate table,#v-aggiudicate thead,#v-aggiudicate tbody,#v-aggiudicate tr,#v-aggiudicate td{display:block;width:100%}
+  #v-aggiudicate table{min-width:0;border-collapse:separate}
+  #v-aggiudicate thead{display:none}
+  #v-aggiudicate tbody{display:grid;gap:9px}
+  #v-aggiudicate tbody tr{
+    position:relative;border:1px solid #E2EBF5;border-radius:22px;background:#fff!important;box-shadow:0 10px 26px rgba(13,27,62,.07);
+    padding:11px 12px;overflow:hidden;transition:transform .15s ease, box-shadow .15s ease
+  }
+  #v-aggiudicate tbody tr::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--green)}
+  #v-aggiudicate tbody tr::after{
+    content:'AGGIUDICATA';display:inline-flex;align-items:center;position:absolute;left:12px;top:11px;background:var(--green);color:#fff;
+    border-radius:999px;padding:4px 9px;font-size:10px;font-weight:900;line-height:1;z-index:1
+  }
+  #v-aggiudicate tbody tr:hover{transform:translateY(-1px);box-shadow:0 14px 32px rgba(13,27,62,.1)}
+  #v-aggiudicate tbody tr:hover td{background:transparent!important}
+  #v-aggiudicate tbody td{padding:0;white-space:normal;border:none}
+  #v-aggiudicate tbody td:nth-child(1){
+    position:absolute;right:12px;top:11px;width:auto;color:var(--teal)!important;font-size:10px;font-weight:900;letter-spacing:.5px;background:#EAF7F8;
+    padding:4px 8px;border-radius:999px;z-index:1
+  }
+  #v-aggiudicate tbody td:nth-child(2){font-family:'JetBrains Mono',monospace!important;color:var(--gray3)!important;font-size:10px!important;margin:28px 0 6px;padding-left:3px}
+  #v-aggiudicate tbody td:nth-child(2)::before{content:'RDO ';font-family:'Manrope',sans-serif;color:var(--gray4);font-weight:800;letter-spacing:.7px}
+  #v-aggiudicate tbody td:nth-child(3){
+    font-family:'Outfit',sans-serif;font-size:16px!important;line-height:1.12;font-weight:800!important;color:var(--navy);
+    padding-left:3px;padding-right:68px;margin-bottom:8px;max-width:none!important
+  }
+  #v-aggiudicate tbody td:nth-child(5){display:inline-flex;margin:0 0 8px 3px}
+  #v-aggiudicate tbody td:nth-child(5) .asta-val{font-size:17px;padding:5px 9px;background:#EDF4FF;color:var(--blue)!important;border-radius:999px}
+  #v-aggiudicate tbody td:nth-child(4),
+  #v-aggiudicate tbody td:nth-child(6),
+  #v-aggiudicate tbody td:nth-child(8),
+  #v-aggiudicate tbody td:nth-child(9),
+  #v-aggiudicate tbody td:nth-child(10),
+  #v-aggiudicate tbody td:nth-child(11){display:none}
+  #v-aggiudicate tbody td:nth-child(7){
+    display:grid;grid-template-columns:84px minmax(0,1fr);gap:8px;align-items:start;padding:6px 3px;border-top:1px solid #EEF3F8;
+    font-size:11px!important;line-height:1.32;color:var(--gray2)
+  }
+  #v-aggiudicate tbody td:nth-child(7)::before{content:'Scadenza';font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--gray3)}
+  #v-aggiudicate tbody tr.empty-row{padding:0}
+  #v-aggiudicate tbody tr.empty-row::before,#v-aggiudicate tbody tr.empty-row::after{display:none}
+  #v-aggiudicate tbody tr.empty-row td{position:static!important;display:block!important;margin:0!important;padding:0!important;background:transparent!important}
+  #v-aggiudicate .tc-ftr{background:transparent;border:none;padding:14px 4px 0;color:var(--gray3);font-weight:800}
+  #v-offerte .tw{overflow:visible;border-radius:0}
+  #v-offerte table,#v-offerte thead,#v-offerte tbody,#v-offerte tr,#v-offerte td{display:block;width:100%}
+  #v-offerte table{min-width:0;border-collapse:separate}
+  #v-offerte thead{display:none}
+  #v-offerte tbody{display:grid;gap:9px}
+  #v-offerte tbody tr{
+    position:relative;border:1px solid #E2EBF5;border-radius:22px;background:#fff!important;box-shadow:0 10px 26px rgba(13,27,62,.07);
+    padding:12px;overflow:hidden;transition:transform .15s ease, box-shadow .15s ease
+  }
+  #v-offerte tbody tr::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--teal)}
+  #v-offerte tbody tr:hover{transform:translateY(-1px);box-shadow:0 14px 32px rgba(13,27,62,.1)}
+  #v-offerte tbody tr:hover td{background:transparent!important}
+  #v-offerte tbody td{padding:0;white-space:normal;border:none}
+  #v-offerte tbody td:nth-child(1){
+    display:inline-flex;width:auto!important;margin:0 0 8px 3px;padding:5px 10px;border-radius:999px;background:#EAF7F8;
+    color:var(--teal)!important;font-family:'Outfit',sans-serif!important;font-size:14px!important;font-weight:900!important
+  }
+  #v-offerte tbody td:nth-child(2){
+    position:absolute;right:12px;top:13px;width:auto!important;color:var(--gray3);font-size:11px;font-weight:900;background:#F3F7FC;
+    padding:5px 9px;border-radius:999px
+  }
+  #v-offerte tbody td:nth-child(3){
+    padding-left:3px;padding-right:82px;margin-bottom:10px;font-family:'Outfit',sans-serif;font-size:17px!important;line-height:1.14;
+    font-weight:900!important;color:var(--navy)
+  }
+  #v-offerte tbody td:nth-child(4){
+    display:grid;grid-template-columns:76px minmax(0,1fr);gap:8px;align-items:start;padding:8px 3px;border-top:1px solid #EEF3F8;
+    font-size:12px!important;line-height:1.35;color:var(--gray2)
+  }
+  #v-offerte tbody td:nth-child(4)::before{content:'Ente';font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--gray3)}
+  #v-offerte tbody td:nth-child(5){
+    display:grid;grid-template-columns:76px minmax(0,1fr);gap:8px;align-items:center;padding:8px 3px;border-top:1px solid #EEF3F8;
+    font-size:12px;color:var(--gray2)
+  }
+  #v-offerte tbody td:nth-child(5)::before{content:'Operatore';font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--gray3)}
+  #v-offerte tbody td:nth-child(6){display:flex!important;gap:8px;justify-content:flex-end;align-items:center;padding-top:10px}
+  #v-offerte tbody td:nth-child(6) .btn,#v-offerte tbody td:nth-child(6) .btn-del{min-width:42px;min-height:38px;border-radius:12px;justify-content:center}
+  #v-offerte tbody tr.empty-row{padding:0}
+  #v-offerte tbody tr.empty-row::before{display:none}
+  #v-offerte tbody tr.empty-row td{position:static!important;display:block!important;margin:0!important;padding:0!important;background:transparent!important}
+  #v-offerte .tc-ftr{background:transparent;border:none;padding:14px 4px 0;color:var(--gray3);font-weight:800}
+  #v-portali .tw{overflow:visible;border-radius:0}
+  #v-portali table,#v-portali thead,#v-portali tbody,#v-portali tr,#v-portali td{display:block;width:100%}
+  #v-portali table{min-width:0;border-collapse:separate}
+  #v-portali thead{display:none}
+  #v-portali tbody{display:grid;gap:10px}
+  #v-portali tbody tr{
+    position:relative;border:1px solid #E2EBF5;border-radius:22px;background:#fff!important;box-shadow:0 10px 26px rgba(13,27,62,.07);
+    padding:13px;overflow:hidden
+  }
+  #v-portali tbody tr.port-fav{background:linear-gradient(135deg,#FFFDEB 0%,#fff 58%)!important;border-color:#F7E6A9}
+  #v-portali tbody tr::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--blue)}
+  #v-portali tbody tr.port-fav::before{background:var(--gold)}
+  #v-portali tbody td{padding:0;white-space:normal;border:none}
+  #v-portali tbody td:nth-child(1){position:absolute;right:12px;top:12px;width:38px!important;height:38px;padding:0!important;display:flex;align-items:center;justify-content:center;border-radius:14px;background:#F5F8FC;color:var(--gold);z-index:1}
+  #v-portali tbody td:nth-child(1) .mi{font-size:22px}
+  #v-portali tbody td:nth-child(2){padding:2px 48px 10px 3px;font-family:'Outfit',sans-serif;font-size:19px!important;font-weight:900!important;color:var(--navy)!important;line-height:1.1}
+  #v-portali tbody td:nth-child(3){padding:8px 3px;border-top:1px solid #EEF3F8}
+  #v-portali tbody td:nth-child(3) a{display:flex;align-items:center;gap:6px;max-width:100%;font-size:12px!important;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #v-portali tbody td:nth-child(4),
+  #v-portali tbody td:nth-child(5),
+  #v-portali tbody td:nth-child(7){
+    display:grid;grid-template-columns:92px minmax(0,1fr);gap:8px;align-items:start;padding:8px 3px;border-top:1px solid #EEF3F8;
+    font-size:12px!important;color:var(--gray2);line-height:1.35;max-width:none!important
+  }
+  #v-portali tbody td:nth-child(4)::before{content:'Username';font-family:'Manrope',sans-serif;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--gray3)}
+  #v-portali tbody td:nth-child(5)::before{content:'Password';font-family:'Manrope',sans-serif;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--gray3)}
+  #v-portali tbody td:nth-child(7)::before{content:'Note';font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--gray3)}
+  #v-portali tbody td:nth-child(5){font-family:'JetBrains Mono',monospace}
+  #v-portali tbody td:nth-child(5) .eye{margin-left:6px;border:none;border-radius:10px;background:#EDF4FF;color:var(--blue);width:32px;height:32px}
+  #v-portali tbody td:nth-child(6){position:absolute;left:13px;bottom:13px;width:auto!important}
+  #v-portali tbody td:nth-child(8){display:flex!important;gap:8px;justify-content:flex-end;align-items:center;padding-top:12px;padding-left:92px;min-height:46px}
+  #v-portali tbody td:nth-child(8) .btn,#v-portali tbody td:nth-child(8) .btn-del{min-width:42px;min-height:38px;border-radius:12px;justify-content:center}
+  #v-portali tbody tr.empty-row{padding:0}
+  #v-portali tbody tr.empty-row::before{display:none}
+  #v-portali tbody tr.empty-row td{position:static!important;display:block!important;margin:0!important;padding:0!important;background:transparent!important}
   .gara-row td{padding-top:14px;padding-bottom:14px}
   .gara-desc-main{font-size:13px;line-height:1.35}
+  #m-gara .mdl{height:100dvh;border-radius:0;background:#F4F8FD}
+  #m-gara .mh{position:sticky;top:0;z-index:2;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1px solid #DDE8F5}
+  #m-gara .mh h3{font-family:'Outfit',sans-serif;font-size:22px}
+  #m-gara .mb{padding:16px;background:#F4F8FD}
+  #m-gara .fg{gap:12px}
+  #m-gara .fi{background:#fff;border:1px solid #E2EBF5;border-radius:18px;padding:12px;box-shadow:0 8px 20px rgba(13,27,62,.04)}
+  #m-gara .fi label{font-size:10px;margin-bottom:4px}
+  #m-gara input,#m-gara select,#m-gara textarea{border-radius:14px;min-height:46px;font-size:15px;background:#FBFDFF}
+  #m-gara textarea{min-height:110px}
+  #m-gara .mf{position:sticky;bottom:0;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-top:1px solid #DDE8F5;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+  #m-gara .mf .btn{min-height:50px;border-radius:14px;font-size:15px}
+  #m-detail .mdl{background:#F4F8FD}
+  #m-detail .gd-header{background:#fff;border-bottom:1px solid #E3ECF6}
+  #m-detail .gd-eyebrow .bd{font-size:10px;padding:4px 9px}
+  #m-detail .gd-header-title{font-size:27px;line-height:1.02}
+  #m-detail .gd-head-actions{display:grid;grid-template-columns:1fr 1fr auto;align-items:center}
+  #m-detail .gd-head-actions .btn{flex:none;min-width:0;padding:12px 10px;border-radius:14px}
+  #m-detail .gd-head-actions .mcl{width:46px;height:46px}
+  #m-detail .gd-main-card,#m-detail .gd-note-card,#m-detail .gd-activity-card,#m-detail .gd-map-card,#m-detail .gd-side-card{border-radius:22px}
+  #m-detail .gd-section-title{font-size:18px;margin-bottom:18px}
+  #m-detail .gd-info-grid{gap:14px}
+  #m-detail .gd-info{padding:12px;border-radius:16px;background:#F8FBFF;border:1px solid #E7EFF8}
+  #m-detail .gd-metrics{border-radius:18px}
+  #m-detail .gd-metric{padding:16px}
+  #m-detail .gd-val.hero{font-size:29px}
+  #m-detail .gd-side{order:-1}
   .gd-header{grid-template-columns:1fr;padding:20px 18px 14px;gap:16px}
   .gd-header-title{font-size:24px;max-width:none}
   .gd-header-sub{font-size:14px;max-width:none}
@@ -641,16 +879,113 @@ thead th{position:sticky;top:0;z-index:2}
   .gd-cell:nth-child(odd),.gd-field:nth-child(odd){border-right:none}
   .gd-activity-head{flex-direction:column}
   .calendar-toolbar{flex-direction:column}
-  .calendar-nav{justify-content:flex-start;width:100%}
-  .calendar-grid{display:flex;flex-direction:column;gap:8px;background:transparent;padding:12px}
-  .calendar-day-name{display:none}
-  .calendar-cell{min-height:0;border:1px solid #E8EEF6;border-radius:14px}
-  .calendar-cell.muted{display:none}
+  #v-calendario .calendar-shell{background:transparent;border:none;box-shadow:none;overflow:visible}
+  #v-calendario .calendar-toolbar{
+    display:grid;gap:0;border:0;border-radius:0 0 22px 22px;padding:0 18px 14px;background:transparent;
+    box-shadow:none;margin:-2px 0 10px
+  }
+  #v-calendario .calendar-toolbar>div:first-child{display:none}
+  .calendar-nav{
+    display:grid;grid-template-columns:38px minmax(0,1fr) 38px;justify-content:stretch;width:100%;gap:10px;align-items:center;
+    padding:12px;border:1px solid #DDE8F5;border-radius:20px;background:rgba(255,255,255,.72);box-shadow:0 10px 24px rgba(13,27,62,.06);backdrop-filter:blur(10px)
+  }
+  .calendar-nav strong{min-width:0;font-family:'Outfit',sans-serif;font-size:23px;line-height:1;color:var(--navy);text-align:center;text-transform:capitalize}
+  .calendar-nav .btn{width:38px;height:38px;padding:0;border-radius:14px;justify-content:center;font-size:0;background:#fff;border-color:#D7E2F0;box-shadow:0 6px 14px rgba(13,27,62,.05)}
+  .calendar-nav .btn:nth-of-type(1)::before{content:'‹';font-size:25px;line-height:1;color:var(--navy)}
+  .calendar-nav .btn:nth-of-type(2)::before{content:'›';font-size:25px;line-height:1;color:var(--navy)}
+  body.view-calendario #topbar{z-index:96}
+  body.view-calendario #content{padding-top:0}
+  body.view-calendario #v-calendario .calendar-toolbar{
+    position:sticky;top:82px;z-index:95;margin:0 16px 10px;padding:0;border:none;border-radius:0;background:#F4F8FD;box-shadow:none
+  }
+  body.view-calendario #v-calendario .calendar-nav{
+    position:relative;padding:0 72px 0 0;border:none;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none;
+    grid-template-columns:36px minmax(0,1fr) 36px;gap:7px
+  }
+  body.view-calendario #v-calendario .calendar-nav strong{
+    font-size:22px;padding:9px 10px;border:1px solid #DCE7F4;border-radius:999px;background:rgba(255,255,255,.72);
+    box-shadow:0 8px 22px rgba(13,27,62,.06)
+  }
+  body.view-calendario #v-calendario .calendar-nav .btn{
+    width:36px;height:36px;border-radius:999px;background:#fff;border-color:#DFE9F5;box-shadow:0 8px 18px rgba(13,27,62,.06)
+  }
+  body.view-calendario .mobile-today-btn{
+    position:absolute;right:0;top:0;display:inline-flex;align-items:center;justify-content:center;width:64px;height:36px;padding:0;border:none;border-radius:999px;background:var(--navy);
+    color:#fff;font-family:'Manrope',sans-serif;font-size:11px;font-weight:900;box-shadow:0 10px 22px rgba(13,27,62,.18)
+  }
+  body.view-calendario #v-calendario .calendar-grid{padding:0 14px}
+  body.view-calendario .mobile-day-calendar{gap:8px}
+  body.view-calendario .mobile-cal-strip,
+  body.view-calendario .mobile-cal-date-title{
+    position:sticky;z-index:94;background:#F4F8FD
+  }
+  body.view-calendario .mobile-cal-strip{top:135px}
+  body.view-calendario .mobile-cal-date-title{top:202px}
+  body.view-calendario .mobile-cal-strip{background:transparent;padding:0 0 8px}
+  body.view-calendario .mobile-cal-day{background:rgba(255,255,255,.78);box-shadow:none}
+  body.view-calendario .mobile-cal-day.on{background:var(--blue);box-shadow:0 10px 22px rgba(25,103,210,.22)}
+  body.view-calendario .mobile-cal-all-day,
+  body.view-calendario .mobile-cal-timeline{
+    background:#F6FAFF
+  }
+  body.view-calendario .mobile-cal-date-title{border-radius:22px 22px 0 0;padding-top:16px}
+  body.view-calendario .mobile-cal-all-day{padding-left:10px;padding-right:10px}
+  body.view-calendario .mobile-cal-timeline{border-radius:0 0 22px 22px;padding-left:10px;padding-right:10px}
+  #v-calendario .calendar-grid{display:block;background:transparent;padding:0;width:100%;min-width:0}
+  .mobile-day-calendar{display:flex;flex-direction:column;gap:10px;width:100%;min-width:0}
+  .mobile-cal-strip{
+    width:100%;min-width:0;overflow:hidden;padding:2px 0 8px
+  }
+  .mobile-cal-weeks{
+    display:flex;width:100%;overflow:hidden;overscroll-behavior-x:contain;touch-action:pan-y;scrollbar-width:none
+  }
+  .mobile-cal-weeks::-webkit-scrollbar{display:none}
+  .mobile-cal-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;min-width:100%;scroll-snap-align:center;padding:0 1px}
+  .mobile-cal-arrow{
+    flex:0 0 42px;height:58px;border:none;border-radius:18px;background:#fff;color:var(--blue);font-size:26px;font-weight:900;
+    box-shadow:0 10px 24px rgba(13,27,62,.08)
+  }
+  .mobile-cal-day{
+    min-width:0;border:none;border-radius:18px;background:#fff;padding:9px 4px;display:grid;justify-items:center;align-content:center;gap:5px;
+    color:var(--navy);box-shadow:0 10px 24px rgba(13,27,62,.07);font-family:'Manrope',sans-serif;scroll-snap-align:center
+  }
+  .mobile-cal-day small{font-size:10px;font-weight:900;color:var(--gray3);text-transform:uppercase;line-height:1}
+  .mobile-cal-day strong{font-family:'Outfit',sans-serif;font-size:21px;line-height:1}
+  .mobile-cal-day.on{background:var(--blue);color:#fff;box-shadow:0 14px 28px rgba(25,103,210,.24)}
+  .mobile-cal-day.on small{color:rgba(255,255,255,.78)}
+  .mobile-cal-day.today:not(.on){box-shadow:inset 0 0 0 2px var(--blue),0 10px 24px rgba(13,27,62,.07)}
+  .mobile-cal-date-title{
+    display:block;width:100%;font-family:'Outfit',sans-serif;font-size:22px;line-height:1.15;color:var(--navy);text-align:center;text-transform:capitalize;
+    padding:0 8px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+  }
+  .mobile-cal-all-day{
+    display:grid;grid-template-columns:82px minmax(0,1fr);gap:12px;align-items:start;border-top:1px solid #E3ECF6;border-bottom:1px solid #E3ECF6;
+    padding:10px 0;width:100%;min-width:0
+  }
+  .mobile-cal-all-day-label{font-size:13px;font-weight:900;color:var(--gray3);line-height:1.15;padding-top:9px}
+  .mobile-cal-all-day-list{display:grid;gap:8px;min-width:0}
+  .mobile-cal-empty{font-size:12px;color:var(--gray4);font-weight:800;padding:10px 0}
+  body.view-calendario .mobile-cal-timeline{max-height:calc(100dvh - 342px);overflow:auto}
+  .mobile-cal-timeline{max-height:62vh;overflow:auto;padding:2px 0 18px;width:100%;min-width:0;-webkit-overflow-scrolling:touch}
+  .mobile-cal-hour{display:grid;grid-template-columns:62px minmax(0,1fr);min-height:64px;width:100%;min-width:0}
+  .mobile-cal-hour-label{font-size:13px;color:var(--gray3);font-weight:800;padding-top:10px}
+  .mobile-cal-hour-line{border-top:1px solid #DDE6F1;position:relative;padding:7px 0 7px 10px;min-width:0}
+  .mobile-cal-event{
+    width:100%;max-width:100%;border-left:5px solid var(--blue);border-radius:16px;padding:11px 12px;background:#F5F9FF;
+    box-shadow:0 10px 22px rgba(13,27,62,.07);cursor:pointer;min-width:0
+  }
+  .mobile-cal-event+.mobile-cal-event{margin-top:8px}
+  .mobile-cal-event.deadline{border-left-color:var(--orange);background:#FFF8F0}
+  .mobile-cal-event.meeting{border-left-color:var(--green);background:#F0FBF2}
+  .mobile-cal-event.memo{border-left-color:var(--purple);background:#F8F0FF}
+  .mobile-cal-event strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--navy);margin-bottom:5px}
+  .mobile-cal-event span{display:block;font-size:14px;line-height:1.35;color:var(--gray2);font-weight:800;overflow-wrap:anywhere}
   .quote-layout,.quote-top-grid,.quote-kpis{grid-template-columns:1fr}
   .quote-panel,.quote-workspace{min-height:0;border-radius:18px}
   .quote-panel{margin-right:0}
   .quote-body{padding:14px}
-  .quote-panel-hd,.quote-workspace-hd{padding:14px}
+  .quote-panel-hd,.quote-workspace-hd{padding:14px;background:rgba(255,255,255,.74);border-bottom:1px solid #E1EAF5}
+  .quote-panel-hd h3,.quote-workspace-hd h3{font-family:'Outfit',sans-serif;font-size:18px}
   .quote-list{padding:10px}
   .quote-item{padding:14px}
   .quote-actions{align-items:stretch}
@@ -658,6 +993,59 @@ thead th{position:sticky;top:0;z-index:2}
   .quote-actions-left .btn,.quote-actions-right .btn{flex:1 1 calc(50% - 8px);justify-content:center}
   .quote-resizer{display:none}
   .quote-table{min-width:1320px}
+  #v-quotazioni .quote-layout{display:flex;flex-direction:column;gap:12px}
+  #v-quotazioni .quote-panel{min-height:0;margin:0;border-radius:22px;border:1px solid #E1EAF5;box-shadow:0 10px 24px rgba(13,27,62,.06)}
+  #v-quotazioni .quote-panel-close,#v-quotazioni .quote-resizer{display:none!important}
+  #v-quotazioni .quote-panel-hd{padding:14px 14px 10px;background:rgba(255,255,255,.8)}
+  #v-quotazioni .quote-panel-hd h3,#v-quotazioni .quote-workspace-hd h3{font-size:19px}
+  #v-quotazioni .quote-list{display:flex;flex-direction:row;gap:10px;overflow-x:auto;padding:10px 12px 14px;scroll-snap-type:x mandatory}
+  #v-quotazioni .quote-list::-webkit-scrollbar{display:none}
+  #v-quotazioni .quote-item{min-width:78vw;scroll-snap-align:start;border-radius:18px;padding:14px;box-shadow:0 10px 24px rgba(13,27,62,.06)}
+  #v-quotazioni .quote-item-title{font-size:15px;line-height:1.25}
+  #v-quotazioni .quote-item-total{font-size:24px}
+  #v-quotazioni .quote-item-actions .btn,#v-quotazioni .quote-item-actions .btn-del{min-height:38px;border-radius:12px}
+  #v-quotazioni .quote-workspace{min-height:0;border-radius:22px;border:1px solid #E1EAF5;box-shadow:0 10px 24px rgba(13,27,62,.06)}
+  #v-quotazioni .quote-workspace-hd{padding:14px;background:rgba(255,255,255,.8)}
+  #v-quotazioni .quote-body{padding:12px;gap:12px}
+  #v-quotazioni .quote-top-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  #v-quotazioni .quote-field:first-child,#v-quotazioni .quote-field:nth-child(2),#v-quotazioni .quote-field.full{grid-column:1/-1}
+  #v-quotazioni .quote-field label{font-size:9px}
+  #v-quotazioni .quote-field input,#v-quotazioni .quote-field textarea{min-height:46px;border-radius:14px;font-size:15px;background:#FBFDFF}
+  #v-quotazioni .quote-field textarea{min-height:82px}
+  #v-quotazioni .quote-kpis{grid-template-columns:1fr 1fr;gap:9px}
+  #v-quotazioni .quote-kpi{border-radius:18px;padding:12px;background:#fff}
+  #v-quotazioni .quote-kpi-v{font-size:20px;line-height:1.05;word-break:break-word}
+  #v-quotazioni .quote-actions{display:grid;gap:9px}
+  #v-quotazioni .quote-actions-left,#v-quotazioni .quote-actions-right{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+  #v-quotazioni .quote-actions-left .quote-status{grid-column:1/-1;text-align:center}
+  #v-quotazioni .quote-actions .btn{width:100%;justify-content:center;min-height:42px;border-radius:13px;font-size:12px}
+  #v-quotazioni .quote-table-wrap{overflow:visible;border:none;background:transparent;border-radius:0}
+  #v-quotazioni .quote-table,#v-quotazioni .quote-table thead,#v-quotazioni .quote-table tbody,#v-quotazioni .quote-table tr,#v-quotazioni .quote-table td{display:block;width:100%}
+  #v-quotazioni .quote-table{min-width:0;border-collapse:separate}
+  #v-quotazioni .quote-table thead{display:none}
+  #v-quotazioni .quote-table tbody{display:grid;gap:10px}
+  #v-quotazioni .quote-table tr{border:1px solid #E2EBF5;border-radius:20px;background:#fff;box-shadow:0 10px 24px rgba(13,27,62,.06);padding:12px;overflow:hidden}
+  #v-quotazioni .quote-table td{border:none;padding:7px 0;white-space:normal;min-width:0!important}
+  #v-quotazioni .quote-table td::before{display:block;margin-bottom:5px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--gray3)}
+  #v-quotazioni .quote-table td:nth-child(1){padding:0 0 10px;font-family:'Outfit',sans-serif;font-size:20px}
+  #v-quotazioni .quote-table td:nth-child(1)::before{content:'Posizione'}
+  #v-quotazioni .quote-table td:nth-child(2)::before{content:'Codice'}
+  #v-quotazioni .quote-table td:nth-child(3)::before{content:'Descrizione'}
+  #v-quotazioni .quote-table td:nth-child(4)::before{content:'Quantità'}
+  #v-quotazioni .quote-table td:nth-child(5)::before{content:'Fornitore'}
+  #v-quotazioni .quote-table td:nth-child(6)::before{content:'Note'}
+  #v-quotazioni .quote-table td:nth-child(7)::before{content:'Costo unitario'}
+  #v-quotazioni .quote-table td:nth-child(8)::before{content:'Totale acquisto'}
+  #v-quotazioni .quote-table td:nth-child(9)::before{content:'L/T'}
+  #v-quotazioni .quote-table td:nth-child(10)::before{content:'Prezzo offerto unit.'}
+  #v-quotazioni .quote-table td:nth-child(11)::before{content:'Valore totale offerto'}
+  #v-quotazioni .quote-table td:nth-child(12)::before{content:'Margine totale'}
+  #v-quotazioni .quote-table td:nth-child(13)::before{content:'% Margine'}
+  #v-quotazioni .quote-table td:nth-child(14)::before{content:'Azioni'}
+  #v-quotazioni .quote-table input,#v-quotazioni .quote-table textarea{width:100%;min-width:0!important;border-radius:13px;font-size:15px;padding:10px 11px;background:#FBFDFF}
+  #v-quotazioni .quote-table textarea{min-height:48px}
+  #v-quotazioni .quote-table td:nth-child(3) textarea{min-height:86px}
+  #v-quotazioni .quote-money{font-size:20px}
   #m-detail .mdl{width:100vw;max-width:100vw;max-height:100dvh;border-radius:0}
   .mdl{width:100%;max-width:none;max-height:100dvh;border-radius:24px 24px 0 0}
   .mb,.mf,.mh{padding-left:16px;padding-right:16px}
@@ -678,11 +1066,10 @@ thead th{position:sticky;top:0;z-index:2}
   .auth-actions{flex-direction:column;align-items:stretch}
   .auth-actions .btn{width:100%;justify-content:center}
   .mobile-menu-btn{width:40px;height:40px;border-radius:13px}
-  #topbar{padding:10px 12px 12px;min-height:68px}
-  .tb-title{font-size:20px}
-  .tb-right{align-items:flex-start;gap:8px}
-  #sync-status{max-width:45vw;font-size:10px}
-  #btn-add{padding:10px 12px;font-size:11px}
+  #topbar{margin:0;padding:14px 14px 9px;border-radius:0}
+  .tb-title{font-size:27px}
+  #sync-status{font-size:10px}
+  #btn-add{padding:10px 13px;font-size:11px;border-radius:999px}
   .mobile-dock{left:8px;right:8px;gap:6px;padding:7px}
   .mobile-dock-btn{padding:7px 2px}
   .mobile-dock-btn strong{font-size:9px}
@@ -714,6 +1101,34 @@ thead th{position:sticky;top:0;z-index:2}
   .quote-item-actions{flex-wrap:wrap}
   .quote-item-actions .btn,.quote-item-actions .btn-del{flex:1 1 auto;justify-content:center}
   .quote-table{min-width:1200px}
+  #v-calendario .calendar-toolbar{padding:0 10px 12px;margin:-1px 0 9px}
+  .calendar-nav{grid-template-columns:36px minmax(0,1fr) 36px;gap:8px;padding:10px;border-radius:18px}
+  .calendar-nav .btn{width:36px;height:36px;border-radius:13px}
+  .calendar-nav strong{font-size:22px}
+  body.view-calendario #topbar{margin:0;padding:14px 14px 7px}
+  body.view-calendario #v-calendario .calendar-toolbar{margin:0 14px 9px;padding:0}
+  body.view-calendario #v-calendario .calendar-nav{grid-template-columns:34px minmax(0,1fr) 34px;gap:6px;padding:0 66px 0 0}
+  body.view-calendario #v-calendario .calendar-nav strong{font-size:21px;padding:9px 10px}
+  body.view-calendario #v-calendario .calendar-nav .btn{width:34px;height:36px}
+  body.view-calendario .mobile-today-btn{right:0;top:0;width:60px;height:36px;padding:0;font-size:11px}
+  body.view-calendario #v-calendario .calendar-grid{padding:0 10px}
+  body.view-calendario #v-calendario .calendar-toolbar{top:76px}
+  body.view-calendario .mobile-cal-strip{top:126px}
+  body.view-calendario .mobile-cal-date-title{top:190px}
+  body.view-calendario .mobile-cal-date-title{padding-top:14px}
+  body.view-calendario .mobile-cal-timeline{max-height:calc(100dvh - 326px)}
+  .mobile-cal-strip{padding-bottom:7px}
+  .mobile-cal-week{gap:6px}
+  .mobile-cal-day{border-radius:16px;padding:8px 3px}
+  .mobile-cal-day strong{font-size:20px}
+  .mobile-cal-day small{font-size:9px}
+  .mobile-cal-date-title{font-size:22px}
+  .mobile-cal-all-day{grid-template-columns:72px minmax(0,1fr);gap:9px}
+  .mobile-cal-all-day-label{font-size:12px}
+  .mobile-cal-hour{grid-template-columns:52px minmax(0,1fr);min-height:62px}
+  .mobile-cal-hour-label{font-size:12px}
+  .mobile-cal-hour-line{padding-left:8px}
+  .mobile-cal-event{padding:10px 11px}
   #toasts{left:12px;right:12px;bottom:12px}
   .toast{width:100%}
 }
@@ -736,9 +1151,9 @@ thead th{position:sticky;top:0;z-index:2}
       <h1>Accesso sicuro al workspace condiviso</h1>
       <p>Autenticazione con utenti separati, sincronizzazione cloud tra tutti i membri autorizzati e protezione dati con permessi e controlli lato database.</p>
       <div class="auth-points">
-        <div class="auth-point"><div>📋</div><div><strong>Gestione gare centralizzata</strong><span>Il tracker organizza Lista Gare, Aggiudicate, Offerte, Portali e Scadenze in un unico spazio operativo sempre aggiornato.</span></div></div>
-        <div class="auth-point"><div>📊</div><div><strong>Dashboard e controllo attività</strong><span>Monitora stati, portali, trend mensili, tipologie gara e indicatori principali per avere subito il quadro completo del lavoro.</span></div></div>
-        <div class="auth-point"><div>🧾</div><div><strong>Quotazioni e dati condivisi</strong><span>Crea quotazioni, esporta il modello Excel e lavora su dati sincronizzati tra gli utenti autorizzati del workspace.</span></div></div>
+        <div class="auth-point"><div><span class="mi white">assignment</span></div><div><strong>Gestione gare centralizzata</strong><span>Il tracker organizza Lista Gare, Aggiudicate, Offerte, Portali e Scadenze in un unico spazio operativo sempre aggiornato.</span></div></div>
+        <div class="auth-point"><div><span class="mi white">monitoring</span></div><div><strong>Dashboard e controllo attività</strong><span>Monitora stati, portali, trend mensili, tipologie gara e indicatori principali per avere subito il quadro completo del lavoro.</span></div></div>
+        <div class="auth-point"><div><span class="mi white">receipt_long</span></div><div><strong>Quotazioni e dati condivisi</strong><span>Crea quotazioni, esporta il modello Excel e lavora su dati sincronizzati tra gli utenti autorizzati del workspace.</span></div></div>
       </div>
     </div>
     <div class="auth-card">
@@ -796,14 +1211,14 @@ thead th{position:sticky;top:0;z-index:2}
     <div class="sb-tagline">TRACKER GARE PUBBLICHE</div>
   </div>
   <div class="sb-sec">Principale</div>
-  <div class="nav on" data-v="dashboard"><span class="ic">📊</span>Dashboard</div>
-  <div class="nav" data-v="calendario"><span class="ic">📅</span>Calendario<span class="nb" id="nb-c">0</span></div>
-  <div class="nav" data-v="gare"><span class="ic">📋</span>Lista Gare<span class="nb" id="nb-g">—</span></div>
-  <div class="nav" data-v="aggiudicate"><span class="ic">✅</span>Aggiudicate<span class="nb" id="nb-a">—</span></div>
-  <div class="nav" data-v="quotazioni"><span class="ic">🧾</span>Quotazioni<span class="nb" id="nb-q">0</span></div>
-  <div class="nav" data-v="offerte"><span class="ic">📬</span>Offerte<span class="nb" id="nb-o">—</span></div>
+  <div class="nav on" data-v="dashboard"><span class="mi ic">monitoring</span>Dashboard</div>
+  <div class="nav" data-v="calendario"><span class="mi ic">calendar_month</span>Calendario<span class="nb" id="nb-c">0</span></div>
+  <div class="nav" data-v="gare"><span class="mi ic">assignment</span>Lista Gare<span class="nb" id="nb-g">—</span></div>
+  <div class="nav" data-v="aggiudicate"><span class="mi ic">check_circle</span>Aggiudicate<span class="nb" id="nb-a">—</span></div>
+  <div class="nav" data-v="quotazioni"><span class="mi ic">receipt_long</span>Quotazioni<span class="nb" id="nb-q">0</span></div>
+  <div class="nav" data-v="offerte"><span class="mi ic">outbox</span>Offerte<span class="nb" id="nb-o">—</span></div>
   <div class="sb-sec">Gestione</div>
-  <div class="nav" data-v="portali"><span class="ic">🌐</span>Portali</div>
+  <div class="nav" data-v="portali"><span class="mi ic">language</span>Portali</div>
   <div class="sb-bottom">
     <div class="sb-user-wrap">
       <div class="auth-user" id="auth-user" style="display:none">
@@ -822,22 +1237,46 @@ thead th{position:sticky;top:0;z-index:2}
 <button class="mobile-backdrop" type="button" aria-label="Chiudi menu" onclick="closeMobileMenu()"></button>
 
 <nav class="mobile-dock mobile-only" aria-label="Navigazione rapida smartphone">
-  <button class="mobile-dock-btn on" type="button" data-mobile-nav="dashboard" onclick="goToView('dashboard')"><span>📊</span><strong>Home</strong></button>
-  <button class="mobile-dock-btn" type="button" data-mobile-nav="gare" onclick="goToView('gare')"><span>📋</span><strong>Gare</strong></button>
-  <button class="mobile-dock-btn" type="button" data-mobile-nav="aggiudicate" onclick="goToView('aggiudicate')"><span>✅</span><strong>Vinte</strong></button>
-  <button class="mobile-dock-btn" type="button" data-mobile-nav="quotazioni" onclick="goToView('quotazioni')"><span>🧾</span><strong>Quote</strong></button>
-  <button class="mobile-dock-btn more" type="button" onclick="toggleMobileMenu()" aria-label="Apri menu"><span>☰</span><strong>Altro</strong></button>
+  <button class="mobile-dock-btn on" type="button" data-mobile-nav="dashboard" onclick="goToView('dashboard')"><span class="mi white">monitoring</span><strong>Dashboard</strong></button>
+  <button class="mobile-dock-btn" type="button" data-mobile-nav="calendario" onclick="goToView('calendario')"><span class="mi white">calendar_month</span><strong>Calendario</strong></button>
+  <button class="mobile-dock-btn" type="button" data-mobile-nav="gare" onclick="goToView('gare')"><span class="mi white">assignment</span><strong>Gare</strong></button>
+  <button class="mobile-dock-btn more" type="button" data-mobile-more onclick="openMobileMore()" aria-label="Apri altre sezioni"><span class="mi white">menu</span><strong>Altro</strong></button>
 </nav>
+
+<section class="mobile-more-screen mobile-only" aria-label="Altre sezioni smartphone">
+  <div class="mobile-more-head">
+    <div>
+      <h2>Altro</h2>
+      <p>Apri le altre aree del tracker.</p>
+    </div>
+    <button class="mobile-more-close" type="button" onclick="closeMobileMore()" aria-label="Chiudi">×</button>
+  </div>
+  <div class="mobile-more-grid">
+    <button class="mobile-more-card" type="button" onclick="goToView('aggiudicate')"><span class="mi">check_circle</span><span><strong>Aggiudicate</strong><span>Gare vinte e stato procedura</span></span><em>›</em></button>
+    <button class="mobile-more-card" type="button" onclick="goToView('quotazioni')"><span class="mi">receipt_long</span><span><strong>Quotazioni</strong><span>Listino, righe ed export Excel</span></span><em>›</em></button>
+    <button class="mobile-more-card" type="button" onclick="goToView('offerte')"><span class="mi">outbox</span><span><strong>Offerte</strong><span>Offerte presentate e storico invii</span></span><em>›</em></button>
+    <button class="mobile-more-card" type="button" onclick="goToView('portali')"><span class="mi">language</span><span><strong>Portali</strong><span>Credenziali e accessi condivisi</span></span><em>›</em></button>
+  </div>
+  <div class="mobile-more-user">
+    <div class="auth-user" id="auth-user-mobile" style="display:none">
+      <div class="auth-user-avatar" id="auth-user-avatar-mobile">M</div>
+      <div class="auth-user-meta">
+        <div class="auth-user-name" id="auth-user-name-mobile">—</div>
+        <div class="auth-user-role" id="auth-user-role-mobile">user</div>
+      </div>
+      <button class="btn btn-o btn-sm" type="button" onclick="handleLogout()">Esci</button>
+    </div>
+  </div>
+</section>
 
 <!-- MAIN -->
 <div id="main">
   <div id="topbar">
-    <button class="mobile-menu-btn mobile-top-trigger" type="button" aria-label="Apri menu" onclick="toggleMobileMenu()">☰</button>
     <span class="tb-title" id="tb-ttl">Dashboard</span>
     <span class="tb-sub" id="tb-sub"></span>
     <div class="tb-right">
-      <span id="sync-status">🔄 Connessione...</span>
-      <button class="btn btn-p" id="btn-add" type="button" onclick="openAdd()" style="display:none">＋ Nuova Gara</button>
+      <span id="sync-status"><span class="mi">sync</span> Connessione...</span>
+      <button class="btn btn-p" id="btn-add" type="button" onclick="openAdd()" style="display:none"><span class="mi white">add</span> Nuova Gara</button>
     </div>
   </div>
 
@@ -914,7 +1353,7 @@ thead th{position:sticky;top:0;z-index:2}
         <div class="quote-panel">
           <div class="quote-panel-hd">
             <div>
-              <h3>🧾 Quotazioni Salvate</h3>
+              <h3><span class="mi">receipt_long</span> Quotazioni Salvate</h3>
               <div class="quote-panel-sub">Bozze locali sincronizzate con il tracker</div>
             </div>
             <button class="quote-panel-close" type="button" onclick="toggleQuotePanel(true)" title="Chiudi elenco quotazioni" aria-label="Chiudi elenco quotazioni">‹</button>
@@ -926,7 +1365,7 @@ thead th{position:sticky;top:0;z-index:2}
         </div>
         <div class="quote-workspace">
           <div class="quote-workspace-hd">
-            <h3>⚙️ Editor Quotazione</h3>
+            <h3><span class="mi">settings</span> Editor Quotazione</h3>
             <div class="quote-workspace-sub">Compila le righe come nel file Excel e poi esporta il modello originale già valorizzato.</div>
           </div>
           <div class="quote-body" id="quote-body"></div>
@@ -938,8 +1377,8 @@ thead th{position:sticky;top:0;z-index:2}
     <div class="view" id="v-gare">
       <div class="tc">
         <div class="tc-hdr">
-          <h3>📋 Lista Gare</h3>
-          <div class="srch"><span>🔍</span><input id="sg" placeholder="Cerca..." oninput="pg.cur=1;drawGare()"></div>
+          <h3><span class="mi">assignment</span> Lista Gare</h3>
+          <div class="srch"><span class="mi">search</span><input id="sg" placeholder="Cerca..." oninput="pg.cur=1;drawGare()"></div>
           <div class="sortbar" id="g-sortbar">
             <span class="sortbar-label">Ordina per</span>
             <button type="button" class="sortchip" data-sort-field="scadenza" onclick="setGareSortField('scadenza')">Scadenza</button>
@@ -969,15 +1408,15 @@ thead th{position:sticky;top:0;z-index:2}
     <div class="view" id="v-aggiudicate">
       <div class="tc">
         <div class="tc-hdr">
-          <h3>✅ Gare Aggiudicate</h3>
-          <div class="srch"><span>🔍</span><input id="sa" placeholder="Cerca..." oninput="pa.cur=1;drawAgg()"></div>
+          <h3><span class="mi">check_circle</span> Gare Aggiudicate</h3>
+          <div class="srch"><span class="mi">search</span><input id="sa" placeholder="Cerca..." oninput="pa.cur=1;drawAgg()"></div>
           <div class="sortbar" id="a-sortbar">
             <button type="button" class="sortchip" data-sort-field="scadenza" onclick="setAggSortField('scadenza')">Scadenza</button>
             <button type="button" class="sortdir" id="a-sortdir" onclick="toggleAggSortDirection()">↑ Crescente</button>
           </div>
         </div>
         <div class="tw"><table><thead><tr>
-          <th class="th-click" data-tbl="agg" data-tbl="gare" data-col="portale">Portale ▾</th>
+          <th class="th-click" data-tbl="agg" data-col="portale">Portale ▾</th>
           <th>N° RDO</th><th>Descrizione</th>
           <th>Base Asta</th><th>Valore Offerto</th>
           <th class="th-click" data-tbl="agg" data-col="stato_proc">Stato ▾</th>
@@ -994,8 +1433,8 @@ thead th{position:sticky;top:0;z-index:2}
     <div class="view" id="v-offerte">
       <div class="tc">
         <div class="tc-hdr">
-          <h3>📬 Offerte Presentate</h3>
-          <div class="srch"><span>🔍</span><input id="so" placeholder="Cerca..." oninput="po.cur=1;drawOff()"></div>
+          <h3><span class="mi">outbox</span> Offerte Presentate</h3>
+          <div class="srch"><span class="mi">search</span><input id="so" placeholder="Cerca..." oninput="po.cur=1;drawOff()"></div>
           <div class="sortbar" id="o-yearbar"></div>
         </div>
         <div class="tw"><table><thead><tr>
@@ -1012,8 +1451,8 @@ thead th{position:sticky;top:0;z-index:2}
     <div class="view" id="v-portali">
       <div class="tc">
         <div class="tc-hdr">
-          <h3>🌐 Portali</h3>
-          <div class="srch"><span>🔍</span><input id="sp" placeholder="Cerca portale..." oninput="drawPortali()"></div>
+          <h3><span class="mi">language</span> Portali</h3>
+          <div class="srch"><span class="mi">search</span><input id="sp" placeholder="Cerca portale..." oninput="drawPortali()"></div>
           <div style="font-size:11px;color:var(--gray3);margin-left:auto">
             Credenziali condivise nel workspace autenticato.
           </div>
@@ -1021,7 +1460,7 @@ thead th{position:sticky;top:0;z-index:2}
         <div class="tw">
           <table id="table-portali">
             <thead><tr>
-              <th style="width:36px">⭐</th>
+              <th style="width:36px"><span class="mi">star</span></th>
               <th class="th-click" data-tbl="port" data-col="nome">Portale ▾</th>
               <th>URL</th><th>Username</th><th>Password</th>
               <th class="th-click" data-tbl="port" data-tbl="gare" data-col="stato">Stato ▾</th>
@@ -1038,13 +1477,14 @@ thead th{position:sticky;top:0;z-index:2}
       <div class="calendar-shell">
         <div class="calendar-toolbar">
           <div>
-            <h3>📅 Calendario operativo</h3>
+            <h3><span class="mi">calendar_month</span> Calendario operativo</h3>
             <p>Scadenze gare, eventi e task condivisi.</p>
           </div>
           <div class="calendar-nav">
             <button class="btn btn-o btn-sm" type="button" onclick="shiftCalendarMonth(-1)">‹ Mese precedente</button>
             <strong id="calendar-title">—</strong>
             <button class="btn btn-o btn-sm" type="button" onclick="shiftCalendarMonth(1)">Mese successivo ›</button>
+            <button class="mobile-today-btn" type="button" onclick="goCalendarToday()">Oggi</button>
           </div>
         </div>
         <div class="calendar-grid" id="calendar-grid"></div>
@@ -1057,7 +1497,7 @@ thead th{position:sticky;top:0;z-index:2}
 <!-- MODAL GARA -->
 <div class="ovl" id="m-gara">
   <div class="mdl">
-    <div class="mh"><h3 id="m-gara-ttl">📋 Nuova Gara</h3><button class="mcl" onclick="closeM('gara')">✕</button></div>
+    <div class="mh"><h3 id="m-gara-ttl"><span class="mi">assignment</span> Nuova Gara</h3><button class="mcl" onclick="closeM('gara')"><span class="mi">close</span></button></div>
     <div class="mb">
       <div class="fg">
         <div class="fi"><label>Stato *</label><select id="xg-stato" class="upper">
@@ -1082,14 +1522,14 @@ thead th{position:sticky;top:0;z-index:2}
         <div class="fi full"><label>Note</label><textarea id="xg-note" class="upper" placeholder="Note aggiuntive..."></textarea></div>
       </div>
     </div>
-    <div class="mf"><button class="btn btn-o" onclick="closeM('gara')">Annulla</button><button class="btn btn-p" onclick="saveGara()">💾 Salva</button></div>
+    <div class="mf"><button class="btn btn-o" onclick="closeM('gara')">Annulla</button><button class="btn btn-p" onclick="saveGara()"><span class="mi white">save</span> Salva</button></div>
   </div>
 </div>
 
 <!-- MODAL AGGIUDICATA -->
 <div class="ovl" id="m-agg">
   <div class="mdl">
-    <div class="mh"><h3 id="m-agg-ttl">✅ Gara Aggiudicata</h3><button class="mcl" onclick="closeM('agg')">✕</button></div>
+    <div class="mh"><h3 id="m-agg-ttl"><span class="mi">check_circle</span> Gara Aggiudicata</h3><button class="mcl" onclick="closeM('agg')"><span class="mi">close</span></button></div>
     <div class="mb">
       <div class="fg">
         <div class="fi"><label>Portale</label><select id="xa-port" class="upper"></select></div>
@@ -1115,14 +1555,14 @@ thead th{position:sticky;top:0;z-index:2}
         <div class="fi full"><label>Note</label><textarea id="xa-note" class="upper"></textarea></div>
       </div>
     </div>
-    <div class="mf"><button class="btn btn-o" onclick="closeM('agg')">Annulla</button><button class="btn btn-g" onclick="saveAgg()">💾 Salva</button></div>
+    <div class="mf"><button class="btn btn-o" onclick="closeM('agg')">Annulla</button><button class="btn btn-g" onclick="saveAgg()"><span class="mi white">save</span> Salva</button></div>
   </div>
 </div>
 
 <!-- MODAL OFFERTA -->
 <div class="ovl" id="m-off">
   <div class="mdl" style="max-width:480px">
-    <div class="mh"><h3 id="m-off-ttl">📬 Nuova Offerta</h3><button class="mcl" onclick="closeM('off')">✕</button></div>
+    <div class="mh"><h3 id="m-off-ttl"><span class="mi">outbox</span> Nuova Offerta</h3><button class="mcl" onclick="closeM('off')"><span class="mi">close</span></button></div>
     <div class="mb">
       <div class="fg">
         <div class="fi"><label>N° Offerta</label><input id="xo-num"></div>
@@ -1134,14 +1574,14 @@ thead th{position:sticky;top:0;z-index:2}
         </select></div>
       </div>
     </div>
-    <div class="mf"><button class="btn btn-o" onclick="closeM('off')">Annulla</button><button class="btn btn-t" onclick="saveOff()">💾 Salva</button></div>
+    <div class="mf"><button class="btn btn-o" onclick="closeM('off')">Annulla</button><button class="btn btn-t" onclick="saveOff()"><span class="mi white">save</span> Salva</button></div>
   </div>
 </div>
 
 <!-- MODAL PORTALE -->
 <div class="ovl" id="m-port">
   <div class="mdl" style="max-width:500px">
-    <div class="mh"><h3 id="m-port-ttl">🌐 Portale</h3><button class="mcl" onclick="closeM('port')">✕</button></div>
+    <div class="mh"><h3 id="m-port-ttl"><span class="mi">language</span> Portale</h3><button class="mcl" onclick="closeM('port')"><span class="mi">close</span></button></div>
     <div class="mb">
       <div class="fg">
         <div class="fi full"><label>Nome Portale *</label><input id="xp-nome" class="upper"></div>
@@ -1157,11 +1597,11 @@ thead th{position:sticky;top:0;z-index:2}
         <div class="fi full"><label>Note</label><textarea id="xp-note"></textarea></div>
         <div class="fi full" style="flex-direction:row;align-items:center;gap:10px">
           <input type="checkbox" id="xp-fav" style="width:18px;height:18px;flex-shrink:0">
-          <label for="xp-fav" style="font-size:13px;text-transform:none;letter-spacing:0;font-weight:600;color:var(--gold)">⭐ Segna come preferito</label>
+          <label for="xp-fav" style="font-size:13px;text-transform:none;letter-spacing:0;font-weight:600;color:var(--gold)"><span class="mi">star</span> Segna come preferito</label>
         </div>
       </div>
     </div>
-    <div class="mf"><button class="btn btn-o" onclick="closeM('port')">Annulla</button><button class="btn btn-p" onclick="savePort()">💾 Salva</button></div>
+    <div class="mf"><button class="btn btn-o" onclick="closeM('port')">Annulla</button><button class="btn btn-p" onclick="savePort()"><span class="mi white">save</span> Salva</button></div>
   </div>
 </div>
 
@@ -1176,9 +1616,9 @@ thead th{position:sticky;top:0;z-index:2}
         <div class="gd-header-sub" id="gd-subtitle">—</div>
       </div>
       <div class="gd-head-actions">
-        <button class="btn btn-r btn-sm" id="gd-btn-del">🗑️ Elimina Gara</button>
-        <button class="btn btn-p btn-sm" id="gd-btn-edit">✏️ Modifica Gara</button>
-        <button class="mcl" onclick="closeM('detail')">✕</button>
+        <button class="btn btn-r btn-sm" id="gd-btn-del"><span class="mi white">delete</span> Elimina Gara</button>
+        <button class="btn btn-p btn-sm" id="gd-btn-edit"><span class="mi white">edit</span> Modifica Gara</button>
+        <button class="mcl" onclick="closeM('detail')"><span class="mi">close</span></button>
       </div>
     </div>
     <div class="gd-body" id="gd-body"></div>
@@ -1188,7 +1628,7 @@ thead th{position:sticky;top:0;z-index:2}
 <!-- MODAL EVENTO CALENDARIO -->
 <div class="ovl" id="m-cal">
   <div class="mdl" style="max-width:520px">
-    <div class="mh"><h3 id="m-cal-ttl">📅 Nuovo evento</h3><button class="mcl" onclick="closeM('cal')">✕</button></div>
+    <div class="mh"><h3 id="m-cal-ttl"><span class="mi">calendar_month</span> Nuovo evento</h3><button class="mcl" onclick="closeM('cal')"><span class="mi">close</span></button></div>
     <div class="mb">
       <div class="fg">
         <div class="fi full"><label>Oggetto *</label><input id="xc-title" placeholder="Inserisci evento/task"></div>
@@ -1200,7 +1640,7 @@ thead th{position:sticky;top:0;z-index:2}
         <div class="fi full"><label>Note</label><textarea id="xc-notes" placeholder="Dettagli operativi..."></textarea></div>
       </div>
     </div>
-    <div class="mf"><button class="btn btn-r" id="m-cal-del" style="display:none" onclick="deleteCalendarEvent(editId.cal && editId.cal.id)">🗑️ Elimina</button><button class="btn btn-p" onclick="saveCalendarEvent()">💾 Salva evento</button></div>
+    <div class="mf"><button class="btn btn-r" id="m-cal-del" style="display:none" onclick="deleteCalendarEvent(editId.cal && editId.cal.id)"><span class="mi white">delete</span> Elimina</button><button class="btn btn-p" onclick="saveCalendarEvent()"><span class="mi white">save</span> Salva evento</button></div>
   </div>
 </div>
 
@@ -1208,8 +1648,8 @@ thead th{position:sticky;top:0;z-index:2}
 <div class="ovl" id="m-attachment">
   <div class="mdl attachment-preview">
     <div class="mh">
-      <h3 id="attachment-title">📎 Allegato</h3>
-      <button class="mcl" onclick="closeAttachmentPreview()">✕</button>
+      <h3 id="attachment-title"><span class="mi">attach_file</span> Allegato</h3>
+      <button class="mcl" onclick="closeAttachmentPreview()"><span class="mi">close</span></button>
     </div>
     <iframe class="attachment-preview-frame" id="attachment-frame" title="Anteprima allegato"></iframe>
     <div class="mf"><button class="btn btn-o" id="attachment-download" type="button">Scarica</button></div>
@@ -1269,7 +1709,8 @@ const DEFAULT_UI_PREFS = {
   scadRange: '30',
   quotePanelWidth: 320,
   quotePanelCollapsed: false,
-  calendarMonth: ''
+  calendarMonth: '',
+  calendarDay: ''
 };
 
 function lsLoad(key, seed) {
@@ -1413,24 +1854,40 @@ function lockAppForAuth() {
   document.body.classList.add('auth-locked');
   document.getElementById('auth-screen').classList.add('on');
   document.getElementById('auth-user').style.display = 'none';
+  const mobileUser = document.getElementById('auth-user-mobile');
+  if(mobileUser) mobileUser.style.display = 'none';
 }
 
 function unlockAppAfterAuth() {
   document.body.classList.remove('auth-locked');
   document.getElementById('auth-screen').classList.remove('on');
   document.getElementById('auth-user').style.display = '';
+  const mobileUser = document.getElementById('auth-user-mobile');
+  if(mobileUser) mobileUser.style.display = '';
 }
 
 function syncAuthUserUi() {
   const userBox = document.getElementById('auth-user');
+  const mobileUserBox = document.getElementById('auth-user-mobile');
   if(!authState.profile) {
     userBox.style.display = 'none';
+    if(mobileUserBox) mobileUserBox.style.display = 'none';
     return;
   }
-  document.getElementById('auth-user-avatar').textContent = buildProfileAvatar(authState.profile.full_name || authState.profile.username || authState.profile.email);
-  document.getElementById('auth-user-name').textContent = authState.profile.full_name || authState.profile.username || authState.profile.email || 'Utente';
-  document.getElementById('auth-user-role').textContent = ROLE_LABELS[getCurrentUserRole()] || getCurrentUserRole();
+  const avatar = buildProfileAvatar(authState.profile.full_name || authState.profile.username || authState.profile.email);
+  const name = authState.profile.full_name || authState.profile.username || authState.profile.email || 'Utente';
+  const role = ROLE_LABELS[getCurrentUserRole()] || getCurrentUserRole();
+  document.getElementById('auth-user-avatar').textContent = avatar;
+  document.getElementById('auth-user-name').textContent = name;
+  document.getElementById('auth-user-role').textContent = role;
   userBox.style.display = '';
+  const mobileAvatar = document.getElementById('auth-user-avatar-mobile');
+  const mobileName = document.getElementById('auth-user-name-mobile');
+  const mobileRole = document.getElementById('auth-user-role-mobile');
+  if(mobileAvatar) mobileAvatar.textContent = avatar;
+  if(mobileName) mobileName.textContent = name;
+  if(mobileRole) mobileRole.textContent = role;
+  if(mobileUserBox) mobileUserBox.style.display = '';
 }
 
 function syncPermissionUi() {
@@ -1445,7 +1902,7 @@ function updateTopbarAddButton() {
   if(!addBtn) return;
   const cfg = viewCfg[curView] || {};
   if(cfg.add && canMutateData()) {
-    addBtn.textContent = cfg.add;
+    addBtn.innerHTML = '<span class="mi white">add</span> ' + escHtml(cfg.add);
     addBtn.style.display = '';
   } else {
     addBtn.style.display = 'none';
@@ -1460,20 +1917,30 @@ function closeMobileMenu() {
   document.body.classList.remove('mobile-menu-open');
 }
 
-function openMobileMenu() {
+function closeMobileMore() {
+  document.body.classList.remove('mobile-more-open');
+}
+
+function openMobileMore() {
   if(!isMobileViewport()) return;
-  document.body.classList.add('mobile-menu-open');
+  closeMobileMenu();
+  document.body.classList.add('mobile-more-open');
+}
+
+function openMobileMenu() {
+  return;
 }
 
 function toggleMobileMenu() {
-  if(!isMobileViewport()) return;
-  document.body.classList.toggle('mobile-menu-open');
+  return;
 }
 
 function syncMobileNavigationUi() {
   document.querySelectorAll('[data-mobile-nav]').forEach(btn => {
     btn.classList.toggle('on', btn.dataset.mobileNav === curView);
   });
+  const moreBtn = document.querySelector('[data-mobile-more]');
+  if(moreBtn) moreBtn.classList.toggle('on', !['dashboard','calendario','gare'].includes(curView));
 }
 
 function applyState(nextState) {
@@ -2154,14 +2621,17 @@ function opBd(op) {
 function scadTag(s, stato) {
   if(['PERSA','AGGIUDICATA','SCARTATA'].includes(stato)) return '';
   const d=daysTo(s); if(d===null||d<0) return '';
-  if(d<=3) return ' <span class="scad-urg">🚨'+d+'gg</span>';
-  if(d<=10) return ' <span class="scad-att">⚠️'+d+'gg</span>';
+  if(d<=3) return ' <span class="scad-urg"><span class="mi white">priority_high</span>'+d+'gg</span>';
+  if(d<=10) return ' <span class="scad-att"><span class="mi white">warning</span>'+d+'gg</span>';
   return '';
+}
+function icon(name, cls='') {
+  return '<span class="mi '+cls+'">'+name+'</span>';
 }
 function toast(msg, type) {
   const t=document.createElement('div');
   t.className='toast'+(type?' '+type:'');
-  t.textContent=(type==='ok'?'✅ ':type==='err'?'❌ ':'ℹ️ ')+msg;
+  t.innerHTML=icon(type==='ok'?'check_circle':type==='err'?'error':'info')+' '+escHtml(msg);
   document.getElementById('toasts').appendChild(t);
   setTimeout(()=>t.remove(), 3000);
 }
@@ -2171,17 +2641,18 @@ function toast(msg, type) {
 // ═══════════════════════════════════════════════════════
 const viewCfg = {
   dashboard:   {ttl:'Dashboard',           sub:'Analisi in tempo reale', add:''},
-  quotazioni:  {ttl:'Quotazioni',          sub:'Listino e export Excel', add:'＋ Nuova Quotazione'},
-  gare:        {ttl:'Lista Gare',           sub:'',                       add:'＋ Nuova Gara'},
-  aggiudicate: {ttl:'Gare Aggiudicate',    sub:'',                       add:'＋ Aggiungi'},
-  offerte:     {ttl:'Offerte Presentate',  sub:'',                       add:'＋ Nuova Offerta'},
-  portali:     {ttl:'Portali',              sub:'Credenziali & accessi',  add:'＋ Portale'},
-  calendario:  {ttl:'Calendario',           sub:'Scadenze e promemoria',  add:'＋ Nuovo Evento'},
+  quotazioni:  {ttl:'Quotazioni',          sub:'Listino e export Excel', add:'Nuova Quotazione'},
+  gare:        {ttl:'Lista Gare',           sub:'',                       add:'Nuova Gara'},
+  aggiudicate: {ttl:'Gare Aggiudicate',    sub:'',                       add:'Aggiungi'},
+  offerte:     {ttl:'Offerte Presentate',  sub:'',                       add:'Nuova Offerta'},
+  portali:     {ttl:'Portali',              sub:'Credenziali & accessi',  add:'Portale'},
+  calendario:  {ttl:'Calendario',           sub:'Scadenze e promemoria',  add:'Nuovo Evento'},
 };
 
 function goToView(v) {
   if(!viewCfg[v]) return;
   curView = v;
+  document.body.classList.toggle('view-calendario', v === 'calendario');
   document.querySelectorAll('.nav').forEach(x => x.classList.toggle('on', x.dataset.v === v));
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
   const viewEl = document.getElementById('v-'+v);
@@ -2191,6 +2662,7 @@ function goToView(v) {
   document.getElementById('tb-sub').textContent = c.sub;
   updateTopbarAddButton();
   syncMobileNavigationUi();
+  closeMobileMore();
   closeMobileMenu();
   redrawCurrent();
   if(isMobileViewport()) window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2655,8 +3127,8 @@ function drawQuotePage() {
     if(editable) {
       newQuote();
     } else {
-      listEl.innerHTML = '<div class="empty" style="margin:14px"><div class="ei">🧾</div><h4>Nessuna quotazione salvata</h4></div>';
-      bodyEl.innerHTML = '<div class="empty" style="margin:16px"><div class="ei">🔒</div><h4>Accesso in sola lettura</h4><p style="color:var(--gray3);font-size:13px">Un utente con ruolo editor o admin puo creare la prima quotazione del workspace.</p></div>';
+      listEl.innerHTML = '<div class="empty" style="margin:14px"><div class="ei">'+icon('receipt_long')+'</div><h4>Nessuna quotazione salvata</h4></div>';
+      bodyEl.innerHTML = '<div class="empty" style="margin:16px"><div class="ei">'+icon('lock')+'</div><h4>Accesso in sola lettura</h4><p style="color:var(--gray3);font-size:13px">Un utente con ruolo editor o admin puo creare la prima quotazione del workspace.</p></div>';
     }
     return;
   }
@@ -2671,7 +3143,7 @@ function drawQuotePage() {
       +'<div class="quote-item-meta"><span>'+(q.rows.filter(r=>r.descrizione||r.codice||r.quantita).length)+' righe</span><span>'+formatDateTime(q.quote.updatedAt)+'</span></div>'
       +'<div class="quote-item-total">'+eur(q.offertaFinale)+'</div>'
       +'<div class="quote-item-actions">'
-      +(editable?'<button class="btn btn-o btn-sm" onclick="event.stopPropagation();duplicateQuote(\''+q.quote.id+'\')">Duplica</button><button class="btn-del" onclick="event.stopPropagation();deleteQuote(\''+q.quote.id+'\')">🗑️</button>':'')
+      +(editable?'<button class="btn btn-o btn-sm" onclick="event.stopPropagation();duplicateQuote(\''+q.quote.id+'\')">Duplica</button><button class="btn-del" onclick="event.stopPropagation();deleteQuote(\''+q.quote.id+'\')">'+icon('delete')+'</button>':'')
       +'</div>'
       +'</div>';
   }).join('');
@@ -2693,12 +3165,12 @@ function drawQuotePage() {
     +'</div>'
     +'<div class="quote-actions">'
       +'<div class="quote-actions-left">'
-        +(editable?'<button class="btn btn-p" onclick="addQuoteRow()"'+(computed.quote.rows.length>=QUOTE_MAX_ROWS?' disabled':'')+'>＋ Riga</button><button class="btn btn-o" onclick="saveCurrentQuote()">💾 Salva Quotazione</button><button class="btn btn-o" onclick="discardCurrentQuoteChanges()"'+(dirty?'':' disabled')+'>↺ Annulla modifiche</button>':'')
+        +(editable?'<button class="btn btn-p" onclick="addQuoteRow()"'+(computed.quote.rows.length>=QUOTE_MAX_ROWS?' disabled':'')+'>'+icon('add','white')+' Riga</button><button class="btn btn-o" onclick="saveCurrentQuote()">'+icon('save')+' Salva Quotazione</button><button class="btn btn-o" onclick="discardCurrentQuoteChanges()"'+(dirty?'':' disabled')+'>'+icon('undo')+' Annulla modifiche</button>':'')
         +'<span class="quote-status" id="quote-dirty-status">'+(dirty?'Modifiche non salvate':'Tutto salvato')+' · Template Excel: 97 righe disponibili</span>'
       +'</div>'
       +'<div class="quote-actions-right">'
         +(editable?'<button class="btn btn-o" onclick="duplicateQuote(\''+computed.quote.id+'\')">Duplica</button>':'')
-        +'<button class="btn btn-g" onclick="exportQuoteXlsx()">⬇︎ Esporta Excel</button>'
+        +'<button class="btn btn-g" onclick="exportQuoteXlsx()">'+icon('download','white')+' Esporta Excel</button>'
       +'</div>'
     +'</div>'
     +'<div class="quote-table-wrap"><table class="quote-table"><thead><tr>'
@@ -2719,7 +3191,7 @@ function drawQuotePage() {
       +'<td><span class="quote-money" id="quote-row-offer-total-'+index+'">'+eur(row.valore_totale_offerto)+'</span></td>'
       +'<td><span class="quote-money quote-margine" id="quote-row-margin-total-'+index+'">'+eur(row.margine_totale)+'</span></td>'
       +'<td><input type="number" step="0.01" min="0" value="'+escHtml(computed.quote.rows[index].margine)+'" oninput="updateQuoteRow('+index+', \'margine\', this.value)"'+lockAttr+'></td>'
-      +'<td>'+(editable?'<button class="btn-del" onclick="removeQuoteRow('+index+')">🗑️</button>':'')+'</td>'
+      +'<td>'+(editable?'<button class="btn-del" onclick="removeQuoteRow('+index+')">'+icon('delete')+'</button>':'')+'</td>'
       +'</tr>'
     ).join('')
     +'</tbody></table></div>';
@@ -2984,9 +3456,9 @@ function openColDD(th, tbl, col) {
   dd.className='col-dropdown'; dd._th=th; activeDropdown=dd;
 
   let html='<div class="col-dd-search"><input placeholder="Cerca..." oninput="ddSearch(this)"></div>';
-  if(cur) html+='<div class="col-dd-clear">✕ Rimuovi: <strong>'+cur+'</strong></div>';
+  if(cur) html+='<div class="col-dd-clear">'+icon('close')+' Rimuovi: <strong>'+escHtml(cur)+'</strong></div>';
   vals.forEach(v=>{
-    html+='<div class="col-dropdown-item'+(v===cur?' on':'')+'" data-v="'+v.toString().replace(/"/g,'&quot;')+'">'+v+(v===cur?'<span class="ck">✓</span>':'')+'</div>';
+    html+='<div class="col-dropdown-item'+(v===cur?' on':'')+'" data-v="'+v.toString().replace(/"/g,'&quot;')+'">'+escHtml(v)+(v===cur?'<span class="ck">'+icon('check')+'</span>':'')+'</div>';
   });
   if(!vals.length) html+='<div style="padding:10px 16px;font-size:12px;color:var(--gray3)">—</div>';
   dd.innerHTML=html;
@@ -3029,7 +3501,7 @@ function updateThHeaders(tbl) {
   document.querySelectorAll('.th-click[data-tbl="'+tbl+'"]').forEach(th=>{
     const col=th.dataset.col, val=(tblFilters[tbl]||{})[col]||'';
     th.classList.toggle('active-filter',!!val);
-    th.textContent=val?(L[col]||col)+' ✕':(L[col]||col)+' ▾';
+    th.innerHTML=escHtml(L[col]||col)+' '+(val?icon('close'):icon('keyboard_arrow_down'));
   });
 }
 
@@ -3039,8 +3511,8 @@ function updateFilterChips() {
   const C={stato:'chip-stato',portale:'chip-portale',tipologia:'chip-tipologia',operatore:'chip-operatore'};
   const active=Object.entries(tblFilters.gare||{}).filter(([k,v])=>!!v);
   bar.innerHTML=active.map(([k,v])=>
-    '<span class="filter-chip '+(C[k]||'')+'" data-col="'+k+'">'+(L[k]||k)+': <strong>'+v+'</strong> ✕</span>'
-  ).join('')+(active.length>1?'<span class="filter-chip" id="chip-clr" style="background:#FFEBEE;color:#C62828;border-color:#FFCDD2">✕ Tutti</span>':'');
+    '<span class="filter-chip '+(C[k]||'')+'" data-col="'+k+'">'+escHtml(L[k]||k)+': <strong>'+escHtml(v)+'</strong> '+icon('close')+'</span>'
+  ).join('')+(active.length>1?'<span class="filter-chip" id="chip-clr" style="background:#FFEBEE;color:#C62828;border-color:#FFCDD2">'+icon('close')+' Tutti</span>':'');
   bar.querySelectorAll('[data-col]').forEach(c=>c.addEventListener('click',()=>setFilter('gare',c.dataset.col,'')));
   const ca=bar.querySelector('#chip-clr');
   if(ca) ca.addEventListener('click',()=>{tblFilters.gare={};updateThHeaders('gare');updateFilterChips();pg.cur=1;drawGare();});
@@ -3073,8 +3545,8 @@ function renderGaraActivitySection(garaId) {
       ? '<div class="gd-activity-form">'
           +'<input id="ga-subject-'+garaId+'" placeholder="Oggetto del messaggio" value="'+escHtml(editingItem ? editingItem.subject || '' : '')+'">'
           +'<textarea id="ga-text-'+garaId+'" placeholder="Scrivi il dettaglio dell’attività...">'+escHtml(editingItem ? editingItem.text || '' : '')+'</textarea>'
-          +'<div class="gd-activity-file-row"><input type="file" id="ga-file-'+garaId+'"><span class="quote-muted">'+(editingItem && editingItem.attachment ? 'Allegato attuale: '+escHtml(editingItem.attachment.name) : 'Allegato facoltativo')+'</span></div>'
-          +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-p btn-sm" type="button" onclick="saveGaraActivity(\''+garaId+'\')">'+(editingItem?'💾 Salva modifica':'＋ Aggiungi messaggio')+'</button>'+(editingItem?'<button class="btn btn-o btn-sm" type="button" onclick="cancelGaraActivityEdit(\''+garaId+'\')">Annulla modifica</button>':'')+'</div>'
+          +'<div class="gd-activity-file-row"><label class="file-upload-btn" for="ga-file-'+garaId+'">'+icon('upload_file')+' Scegli file</label><input class="file-upload-input" type="file" id="ga-file-'+garaId+'" data-empty-label="'+(editingItem && editingItem.attachment ? 'Allegato attuale: '+escHtml(editingItem.attachment.name) : 'Allegato facoltativo')+'" onchange="updateFileUploadLabel(this)"><span class="file-upload-name" id="ga-file-name-'+garaId+'">'+(editingItem && editingItem.attachment ? 'Allegato attuale: '+escHtml(editingItem.attachment.name) : 'Allegato facoltativo')+'</span></div>'
+          +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-p btn-sm" type="button" onclick="saveGaraActivity(\''+garaId+'\')">'+(editingItem?icon('save','white')+' Salva modifica':icon('add','white')+' Aggiungi messaggio')+'</button>'+(editingItem?'<button class="btn btn-o btn-sm" type="button" onclick="cancelGaraActivityEdit(\''+garaId+'\')">Annulla modifica</button>':'')+'</div>'
         +'</div>'
       : '')
     +'<div class="gd-activity-list">'
@@ -3086,10 +3558,10 @@ function renderGaraActivitySection(garaId) {
             +'<div class="gd-activity-subject">'+escHtml(item.subject || 'Aggiornamento')+'</div>'
             +'<div class="gd-activity-text">'+escHtml(item.text || '')+'</div>'
             +(item.attachment ? renderActivityAttachment(item) : '')
-            +(editable ? '<div class="gd-activity-actions"><button class="btn btn-o btn-sm" type="button" onclick="editGaraActivity(\''+item.id+'\', \''+garaId+'\')">✏️ Modifica</button><button class="btn-del" type="button" onclick="deleteGaraActivity(\''+item.id+'\', \''+garaId+'\')">🗑️ Cancella</button></div>' : '')
+            +(editable ? '<div class="gd-activity-actions"><button class="btn btn-o btn-sm" type="button" onclick="editGaraActivity(\''+item.id+'\', \''+garaId+'\')">'+icon('edit')+' Modifica</button><button class="btn-del" type="button" onclick="deleteGaraActivity(\''+item.id+'\', \''+garaId+'\')">'+icon('delete')+' Cancella</button></div>' : '')
           +'</div>'
         +'</div>'
-      ).join('') : '<div class="empty" style="padding:24px"><div class="ei">🕘</div><h4>Nessun messaggio nello storico</h4><p>Inserisci il primo aggiornamento operativo per questa gara.</p></div>')
+      ).join('') : '<div class="empty" style="padding:24px"><div class="ei">'+icon('history')+'</div><h4>Nessun messaggio nello storico</h4><p>Inserisci il primo aggiornamento operativo per questa gara.</p></div>')
     +'</div>'
   +'</div>';
 }
@@ -3097,9 +3569,15 @@ function renderGaraActivitySection(garaId) {
 function renderActivityAttachment(item) {
   const att = item.attachment || {};
   return '<div class="gd-activity-attachment">'
-    +'<div><strong>📎 '+escHtml(att.name || 'Allegato')+'</strong><span>'+formatFileSize(att.size)+'</span></div>'
+    +'<div><strong>'+icon('attach_file')+' '+escHtml(att.name || 'Allegato')+'</strong><span>'+formatFileSize(att.size)+'</span></div>'
     +'<div style="display:flex;gap:6px"><button class="btn btn-o btn-sm" type="button" onclick="openActivityAttachment(\''+item.id+'\')">Visualizza</button><button class="btn btn-o btn-sm" type="button" onclick="downloadActivityAttachment(\''+item.id+'\')">Scarica</button></div>'
   +'</div>';
+}
+
+function updateFileUploadLabel(input) {
+  const label = document.getElementById((input.id || '').replace('ga-file-', 'ga-file-name-'));
+  if(!label) return;
+  label.textContent = input.files && input.files[0] ? input.files[0].name : (input.dataset.emptyLabel || 'Allegato facoltativo');
 }
 
 function formatFileSize(bytes) {
@@ -3235,11 +3713,118 @@ function shiftCalendarMonth(delta) {
   const d = getCalendarBaseMonth();
   d.setMonth(d.getMonth() + delta);
   setCalendarMonth(d);
+  if(isMobileViewport()) uiPrefs.calendarDay = calendarDateKey(d);
+  saveUiPrefs();
   drawCalendar();
 }
 
 function calendarDateKey(date) {
   return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
+}
+
+function parseCalendarDate(value) {
+  if(!value) return null;
+  const [year, month, day] = String(value).split('-').map(Number);
+  if(!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+}
+
+function getCalendarSelectedDate() {
+  const saved = parseCalendarDate(uiPrefs.calendarDay);
+  return saved || new Date();
+}
+
+function selectCalendarDay(value) {
+  const date = parseCalendarDate(value);
+  if(!date) return;
+  uiPrefs.calendarDay = calendarDateKey(date);
+  setCalendarMonth(new Date(date.getFullYear(), date.getMonth(), 1));
+  saveUiPrefs();
+  drawCalendar();
+}
+
+function shiftCalendarDay(delta) {
+  const date = getCalendarSelectedDate();
+  date.setDate(date.getDate() + delta);
+  selectCalendarDay(calendarDateKey(date));
+}
+
+function goCalendarToday() {
+  selectCalendarDay(calendarDateKey(new Date()));
+}
+
+let calendarWeekScrollTimer = null;
+function handleCalendarWeekScroll(el) {
+  if(!el || el.dataset.ready !== '1') return;
+  if(calendarWeekScrollTimer) clearTimeout(calendarWeekScrollTimer);
+  calendarWeekScrollTimer = setTimeout(() => {
+    const width = Math.max(1, el.clientWidth || 1);
+    const index = Math.round(el.scrollLeft / width);
+    const center = Number(el.dataset.center || 0);
+    if(index === center) return;
+    const selected = getCalendarSelectedDate();
+    const weekStart = new Date(selected);
+    const weekdayOffset = (selected.getDay() + 6) % 7;
+    weekStart.setDate(selected.getDate() - weekdayOffset + ((index - center) * 7));
+    weekStart.setDate(weekStart.getDate() + weekdayOffset);
+    selectCalendarDay(calendarDateKey(weekStart));
+  }, 120);
+}
+
+function shiftCalendarWeek(delta) {
+  const date = getCalendarSelectedDate();
+  date.setDate(date.getDate() + (delta * 7));
+  selectCalendarDay(calendarDateKey(date));
+}
+
+let calendarWeekAnimationTimer = null;
+function animateCalendarWeek(delta, el) {
+  if(!delta) return;
+  if(!el) {
+    shiftCalendarWeek(delta);
+    return;
+  }
+  if(el.dataset.animating === '1') return;
+  const center = Number(el.dataset.center || 0);
+  const width = Math.max(1, el.clientWidth || 1);
+  el.dataset.animating = '1';
+  el.scrollLeft = width * center;
+  requestAnimationFrame(() => {
+    el.scrollTo({ left: width * (center + delta), behavior: 'smooth' });
+  });
+  if(calendarWeekAnimationTimer) clearTimeout(calendarWeekAnimationTimer);
+  calendarWeekAnimationTimer = setTimeout(() => {
+    el.dataset.animating = '';
+    shiftCalendarWeek(delta);
+  }, 360);
+}
+
+function handleCalendarWeekTouchStart(event, el) {
+  if(!el || !event.touches || !event.touches.length) return;
+  el.dataset.touchX = String(event.touches[0].clientX);
+}
+
+function handleCalendarWeekTouchEnd(event, el) {
+  if(!el || !event.changedTouches || !event.changedTouches.length) return;
+  const startX = Number(el.dataset.touchX || 0);
+  const diff = event.changedTouches[0].clientX - startX;
+  el.dataset.touchX = '';
+  if(Math.abs(diff) < 42) return;
+  animateCalendarWeek(diff < 0 ? 1 : -1, el);
+}
+
+function handleCalendarWeekWheel(event, el) {
+  if(!el || Math.abs(event.deltaX) <= Math.abs(event.deltaY) || Math.abs(event.deltaX) < 24) return;
+  event.preventDefault();
+  const now = Date.now();
+  const last = Number(el.dataset.wheelAt || 0);
+  if(now - last < 450) return;
+  el.dataset.wheelAt = String(now);
+  animateCalendarWeek(event.deltaX > 0 ? 1 : -1, el);
+}
+
+function formatCalendarHour(hour) {
+  return String(hour).padStart(2,'0') + ':00';
 }
 
 function fillCalendarGaraSelects(selected='') {
@@ -3271,7 +3856,7 @@ function openCalendarEventModal(dateValue='', eventId='') {
   if(!requireRole('editor')) return;
   const ev = eventId ? state.calendarEvents.find(x => x.id === eventId) : null;
   editId.cal = ev || null;
-  document.getElementById('m-cal-ttl').textContent = ev ? '✏️ Modifica evento' : '📅 Nuovo evento';
+  document.getElementById('m-cal-ttl').innerHTML = ev ? icon('edit')+' Modifica evento' : icon('calendar_month')+' Nuovo evento';
   const delBtn = document.getElementById('m-cal-del');
   if(delBtn) delBtn.style.display = ev ? '' : 'none';
   document.getElementById('xc-title').value = ev ? ev.title || '' : '';
@@ -3338,6 +3923,65 @@ function drawCalendar() {
   const items = collectCalendarItems();
   const days = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
   const todayKey = calendarDateKey(new Date());
+
+  if(isMobileViewport()) {
+    const selected = getCalendarSelectedDate();
+    const selectedKey = calendarDateKey(selected);
+    titleEl.textContent = selected.toLocaleDateString('it-IT', { month:'long', year:'numeric' });
+    const weekStart = new Date(selected);
+    weekStart.setDate(selected.getDate() - ((selected.getDay() + 6) % 7));
+    const selectedItems = items.filter(item => item.date === selectedKey).sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
+    const timedItems = selectedItems.filter(item => item.time);
+    const allDayItems = selectedItems.filter(item => !item.time);
+    const eventHtml = item => {
+      const cls = item.source === 'deadline' ? 'deadline' : item.type === 'TASK' ? 'memo' : 'meeting';
+      const action = item.source === 'manual' ? ' onclick="openCalendarEventModal(\'\', \''+item.id+'\')"' : ' onclick="showDetail(\'gara\', \''+item.gara_id+'\')"';
+      return '<div class="mobile-cal-event '+cls+'"'+action+'>'
+        +'<strong>'+escHtml((item.time ? item.time+' · ' : '') + item.type)+'</strong>'
+        +'<span>'+escHtml(item.title || 'Evento')+'</span>'
+      +'</div>';
+    };
+    const weekWindow = 1;
+    let html = '<div class="mobile-day-calendar">';
+    html += '<div class="mobile-cal-strip"><div class="mobile-cal-weeks" data-center="'+weekWindow+'" ontouchstart="handleCalendarWeekTouchStart(event,this)" ontouchend="handleCalendarWeekTouchEnd(event,this)" onwheel="handleCalendarWeekWheel(event,this)">';
+    for(let w=-weekWindow; w<=weekWindow; w++) {
+      html += '<div class="mobile-cal-week">';
+      for(let i=0;i<7;i++) {
+        const day = new Date(weekStart);
+        day.setDate(weekStart.getDate() + (w * 7) + i);
+        const key = calendarDateKey(day);
+        html += '<button class="mobile-cal-day'+(key===selectedKey?' on':'')+(key===todayKey?' today':'')+'" type="button" onclick="selectCalendarDay(\''+key+'\')">'
+          +'<small>'+escHtml(day.toLocaleDateString('it-IT', { weekday:'short' }).replace('.', ''))+'</small>'
+          +'<strong>'+day.getDate()+'</strong>'
+        +'</button>';
+      }
+      html += '</div>';
+    }
+    html += '</div></div>';
+    html += '<div class="mobile-cal-date-title">'+escHtml(selected.toLocaleDateString('it-IT', { weekday:'long', day:'2-digit', month:'short', year:'numeric' }))+'</div>';
+    html += '<div class="mobile-cal-all-day"><div class="mobile-cal-all-day-label">Tutto il giorno</div><div class="mobile-cal-all-day-list">'
+      +(allDayItems.length ? allDayItems.map(eventHtml).join('') : '<div class="mobile-cal-empty">Nessuna scadenza o task</div>')
+      +'</div></div>';
+    html += '<div class="mobile-cal-timeline">';
+    for(let hour=0; hour<24; hour++) {
+      const hourItems = timedItems.filter(item => Number((item.time || '00:00').slice(0,2)) === hour);
+      html += '<div class="mobile-cal-hour">'
+        +'<div class="mobile-cal-hour-label">'+formatCalendarHour(hour)+'</div>'
+        +'<div class="mobile-cal-hour-line">'+hourItems.map(eventHtml).join('')+'</div>'
+      +'</div>';
+    }
+    html += '</div></div>';
+    grid.innerHTML = html;
+    requestAnimationFrame(() => {
+      const weeks = grid.querySelector('.mobile-cal-weeks');
+      if(!weeks) return;
+      weeks.style.scrollBehavior = 'auto';
+      weeks.scrollLeft = weeks.clientWidth * weekWindow;
+      requestAnimationFrame(() => { weeks.dataset.ready = '1'; });
+    });
+    return;
+  }
+
   let html = days.map(d => '<div class="calendar-day-name">'+d+'</div>').join('');
   for(let i=0;i<42;i++) {
     const current = new Date(start);
@@ -3345,16 +3989,17 @@ function drawCalendar() {
     const key = calendarDateKey(current);
     const dayItems = items.filter(item => item.date === key).sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
     const muted = current.getMonth() !== month;
+    const visibleItems = isMobileViewport() ? dayItems.slice(0,2) : dayItems;
     html += '<div class="calendar-cell'+(muted?' muted':'')+(key===todayKey?' today':'')+'">'
       +'<div class="calendar-date"><span>'+current.getDate()+'</span><button class="calendar-add-mini" type="button" onclick="openCalendarEventModal(\''+key+'\')">+</button></div>'
-      +dayItems.map(item => {
+      +'<div class="calendar-events">'+visibleItems.map(item => {
         const cls = item.source === 'deadline' ? 'deadline' : item.type === 'TASK' ? 'memo' : 'meeting';
         const action = item.source === 'manual' ? ' onclick="openCalendarEventModal(\'\', \''+item.id+'\')"' : ' onclick="showDetail(\'gara\', \''+item.gara_id+'\')"';
         return '<div class="calendar-event '+cls+'"'+action+'>'
           +'<strong>'+escHtml((item.time ? item.time+' · ' : '') + item.type)+'</strong>'
           +'<span>'+escHtml(item.title || 'Evento')+'</span>'
         +'</div>';
-      }).join('')
+      }).join('')+(isMobileViewport() && dayItems.length>2?'<div class="calendar-more">+'+(dayItems.length-2)+' altri</div>':'')+'</div>'
     +'</div>';
   }
   grid.innerHTML = html;
@@ -3487,7 +4132,7 @@ function showDetail(type, id) {
         +progressBlock
       +'</div>'
       +'<div class="gd-map-card">'
-        +'<div class="gd-map-ic">🏛️</div>'
+        +'<div class="gd-map-ic">'+icon('account_balance')+'</div>'
         +'<div><div class="gd-map-label">Ente</div><div class="gd-map-place">'+escHtml(place)+'</div></div>'
       +'</div>'
     +'</div>';
@@ -3682,7 +4327,7 @@ function drawGare() {
     +'<td class="gara-scad">'+fmtD(g.scadenza)+'</td>'
     +'<td>'+opBd(g.operatore)+'</td>'
     +'</tr>'
-  ).join(''):'<tr><td colspan="10"><div class="empty"><div class="ei">🔍</div><h4>Nessun risultato</h4></div></td></tr>';
+  ).join(''):'<tr><td colspan="10"><div class="empty"><div class="ei">'+icon('search')+'</div><h4>Nessun risultato</h4></div></td></tr>';
   document.getElementById('cnt-g').textContent=tot+' gare';
   document.getElementById('pag-g').innerHTML='';
 }
@@ -3704,7 +4349,7 @@ function drawAgg() {
   fl = sortByMode(fl, uiPrefs.aggSort, 'agg');
   const tot=fl.length, page=fl;
   document.getElementById('tb-a').innerHTML=page.length?page.map(a=>
-    '<tr class="row-click" data-type="agg" data-id="'+a.id+'" style="cursor:pointer">'
+    '<tr class="row-click agg-row rAG" data-type="agg" data-id="'+a.id+'" style="cursor:pointer">'
     +'<td style="font-weight:700;color:var(--teal)">'+a.portale+'</td>'
     +'<td style="font-family:monospace;font-size:11px;color:var(--gray3)">'+a.num_rdo+'</td>'
     +'<td style="font-weight:600;max-width:200px">'+a.descrizione+'</td>'
@@ -3717,7 +4362,7 @@ function drawAgg() {
     +'<td style="font-family:monospace;font-size:11px">'+a.num_ordine+'</td>'
     +'<td style="font-size:11px">'+a.fornitore+'</td>'
     +'</tr>'
-  ).join(''):'<tr><td colspan="11"><div class="empty"><div class="ei">✅</div><h4>Nessuna gara</h4></div></td></tr>';
+  ).join(''):'<tr class="empty-row"><td colspan="11"><div class="empty"><div class="ei">'+icon('check_circle')+'</div><h4>Nessuna gara</h4></div></td></tr>';
   document.getElementById('cnt-a').textContent=tot+' gare';
   document.getElementById('pag-a').innerHTML='';
 }
@@ -3745,15 +4390,15 @@ function drawOff() {
   });
   const tot=fl.length, page=fl.slice((po.cur-1)*PS,po.cur*PS);
   document.getElementById('tb-o').innerHTML=page.length?page.map(o=>
-    '<tr>'
+    '<tr class="off-row">'
     +'<td style="font-family:Outfit,sans-serif;font-size:19px;font-weight:700;color:var(--teal)">#'+o.num+'</td>'
     +'<td>'+fmtD(o.data)+'</td>'
     +'<td style="font-weight:600">'+o.oggetto+'</td>'
     +'<td style="font-size:11px">'+o.ente+'</td>'
     +'<td>'+opBd(o.operatore)+'</td>'
-    +'<td style="white-space:nowrap">'+(editable?'<button class="btn btn-o btn-ic btn-sm" onclick="event.stopPropagation();editOff(\''+o.id+'\')">✏️</button> <button class="btn-del" onclick="event.stopPropagation();delItem(\'offerte\',\''+o.id+'\')">🗑️</button>':'—')+'</td>'
+    +'<td style="white-space:nowrap">'+(editable?'<button class="btn btn-o btn-ic btn-sm" onclick="event.stopPropagation();editOff(\''+o.id+'\')">'+icon('edit')+'</button> <button class="btn-del" onclick="event.stopPropagation();delItem(\'offerte\',\''+o.id+'\')">'+icon('delete')+'</button>':'—')+'</td>'
     +'</tr>'
-  ).join(''):'<tr><td colspan="6"><div class="empty"><div class="ei">📬</div><h4>Nessuna offerta</h4></div></td></tr>';
+  ).join(''):'<tr class="empty-row"><td colspan="6"><div class="empty"><div class="ei">'+icon('outbox')+'</div><h4>Nessuna offerta</h4></div></td></tr>';
   document.getElementById('cnt-o').textContent=tot+' offerte';
   document.getElementById('pag-o').innerHTML=pagHTML(po,tot,'setOffPage');
 }
@@ -3789,18 +4434,18 @@ function drawPortali() {
   });
   const tbody=document.getElementById('tb-portali'); if(!tbody) return;
   tbody.innerHTML=sorted.length?sorted.map(p=>
-    '<tr class="'+(p.preferito==='⭐'?'port-fav':'')+'">'
-    +'<td class="star-cell"'+(editable?' onclick="event.stopPropagation();toggleFav(\''+p.id+'\')"':'')+'>'+(p.preferito==='⭐'?'⭐':'☆')+'</td>'
+    '<tr class="port-row '+(p.preferito==='⭐'?'port-fav':'')+'">'
+    +'<td class="star-cell"'+(editable?' onclick="event.stopPropagation();toggleFav(\''+p.id+'\')"':'')+'>'+icon('star', p.preferito==='⭐'?'fill':'')+'</td>'
     +'<td style="font-weight:700;color:var(--navy)">'+p.nome+'</td>'
-    +'<td>'+(p.url?'<a href="'+p.url+'" target="_blank" style="color:var(--blue);font-size:12px;text-decoration:none" onclick="event.stopPropagation()">🔗 '+p.url+'</a>':'—')+'</td>'
+    +'<td>'+(p.url?'<a href="'+p.url+'" target="_blank" style="color:var(--blue);font-size:12px;text-decoration:none" onclick="event.stopPropagation()">'+icon('link')+' '+p.url+'</a>':'—')+'</td>'
     +'<td style="font-family:monospace;font-size:12px">'+(p.username||'—')+'</td>'
     +'<td><span id="pw-'+p.id+'" data-p="'+(p.password||'').replace(/"/g,'&quot;')+'">'+maskPwd(p.password)+'</span>'
-    +(p.password?'<button class="eye" onclick="event.stopPropagation();togglePwd(\'pw-'+p.id+'\')">👁️</button>':'')+'</td>'
+    +(p.password?'<button class="eye" onclick="event.stopPropagation();togglePwd(\'pw-'+p.id+'\')">'+icon('visibility')+'</button>':'')+'</td>'
     +'<td>'+bdAcc(p.stato)+'</td>'
     +'<td style="font-size:11px;color:var(--gray3);max-width:200px">'+(p.note||'')+'</td>'
-    +'<td style="white-space:nowrap">'+(editable?'<button class="btn btn-o btn-ic btn-sm" onclick="event.stopPropagation();editPort(\''+p.id+'\')">✏️</button> <button class="btn-del" onclick="event.stopPropagation();delItem(\'portali\',\''+p.id+'\')">🗑️</button>':'—')+'</td>'
+    +'<td style="white-space:nowrap">'+(editable?'<button class="btn btn-o btn-ic btn-sm" onclick="event.stopPropagation();editPort(\''+p.id+'\')">'+icon('edit')+'</button> <button class="btn-del" onclick="event.stopPropagation();delItem(\'portali\',\''+p.id+'\')">'+icon('delete')+'</button>':'—')+'</td>'
     +'</tr>'
-  ).join(''):'<tr><td colspan="8"><div class="empty"><div class="ei">🌐</div><h4>Nessun portale</h4></div></td></tr>';
+  ).join(''):'<tr class="empty-row"><td colspan="8"><div class="empty"><div class="ei">'+icon('language')+'</div><h4>Nessun portale</h4></div></td></tr>';
 }
 
 // ═══════════════════════════════════════════════════════
@@ -3811,7 +4456,7 @@ function openM(type) {
   const ev=editId[type];
   if(type==='gara') {
     fillPortSel('xg-port',ev?ev.portale:'');
-    document.getElementById('m-gara-ttl').textContent=ev?'✏️ Modifica Gara':'📋 Nuova Gara';
+    document.getElementById('m-gara-ttl').innerHTML=ev?icon('edit')+' Modifica Gara':icon('assignment')+' Nuova Gara';
     if(!ev){
       ['xg-rdo','xg-desc','xg-ente','xg-note'].forEach(i=>document.getElementById(i).value='');
       document.getElementById('xg-stato').value='';
@@ -3838,7 +4483,7 @@ function openM(type) {
   }
   if(type==='agg') {
     fillPortSel('xa-port',ev?ev.portale:'');
-    document.getElementById('m-agg-ttl').textContent=ev?'✏️ Modifica':'✅ Nuova Gara Aggiudicata';
+    document.getElementById('m-agg-ttl').innerHTML=ev?icon('edit')+' Modifica':icon('check_circle')+' Nuova Gara Aggiudicata';
     if(!ev){
       ['xa-rdo','xa-desc','xa-ente','xa-asta','xa-val','xa-nord','xa-forn','xa-cons','xa-note'].forEach(i=>document.getElementById(i).value='');
       document.getElementById('xa-tipo').value='';document.getElementById('xa-stp').value='';document.getElementById('xa-stip').value='';document.getElementById('xa-scad').value='';document.getElementById('xa-dstip').value='';
@@ -3853,7 +4498,7 @@ function openM(type) {
     }
   }
   if(type==='off') {
-    document.getElementById('m-off-ttl').textContent=ev?'✏️ Modifica':'📬 Nuova Offerta';
+    document.getElementById('m-off-ttl').innerHTML=ev?icon('edit')+' Modifica':icon('outbox')+' Nuova Offerta';
     if(!ev){
       document.getElementById('xo-num').value=getNextOffertaNum();
       document.getElementById('xo-data').value=new Date().toISOString().slice(0,10);
@@ -3866,7 +4511,7 @@ function openM(type) {
     }
   }
   if(type==='port') {
-    document.getElementById('m-port-ttl').textContent=ev?'✏️ Modifica Portale':'🌐 Nuovo Portale';
+    document.getElementById('m-port-ttl').innerHTML=ev?icon('edit')+' Modifica Portale':icon('language')+' Nuovo Portale';
     if(!ev){
       ['xp-nome','xp-url','xp-user','xp-pass','xp-note'].forEach(i=>document.getElementById(i).value='');
       document.getElementById('xp-op').value='';document.getElementById('xp-stato').value='';document.getElementById('xp-fav').checked=false;
@@ -3971,7 +4616,11 @@ async function init(){
   }
 }
 window.addEventListener('resize', () => {
-  if(!isMobileViewport()) closeMobileMenu();
+  if(!isMobileViewport()) {
+    closeMobileMenu();
+    closeMobileMore();
+  }
+  if(curView === 'calendario') drawCalendar();
 });
 window.addEventListener('load', init);
 </script>
