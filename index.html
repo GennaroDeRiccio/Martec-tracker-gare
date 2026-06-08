@@ -1728,7 +1728,7 @@ const STATE_MAP = {gare:'gare', agg:'aggiudicate', off:'offerte', port:'portali'
 const DEFAULT_REMOTE_CONFIG = {
   syncTable: 'app_state',
   syncRowId: 'shared',
-  pollIntervalMs: 15000
+  pollIntervalMs: 0
 };
 const remoteCfg = Object.assign({}, DEFAULT_REMOTE_CONFIG, window.MARTEC_CONFIG || {});
 const AUTH_MODES = {
@@ -2146,7 +2146,10 @@ async function setupRemoteSync() {
     await pullRemoteState();
     setupRemoteRealtime();
     if(remoteSync.pollingId) clearInterval(remoteSync.pollingId);
-    remoteSync.pollingId = window.setInterval(() => { pullRemoteState(true); }, remoteCfg.pollIntervalMs);
+    remoteSync.pollingId = null;
+    if(Number(remoteCfg.pollIntervalMs) > 0) {
+      remoteSync.pollingId = window.setInterval(() => { pullRemoteState(true); }, Number(remoteCfg.pollIntervalMs));
+    }
     if(!remoteSync.visibilityBound) {
       document.addEventListener('visibilitychange', () => {
         if(!document.hidden) pullRemoteState(true);
