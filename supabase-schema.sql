@@ -29,7 +29,7 @@ create table if not exists public.profiles (
   email text not null,
   username citext not null unique,
   full_name text not null default '',
-  role public.app_role not null default 'viewer',
+  role public.app_role not null default 'editor',
   is_active boolean not null default true,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now()),
@@ -126,7 +126,7 @@ begin
   v_username := lower(coalesce(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1)));
   v_full_name := coalesce(new.raw_user_meta_data->>'full_name', '');
   v_workspace_id := coalesce(new.raw_user_meta_data->>'workspace_id', 'shared');
-  v_role := case when exists (select 1 from public.profiles limit 1) then 'viewer'::public.app_role else 'admin'::public.app_role end;
+  v_role := case when exists (select 1 from public.profiles limit 1) then 'editor'::public.app_role else 'admin'::public.app_role end;
 
   insert into public.profiles (
     user_id,
@@ -164,6 +164,10 @@ create trigger on_auth_user_created
 after insert on auth.users
 for each row
 execute function public.handle_new_user();
+
+update public.profiles
+set role = 'editor'::public.app_role
+where role = 'viewer'::public.app_role;
 
 create or replace function public.current_workspace_id()
 returns text

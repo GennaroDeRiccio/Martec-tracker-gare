@@ -1241,7 +1241,7 @@ thead th{position:sticky;top:0;z-index:2}
           <div class="auth-actions">
             <button class="btn btn-p" type="button" onclick="handleSignup()">Crea account</button>
           </div>
-          <div class="auth-hint">I nuovi utenti vengono creati con ruolo iniziale user. Un admin potrà poi promuoverli se necessario.</div>
+          <div class="auth-hint">I nuovi utenti vengono creati con ruolo iniziale user operativo. Solo l'admin puo gestire gli account.</div>
         </div>
       </div>
 
@@ -1569,7 +1569,7 @@ thead th{position:sticky;top:0;z-index:2}
         <div class="fi full"><label>Ente Appaltante</label><input id="xg-ente" class="upper" placeholder="Nome ente"></div>
         <div class="fi"><label>Base d'Asta (€)</label><input type="number" id="xg-asta" step="0.01" placeholder="0.00"></div>
         <div class="fi"><label>Operatore</label><select id="xg-op">
-          <option value="">—</option><option>ASSIA</option><option>GENNI</option><option>ANNAMARIA</option>
+          <option value="">—</option><option>ASSIA</option><option>GENNI</option><option>ANNAMARIA</option><option>CRISTINA</option>
         </select></div>
         <div class="fi"><label>Data Creazione</label><input type="date" id="xg-crea"></div>
         <div class="fi"><label>Data Scadenza</label><input type="date" id="xg-scad-date"></div>
@@ -1625,7 +1625,7 @@ thead th{position:sticky;top:0;z-index:2}
         <div class="fi full"><label>Oggetto *</label><input id="xo-ogg" class="upper"></div>
         <div class="fi full"><label>Ente</label><input id="xo-ente" class="upper"></div>
         <div class="fi full"><label>Operatore</label><select id="xo-op">
-          <option value="">—</option><option>ASSIA</option><option>GENNI</option><option>ANNAMARIA</option>
+          <option value="">—</option><option>ASSIA</option><option>GENNI</option><option>ANNAMARIA</option><option>CRISTINA</option>
         </select></div>
       </div>
     </div>
@@ -1644,7 +1644,7 @@ thead th{position:sticky;top:0;z-index:2}
         <div class="fi"><label>Username</label><input id="xp-user" autocapitalize="off" autocomplete="username" spellcheck="false"></div>
         <div class="fi"><label>Password</label><input id="xp-pass" type="password" autocapitalize="off" autocomplete="current-password" spellcheck="false"></div>
         <div class="fi"><label>Operatore</label><select id="xp-op">
-          <option value="">—</option><option>ASSIA</option><option>GENNI</option><option>ANNAMARIA</option>
+          <option value="">—</option><option>ASSIA</option><option>GENNI</option><option>ANNAMARIA</option><option>CRISTINA</option>
         </select></div>
         <div class="fi"><label>Stato Account</label><select id="xp-stato">
           <option value="">—</option><option>ATTIVO</option><option>SCADUTO</option><option>SOSPESO</option>
@@ -1733,11 +1733,11 @@ const DEFAULT_REMOTE_CONFIG = {
 const remoteCfg = Object.assign({}, DEFAULT_REMOTE_CONFIG, window.MARTEC_CONFIG || {});
 const AUTH_MODES = {
   login: { title:'Accedi', subtitle:'Entra con il tuo username o la tua email per continuare nel tracker.' },
-  signup: { title:'Nuovo utente', subtitle:'Crea un account nel workspace condiviso. Il ruolo iniziale sara user.' },
+  signup: { title:'Nuovo utente', subtitle:'Crea un account operativo nel workspace condiviso.' },
   reset: { title:'Recupero password', subtitle:'Invia un link di reset alla mail collegata al tuo account.' },
   recovery: { title:'Nuova password', subtitle:'Imposta una nuova password per completare il recupero credenziali.' }
 };
-const ROLE_LABELS = { admin:'Admin', editor:'Editor', viewer:'User' };
+const ROLE_LABELS = { admin:'Admin', editor:'User', viewer:'User' };
 const ROLE_RANK = { viewer:1, editor:2, admin:3 };
 const remoteSync = {
   client: null,
@@ -2673,7 +2673,7 @@ function rowC(s) {
 }
 function opBd(op) {
   if(!op) return '—';
-  const c={ASSIA:'#1565C0',GENNI:'#00838F',ANNAMARIA:'#E65100'};
+  const c={ASSIA:'#1565C0',GENNI:'#00838F',ANNAMARIA:'#E65100',CRISTINA:'#6A1B9A'};
   return '<span style="background:'+(c[op]||'#546E7A')+';color:#fff;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700">'+op+'</span>';
 }
 function scadTag(s, stato) {
