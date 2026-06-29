@@ -243,6 +243,16 @@ for select
 to authenticated
 using (user_id = auth.uid());
 
+drop policy if exists "workspace members can read active profiles" on public.profiles;
+create policy "workspace members can read active profiles"
+on public.profiles
+for select
+to authenticated
+using (
+  is_active = true
+  and workspace_id = public.current_workspace_id()
+);
+
 drop policy if exists "admins can read workspace profiles" on public.profiles;
 create policy "admins can read workspace profiles"
 on public.profiles

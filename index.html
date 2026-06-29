@@ -15,6 +15,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="./config.js"></script>
+<script src="./dati-seed.js"></script>
 <script src="./quote-template.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -61,7 +62,41 @@ body{font-family:'Manrope',sans-serif;background:var(--gray6);color:var(--gray1)
 .mobile-backdrop{display:none}
 .mobile-dock{display:none}
 .mobile-more-screen{display:none}
+.mobile-dock-btn{position:relative}
 #sync-status{font-size:11px;color:var(--gray3);display:flex;align-items:center;gap:4px}
+.notif-btn{position:relative;width:40px;height:40px;border:1px solid #D7E2F0;border-radius:14px;background:#fff;color:var(--navy);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 20px rgba(13,27,62,.06);transition:all .15s}
+.notif-btn:hover,.notif-btn.on{border-color:#B8D8FF;background:#F5FAFF;color:var(--blue)}
+.notif-btn .mi{font-size:22px}
+.notif-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:999px;background:var(--red);color:#fff;font-size:10px;font-weight:900;display:none;align-items:center;justify-content:center;padding:0 5px;border:2px solid #fff}
+.notif-badge.on{display:flex}
+.notification-panel{position:fixed;top:64px;right:18px;width:min(420px,calc(100vw - 28px));max-height:calc(100vh - 92px);background:#fff;border:1px solid #DDE8F4;border-radius:22px;box-shadow:0 24px 70px rgba(13,27,62,.22);z-index:120;display:none;overflow:hidden}
+.notification-panel.on{display:flex;flex-direction:column}
+.notification-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px;border-bottom:1px solid #EEF3F8;background:linear-gradient(180deg,#F8FBFF 0%,#fff 100%)}
+.notification-head h3{font-family:'Outfit',sans-serif;font-size:18px;color:var(--navy)}
+.notification-head p{font-size:12px;color:var(--gray3);margin-top:2px}
+.notification-actions{display:flex;gap:7px;align-items:center}
+.notification-list{padding:12px;overflow:auto;display:grid;gap:10px}
+.notification-group{display:grid;gap:8px}
+.notification-group-title{font-size:10px;font-weight:900;letter-spacing:.9px;text-transform:uppercase;color:var(--gray3);padding:8px 4px 0}
+.notification-card{border:1px solid #E2EBF5;border-radius:16px;padding:12px;background:#fff;display:grid;gap:8px;box-shadow:0 8px 20px rgba(13,27,62,.05)}
+.notification-card.unread{border-color:#B8D8FF;background:#F6FAFF}
+.notification-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.notification-kind{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.6px;color:var(--blue)}
+.notification-date{font-size:10px;font-weight:800;color:var(--gray3);white-space:nowrap}
+.notification-title{font-size:13px;font-weight:900;color:var(--navy);line-height:1.25}
+.notification-text{font-size:12px;color:var(--gray2);line-height:1.35}
+.notification-footer{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.notification-assignees{font-size:10px;font-weight:800;color:var(--gray3);min-width:0}
+.notification-footer-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;white-space:nowrap}
+.notification-footer-actions .btn{height:34px;display:inline-flex;align-items:center;justify-content:center;line-height:1;padding-top:0;padding-bottom:0}
+.notification-footer-actions .btn .mi{font-size:16px;line-height:1}
+.notification-footer-actions .btn-o{min-width:58px}
+.notification-footer-actions .btn-g{min-width:118px}
+.notification-empty{padding:32px 18px;text-align:center;color:var(--gray3)}
+.notification-empty .mi{font-size:38px;color:#B8C7D8;margin-bottom:8px}
+.assignee-select{min-height:96px}
+.assignee-hint{font-size:11px;color:var(--gray3);margin-top:5px}
+.task-completed-wrap{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--gray2)}
 .auth-user{display:grid;grid-template-columns:42px minmax(0,1fr);grid-template-areas:'avatar meta' 'logout logout';gap:10px 12px;padding:12px;border:1px solid rgba(255,255,255,.09);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,.04) 100%);box-shadow:0 10px 28px rgba(3,10,25,.18);backdrop-filter:blur(6px)}
 .auth-user-avatar{grid-area:avatar;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#F8FBFF 0%,#DCEAFF 100%);color:var(--blue);font-weight:800;font-size:14px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(21,101,192,.08)}
 .auth-user-meta{grid-area:meta;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0}
@@ -235,6 +270,16 @@ textarea{resize:vertical;min-height:65px}
 .portal-copy:hover{border-color:#9CCBFF;background:#EDF4FF;color:var(--blue);box-shadow:0 6px 16px rgba(21,101,192,.1)}
 .portal-copy .mi{font-size:15px;color:var(--blue);flex-shrink:0}
 .portal-copy-empty{color:var(--gray4);font-family:'JetBrains Mono',monospace;font-size:12px}
+.dati-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dati-toolbar .srch{min-width:260px}
+.dati-type-filters{display:flex;gap:7px;align-items:center;flex-wrap:wrap;width:100%}
+.dati-filter-chip{border:1px solid #D7E2F0;background:#fff;color:var(--gray2);border-radius:999px;padding:7px 11px;font-size:11px;font-weight:900;cursor:pointer;transition:all .15s}
+.dati-filter-chip:hover{border-color:#9CCBFF;color:var(--blue);background:#F5FAFF}
+.dati-filter-chip.on{border-color:#BBDEFB;background:#EDF4FF;color:var(--blue);box-shadow:0 5px 14px rgba(21,101,192,.1)}
+.dati-type-chip{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:#EDF4FF;color:var(--blue);font-size:11px;font-weight:900;white-space:nowrap}
+.dati-value{display:block;width:100%;white-space:pre-wrap;text-align:left;font:inherit;color:inherit;line-height:1.45;max-width:680px;border:1px solid transparent;background:transparent;border-radius:10px;padding:5px 7px;margin:-5px -7px;cursor:pointer;transition:all .15s}
+.dati-value:hover{border-color:#D7E9FF;background:#F6FAFF;color:var(--blue)}
+.dati-empty{color:var(--gray3);font-weight:700}
 .pc-note{font-size:11px;color:var(--gray3);margin-bottom:7px;font-style:italic}
 .pc-acts{display:flex;gap:7px;margin-top:8px}
 
@@ -472,6 +517,7 @@ tbody .row-click{cursor:pointer}
 .calendar-event{border-left:4px solid var(--blue);border-radius:8px;padding:7px;background:#F5F9FF;font-size:11px;line-height:1.35;cursor:pointer}
 .calendar-event strong{display:block;color:var(--navy);font-size:11px;margin-bottom:2px}
 .calendar-event span{color:var(--gray3);font-weight:700}
+.calendar-event span+span{display:block;margin-top:2px;font-size:10px;color:var(--blue)}
 .calendar-event.deadline{border-left-color:var(--orange);background:#FFF8F0}
 .calendar-event.follow{border-left-color:var(--blue)}
 .calendar-event.meeting{border-left-color:var(--green);background:#F0FBF2}
@@ -714,20 +760,20 @@ thead th{position:sticky;top:0;z-index:2}
   .tw,.quote-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:16px}
   .tw table{min-width:1080px}
   table td,table th{white-space:nowrap}
-  #v-gare .tc,#v-aggiudicate .tc,#v-offerte .tc,#v-portali .tc{background:transparent;box-shadow:none;border-radius:0;overflow:visible}
-  #v-gare .tc-hdr,#v-aggiudicate .tc-hdr,#v-offerte .tc-hdr,#v-portali .tc-hdr{
+  #v-gare .tc,#v-aggiudicate .tc,#v-offerte .tc,#v-portali .tc,#v-dati .tc{background:transparent;box-shadow:none;border-radius:0;overflow:visible}
+  #v-gare .tc-hdr,#v-aggiudicate .tc-hdr,#v-offerte .tc-hdr,#v-portali .tc-hdr,#v-dati .tc-hdr{
     position:relative;top:auto;border:1px solid #E1EAF5;border-radius:22px;padding:12px;background:rgba(255,255,255,.74);
     box-shadow:0 10px 24px rgba(13,27,62,.06);margin-bottom:14px;backdrop-filter:blur(12px)
   }
-  #v-gare .tc-hdr h3,#v-aggiudicate .tc-hdr h3,#v-offerte .tc-hdr h3,#v-portali .tc-hdr h3{display:none}
-  #v-gare .srch,#v-aggiudicate .srch,#v-offerte .srch,#v-portali .srch{
+  #v-gare .tc-hdr h3,#v-aggiudicate .tc-hdr h3,#v-offerte .tc-hdr h3,#v-portali .tc-hdr h3,#v-dati .tc-hdr h3{display:none}
+  #v-gare .srch,#v-aggiudicate .srch,#v-offerte .srch,#v-portali .srch,#v-dati .srch{
     height:52px;border-radius:999px;background:#fff;border:1px solid #D9E6F5;padding:8px 14px 8px 16px;
     box-shadow:0 8px 20px rgba(13,27,62,.05)
   }
-  #v-gare .srch:focus-within,#v-aggiudicate .srch:focus-within,#v-offerte .srch:focus-within,#v-portali .srch:focus-within{border-color:#9CCBFF;box-shadow:0 0 0 4px rgba(25,103,210,.1),0 10px 24px rgba(13,27,62,.07)}
-  #v-gare .srch span,#v-aggiudicate .srch span,#v-offerte .srch span,#v-portali .srch span{font-size:18px;width:30px;height:30px;border-radius:999px;background:#F1F6FF;display:flex;align-items:center;justify-content:center}
-  #v-gare .srch input,#v-aggiudicate .srch input,#v-offerte .srch input,#v-portali .srch input{font-size:16px;font-weight:700;color:var(--navy)}
-  #v-gare .srch input::placeholder,#v-aggiudicate .srch input::placeholder,#v-offerte .srch input::placeholder,#v-portali .srch input::placeholder{color:#92A1B2;font-weight:700}
+  #v-gare .srch:focus-within,#v-aggiudicate .srch:focus-within,#v-offerte .srch:focus-within,#v-portali .srch:focus-within,#v-dati .srch:focus-within{border-color:#9CCBFF;box-shadow:0 0 0 4px rgba(25,103,210,.1),0 10px 24px rgba(13,27,62,.07)}
+  #v-gare .srch span,#v-aggiudicate .srch span,#v-offerte .srch span,#v-portali .srch span,#v-dati .srch span{font-size:18px;width:30px;height:30px;border-radius:999px;background:#F1F6FF;display:flex;align-items:center;justify-content:center}
+  #v-gare .srch input,#v-aggiudicate .srch input,#v-offerte .srch input,#v-portali .srch input,#v-dati .srch input{font-size:16px;font-weight:700;color:var(--navy)}
+  #v-gare .srch input::placeholder,#v-aggiudicate .srch input::placeholder,#v-offerte .srch input::placeholder,#v-portali .srch input::placeholder,#v-dati .srch input::placeholder{color:#92A1B2;font-weight:700}
   #v-gare .sortbar,#v-aggiudicate .sortbar,#v-offerte .sortbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
   #v-gare .sortbar-label{grid-column:1/-1;margin:0;font-size:10px}
   #v-gare .sortchip,#v-gare .sortdir,#v-aggiudicate .sortchip,#v-aggiudicate .sortdir,#v-offerte .sortchip,#v-offerte .sortdir{width:100%;border-radius:14px;padding:11px 12px;text-align:center}
@@ -891,6 +937,25 @@ thead th{position:sticky;top:0;z-index:2}
   #v-portali tbody td:nth-child(6){position:absolute;left:13px;bottom:13px;width:auto!important}
   #v-portali tbody td:nth-child(8){display:flex!important;gap:8px;justify-content:flex-end;align-items:center;padding-top:12px;padding-left:92px;min-height:46px}
   #v-portali tbody td:nth-child(8) .btn,#v-portali tbody td:nth-child(8) .btn-del{min-width:42px;min-height:38px;border-radius:12px;justify-content:center}
+  #v-dati .dati-toolbar{display:grid;grid-template-columns:1fr;gap:10px;width:100%}
+  #v-dati .dati-type-filters{gap:8px;flex-wrap:nowrap;overflow-x:auto;padding:2px 0 4px;-webkit-overflow-scrolling:touch}
+  #v-dati .dati-filter-chip{flex:0 0 auto;padding:10px 13px;border-radius:999px;background:#fff;box-shadow:0 8px 20px rgba(13,27,62,.05)}
+  #v-dati .tw{overflow:visible;border-radius:0}
+  #v-dati table,#v-dati thead,#v-dati tbody,#v-dati tr,#v-dati td{display:block;width:100%}
+  #v-dati table{min-width:0;border-collapse:separate}
+  #v-dati thead{display:none}
+  #v-dati tbody{display:grid;gap:10px}
+  #v-dati tbody tr{
+    position:relative;border:1px solid #E2EBF5;border-radius:22px;background:#fff!important;box-shadow:0 10px 26px rgba(13,27,62,.07);
+    padding:14px 14px 12px;overflow:hidden
+  }
+  #v-dati tbody tr::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--blue)}
+  #v-dati tbody td{padding:0;white-space:normal;border:none}
+  #v-dati tbody td:nth-child(1){padding:0 0 10px 3px}
+  #v-dati tbody td:nth-child(2){padding:0 0 8px 3px;font-family:'Outfit',sans-serif;font-size:18px!important;font-weight:900!important;color:var(--navy)!important;line-height:1.15}
+  #v-dati tbody td:nth-child(3){padding:10px 3px;border-top:1px solid #EEF3F8;color:var(--gray2);font-size:13px;line-height:1.4}
+  #v-dati tbody td:nth-child(4){display:flex!important;gap:8px;justify-content:flex-end;align-items:center;padding-top:12px}
+  #v-dati tbody td:nth-child(4) .btn,#v-dati tbody td:nth-child(4) .btn-del{min-width:42px;min-height:38px;border-radius:12px;justify-content:center}
   #v-portali tbody tr.empty-row{padding:0}
   #v-portali tbody tr.empty-row::before{display:none}
   #v-portali tbody tr.empty-row td{position:static!important;display:block!important;margin:0!important;padding:0!important;background:transparent!important}
@@ -1021,6 +1086,10 @@ thead th{position:sticky;top:0;z-index:2}
   .mobile-cal-all-day-list{display:grid;gap:8px;min-width:0}
   .mobile-cal-empty{font-size:12px;color:var(--gray4);font-weight:800;padding:10px 0}
   body.view-calendario .mobile-cal-timeline{max-height:calc(100dvh - 342px);overflow:auto}
+  .notification-panel{top:0;right:0;left:0;bottom:0;width:100vw;max-height:none;border-radius:0;border:none;z-index:180}
+  .notification-head{padding:20px 18px 14px}
+  .notification-list{padding:12px 12px 96px}
+  .notif-btn{width:38px;height:38px;border-radius:13px}
   .mobile-cal-timeline{max-height:62vh;overflow:auto;padding:2px 0 18px;width:100%;min-width:0;-webkit-overflow-scrolling:touch}
   .mobile-cal-hour{display:grid;grid-template-columns:62px minmax(0,1fr);min-height:64px;width:100%;min-width:0}
   .mobile-cal-hour-label{font-size:13px;color:var(--gray3);font-weight:800;padding-top:10px}
@@ -1035,6 +1104,7 @@ thead th{position:sticky;top:0;z-index:2}
   .mobile-cal-event.memo{border-left-color:var(--purple);background:#F8F0FF}
   .mobile-cal-event strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--navy);margin-bottom:5px}
   .mobile-cal-event span{display:block;font-size:14px;line-height:1.35;color:var(--gray2);font-weight:800;overflow-wrap:anywhere}
+  .mobile-cal-event small{display:block;margin-top:4px;font-size:10px;font-weight:900;color:var(--blue);line-height:1.25}
   .quote-layout,.quote-top-grid,.quote-kpis{grid-template-columns:1fr}
   .quote-panel,.quote-workspace{min-height:0;border-radius:18px}
   .quote-panel{margin-right:0}
@@ -1274,6 +1344,7 @@ thead th{position:sticky;top:0;z-index:2}
   <div class="nav" data-v="offerte"><span class="mi ic">outbox</span>Offerte<span class="nb" id="nb-o">—</span></div>
   <div class="sb-sec">Gestione</div>
   <div class="nav" data-v="portali"><span class="mi ic">language</span>Portali</div>
+  <div class="nav" data-v="dati"><span class="mi ic">database</span>Dati<span class="nb" id="nb-d">—</span></div>
   <div class="sb-bottom">
     <div class="sb-user-wrap">
       <div class="auth-user" id="auth-user" style="display:none">
@@ -1295,7 +1366,7 @@ thead th{position:sticky;top:0;z-index:2}
   <button class="mobile-dock-btn on" type="button" data-mobile-nav="dashboard" onclick="goToView('dashboard')"><span class="mi white">monitoring</span><strong>Dashboard</strong></button>
   <button class="mobile-dock-btn" type="button" data-mobile-nav="calendario" onclick="goToView('calendario')"><span class="mi white">calendar_month</span><strong>Calendario</strong></button>
   <button class="mobile-dock-btn" type="button" data-mobile-nav="gare" onclick="goToView('gare')"><span class="mi white">assignment</span><strong>Gare</strong></button>
-  <button class="mobile-dock-btn more" type="button" data-mobile-more onclick="openMobileMore()" aria-label="Apri altre sezioni"><span class="mi white">menu</span><strong>Altro</strong></button>
+  <button class="mobile-dock-btn more" type="button" data-mobile-more onclick="openMobileMore()" aria-label="Apri altre sezioni"><span class="mi white">menu</span><strong>Altro</strong><span class="notif-badge" id="mobile-dock-noti-badge">0</span></button>
 </nav>
 
 <section class="mobile-more-screen mobile-only" aria-label="Altre sezioni smartphone">
@@ -1311,6 +1382,8 @@ thead th{position:sticky;top:0;z-index:2}
     <button class="mobile-more-card" type="button" onclick="goToView('quotazioni')"><span class="mi">receipt_long</span><span><strong>Quotazioni</strong><span>Listino, righe ed export Excel</span></span><em>›</em></button>
     <button class="mobile-more-card" type="button" onclick="goToView('offerte')"><span class="mi">outbox</span><span><strong>Offerte</strong><span>Offerte presentate e storico invii</span></span><em>›</em></button>
     <button class="mobile-more-card" type="button" onclick="goToView('portali')"><span class="mi">language</span><span><strong>Portali</strong><span>Credenziali e accessi condivisi</span></span><em>›</em></button>
+    <button class="mobile-more-card" type="button" onclick="goToView('dati')"><span class="mi">database</span><span><strong>Dati</strong><span>Archivio dati aziendali per tipologia</span></span><em>›</em></button>
+    <button class="mobile-more-card" type="button" onclick="openNotificationCenter()"><span class="mi">notifications</span><span><strong>Notifiche</strong><span>Task, eventi e scadenze assegnate</span></span><span class="nb red" id="mobile-noti-badge" style="display:none">0</span></button>
   </div>
   <div class="mobile-more-user">
     <div class="auth-user" id="auth-user-mobile" style="display:none">
@@ -1331,9 +1404,24 @@ thead th{position:sticky;top:0;z-index:2}
     <span class="tb-sub" id="tb-sub"></span>
     <div class="tb-right">
       <span id="sync-status"><span class="mi">sync</span> Connessione...</span>
+      <button class="notif-btn" id="notification-btn" type="button" onclick="toggleNotificationCenter(event)" title="Centro notifiche" aria-label="Centro notifiche"><span class="mi">notifications</span><span class="notif-badge" id="noti-badge">0</span></button>
       <button class="btn btn-p" id="btn-add" type="button" onclick="openAdd()" style="display:none"><span class="mi white">add</span> Nuova Gara</button>
     </div>
   </div>
+
+  <aside class="notification-panel" id="notification-panel" aria-label="Centro notifiche">
+    <div class="notification-head">
+      <div>
+        <h3>Centro notifiche</h3>
+        <p id="notification-subtitle">Task, eventi e scadenze del workspace.</p>
+      </div>
+      <div class="notification-actions">
+        <button class="btn btn-o btn-sm" type="button" onclick="markAllNotificationsRead()">Completa tutte</button>
+        <button class="mcl" type="button" onclick="closeNotificationCenter()"><span class="mi">close</span></button>
+      </div>
+    </div>
+    <div class="notification-list" id="notification-list"></div>
+  </aside>
 
   <div id="content">
     <!-- DASHBOARD -->
@@ -1527,6 +1615,31 @@ thead th{position:sticky;top:0;z-index:2}
       </div>
     </div>
 
+    <!-- DATI -->
+    <div class="view" id="v-dati">
+      <div class="tc">
+        <div class="tc-hdr">
+          <h3><span class="mi">database</span> Dati</h3>
+          <div class="dati-toolbar">
+            <div class="srch"><span class="mi">search</span><input id="sd" placeholder="Cerca dato..." oninput="drawDati()"></div>
+            <div class="dati-type-filters" id="fd-tipi" aria-label="Filtra dati per tipo"></div>
+          </div>
+        </div>
+        <div class="tw">
+          <table id="table-dati">
+            <thead><tr>
+              <th>Tipo</th>
+              <th>Nome</th>
+              <th>Dato</th>
+              <th></th>
+            </tr></thead>
+            <tbody id="tb-dati"></tbody>
+          </table>
+        </div>
+        <div class="tc-ftr"><span id="cnt-d"></span></div>
+      </div>
+    </div>
+
     <!-- CALENDARIO -->
     <div class="view" id="v-calendario">
       <div class="calendar-shell">
@@ -1661,6 +1774,23 @@ thead th{position:sticky;top:0;z-index:2}
 </div>
 
 
+<!-- MODAL DATO -->
+<div class="ovl" id="m-dato">
+  <div class="mdl" style="max-width:560px">
+    <div class="mh"><h3 id="m-dato-ttl"><span class="mi">database</span> Nuovo dato</h3><button class="mcl" onclick="closeM('dato')"><span class="mi">close</span></button></div>
+    <div class="mb">
+      <div class="fg">
+        <div class="fi full"><label>Tipo *</label><input id="xd-tipo" list="dati-tipi-list" placeholder="Es. Dati Societari"></div>
+        <div class="fi full"><label>Nome *</label><input id="xd-nome" placeholder="Nome del dato"></div>
+        <div class="fi full"><label>Dato</label><textarea id="xd-dato" placeholder="Valore, nota o riferimento..."></textarea></div>
+      </div>
+      <datalist id="dati-tipi-list"></datalist>
+    </div>
+    <div class="mf"><button class="btn btn-o" onclick="closeM('dato')">Annulla</button><button class="btn btn-p" onclick="saveDato()"><span class="mi white">save</span> Salva dato</button></div>
+  </div>
+</div>
+
+
 <!-- MODAL GARA DETAIL -->
 <div class="ovl" id="m-detail">
   <div class="mdl">
@@ -1687,11 +1817,13 @@ thead th{position:sticky;top:0;z-index:2}
     <div class="mb">
       <div class="fg">
         <div class="fi full"><label>Oggetto *</label><input id="xc-title" placeholder="Inserisci evento/task"></div>
-        <div class="fi"><label>Tipo</label><select id="xc-type">
+        <div class="fi"><label>Tipo</label><select id="xc-type" onchange="syncCalendarTaskFields()">
           <option>EVENTO</option><option>TASK</option>
         </select></div>
         <div class="fi"><label>Data *</label><input type="date" id="xc-date"></div>
         <div class="fi"><label>Ora</label><input type="time" id="xc-time"></div>
+        <div class="fi full"><label>Assegnato a</label><select id="xc-assignees" class="assignee-select" multiple></select><div class="assignee-hint">Se non selezioni nessuno, il task/evento resta assegnato a te.</div></div>
+        <div class="fi full" id="xc-completed-wrap" style="display:none"><label class="task-completed-wrap"><input type="checkbox" id="xc-completed"> Task completato</label></div>
         <div class="fi full"><label>Note</label><textarea id="xc-notes" placeholder="Dettagli operativi..."></textarea></div>
       </div>
     </div>
@@ -1722,9 +1854,9 @@ const SEED = {"gare": [{"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": 
 // ═══════════════════════════════════════════════════════
 // STATE — persistenza locale + sync remoto opzionale
 // ═══════════════════════════════════════════════════════
-const LS = {gare:'mg_gare', agg:'mg_agg', off:'mg_off', port:'mg_port', quote:'mg_quote', activity:'mg_activity', cal:'mg_calendar'};
+const LS = {gare:'mg_gare', agg:'mg_agg', off:'mg_off', port:'mg_port', quote:'mg_quote', activity:'mg_activity', cal:'mg_calendar', dati:'mg_dati', noti:'mg_notification_reads'};
 const UI_LS = 'mg_ui_prefs';
-const STATE_MAP = {gare:'gare', agg:'aggiudicate', off:'offerte', port:'portali', quote:'quotazioni', activity:'attivitaGare', cal:'calendarEvents'};
+const STATE_MAP = {gare:'gare', agg:'aggiudicate', off:'offerte', port:'portali', quote:'quotazioni', activity:'attivitaGare', cal:'calendarEvents', dati:'dati', noti:'notificationReads'};
 const DEFAULT_REMOTE_CONFIG = {
   syncTable: 'app_state',
   syncRowId: 'shared',
@@ -1746,7 +1878,8 @@ const remoteSync = {
   pollingId: null,
   initialized: false,
   channel: null,
-  visibilityBound: false
+  visibilityBound: false,
+  profilesLoaded: false
 };
 const authState = {
   session: null,
@@ -1765,7 +1898,8 @@ const DEFAULT_UI_PREFS = {
   quotePanelWidth: 320,
   quotePanelCollapsed: false,
   calendarMonth: '',
-  calendarDay: ''
+  calendarDay: '',
+  datiTipo: ''
 };
 
 function lsLoad(key, seed) {
@@ -1799,8 +1933,23 @@ let state = {
   quotazioni:  lsLoad(LS.quote, []),
   attivitaGare: lsLoad(LS.activity, []),
   calendarEvents: lsLoad(LS.cal, []),
+  dati: lsLoad(LS.dati, window.MARTEC_DATI_SEED || []),
+  notificationReads: lsLoad(LS.noti, {}),
 };
 let uiPrefs = loadUiPrefs();
+let workspaceProfiles = [];
+
+function isAssuntaToscanoProfile(profile) {
+  if(!profile) return false;
+  const haystack = [
+    profile.full_name,
+    profile.username,
+    profile.email
+  ].map(value => String(value || '').toLowerCase().replace(/\s+/g, ' ').trim()).join(' ');
+  return haystack.includes('assunta toscano')
+    || haystack.includes('assunta.toscano')
+    || haystack.includes('assuntatoscano');
+}
 
 function normalizeOperatoreValue(value) {
   const normalized = value ? String(value).toUpperCase().trim() : '';
@@ -1833,7 +1982,9 @@ function normalizeStateOperatori() {
       portali: portali.rows,
       quotazioni: state.quotazioni,
       attivitaGare: state.attivitaGare,
-      calendarEvents: state.calendarEvents
+      calendarEvents: state.calendarEvents,
+      dati: state.dati,
+      notificationReads: state.notificationReads
     };
   }
   return changed;
@@ -1855,7 +2006,9 @@ function serializeRemoteState() {
     portali: state.portali,
     quotazioni: state.quotazioni,
     attivitaGare: state.attivitaGare,
-    calendarEvents: state.calendarEvents
+    calendarEvents: state.calendarEvents,
+    dati: state.dati,
+    notificationReads: state.notificationReads || {}
   };
 }
 
@@ -2006,7 +2159,9 @@ function applyState(nextState) {
     portali: Array.isArray(nextState.portali) ? nextState.portali : [],
     quotazioni: Array.isArray(nextState.quotazioni) ? nextState.quotazioni : [],
     attivitaGare: Array.isArray(nextState.attivitaGare) ? nextState.attivitaGare : [],
-    calendarEvents: Array.isArray(nextState.calendarEvents) ? nextState.calendarEvents : []
+    calendarEvents: Array.isArray(nextState.calendarEvents) ? nextState.calendarEvents : [],
+    dati: Array.isArray(nextState.dati) ? nextState.dati : (window.MARTEC_DATI_SEED || []),
+    notificationReads: nextState.notificationReads && typeof nextState.notificationReads === 'object' ? nextState.notificationReads : {}
   };
   normalizeStateOperatori();
   saveLocalSnapshot();
@@ -2074,14 +2229,19 @@ async function pullRemoteState(silent=false) {
     return true;
   }
 
+  const shouldSeedDati = !Array.isArray(data.payload.dati) && (window.MARTEC_DATI_SEED || []).length;
   applyState(data.payload);
   remoteSync.lastHash = incomingHash;
+  if(shouldSeedDati) {
+    await pushRemoteState('force');
+  }
   if(remoteSync.initialized) {
     updateBadges();
     fillPortSel('xg-port','');
     fillPortSel('xa-port','');
     fillOffYearFilter();
     fillCalendarGaraSelects();
+    fillCalendarAssignees();
     redrawCurrent();
     toast('Dati aggiornati dal cloud','ok');
   }
@@ -2118,6 +2278,7 @@ function setupRemoteRealtime() {
           fillPortSel('xa-port','');
           fillOffYearFilter();
           fillCalendarGaraSelects();
+          fillCalendarAssignees();
           redrawCurrent();
           toast('Workspace aggiornato in tempo reale', 'ok');
         }
@@ -2213,8 +2374,51 @@ async function loadCurrentProfile() {
   return data;
 }
 
+function profileToAssignee(profile) {
+  if(!profile) return null;
+  return {
+    user_id: profile.user_id || '',
+    name: profile.full_name || profile.username || profile.email || 'Utente',
+    email: profile.email || ''
+  };
+}
+
+function ensureCurrentProfileInCollaborators() {
+  const current = profileToAssignee(authState.profile);
+  if(!current || !current.user_id) return;
+  if(!workspaceProfiles.some(p => p.user_id === current.user_id)) {
+    workspaceProfiles.unshift(Object.assign({}, authState.profile));
+  }
+}
+
+async function loadWorkspaceProfiles() {
+  workspaceProfiles = [];
+  remoteSync.profilesLoaded = false;
+  if(!remoteSync.client || !authState.profile) {
+    ensureCurrentProfileInCollaborators();
+    return workspaceProfiles;
+  }
+  const { data, error } = await remoteSync.client
+    .from('profiles')
+    .select('user_id, email, username, full_name, role, workspace_id, is_active')
+    .eq('workspace_id', getCurrentWorkspaceId())
+    .eq('is_active', true)
+    .order('full_name', { ascending:true });
+  if(error) {
+    console.warn('Collaboratori non leggibili, uso il profilo corrente', error);
+    workspaceProfiles = [];
+    ensureCurrentProfileInCollaborators();
+    return workspaceProfiles;
+  }
+  workspaceProfiles = Array.isArray(data) ? data.filter(profile => !isAssuntaToscanoProfile(profile)) : [];
+  ensureCurrentProfileInCollaborators();
+  remoteSync.profilesLoaded = true;
+  return workspaceProfiles;
+}
+
 async function completeAuthenticatedBootstrap() {
   await loadCurrentProfile();
+  await loadWorkspaceProfiles();
   await remoteInitWithTimeout(5000);
   if(normalizeStateOperatori()) {
     saveLocalSnapshot();
@@ -2224,6 +2428,7 @@ async function completeAuthenticatedBootstrap() {
   updateBadges();
   fillPortSel('xg-port','');
   fillPortSel('xa-port','');
+  fillCalendarAssignees();
   redrawCurrent();
   remoteSync.initialized = true;
   authState.bootstrapped = true;
@@ -2243,6 +2448,8 @@ async function bootstrapSession(session, modeOnFail='login') {
     remoteSync.enabled = false;
     remoteSync.initialized = false;
     remoteSync.lastHash = '';
+    remoteSync.profilesLoaded = false;
+    workspaceProfiles = [];
     syncAuthUserUi();
     lockAppForAuth();
     switchAuthMode(modeOnFail);
@@ -2407,10 +2614,12 @@ function syncUiControls() {
   fillOffYearFilter();
   fillPortaliStatusBar();
   fillCalendarGaraSelects();
+  fillCalendarAssignees();
   syncGareSortControls();
   syncAggSortControls();
   updateTopbarAddButton();
   syncMobileNavigationUi();
+  updateNotificationUi();
 }
 
 function setGareSort(value) {
@@ -2704,6 +2913,7 @@ const viewCfg = {
   aggiudicate: {ttl:'Gare Aggiudicate',    sub:'',                       add:'Aggiungi'},
   offerte:     {ttl:'Offerte Presentate',  sub:'',                       add:'Nuova Offerta'},
   portali:     {ttl:'Portali',              sub:'Credenziali & accessi',  add:'Portale'},
+  dati:        {ttl:'Dati',                 sub:'Archivio dati aziendali', add:'Nuovo Dato'},
   calendario:  {ttl:'Calendario',           sub:'Scadenze e promemoria',  add:'Nuovo Evento'},
 };
 function goToView(v) {
@@ -2733,12 +2943,12 @@ function openAdd() {
   if(!requireRole('editor')) return;
   if(curView==='quotazioni') { newQuote(); return; }
   if(curView==='calendario') { openCalendarEventModal(); return; }
-  const m={dashboard:'gara',gare:'gara',aggiudicate:'agg',offerte:'off',portali:'port'};
+  const m={dashboard:'gara',gare:'gara',aggiudicate:'agg',offerte:'off',portali:'port',dati:'dato'};
   openM(m[curView]||'gara');
 }
 
 function redrawCurrent() {
-  ({dashboard:drawDash,quotazioni:drawQuotePage,gare:drawGare,aggiudicate:drawAgg,offerte:drawOff,portali:drawPortali,calendario:drawCalendar}[curView]||drawDash)();
+  ({dashboard:drawDash,quotazioni:drawQuotePage,gare:drawGare,aggiudicate:drawAgg,offerte:drawOff,portali:drawPortali,dati:drawDati,calendario:drawCalendar}[curView]||drawDash)();
 }
 
 function updateBadges() {
@@ -2746,10 +2956,13 @@ function updateBadges() {
   document.getElementById('nb-g').textContent = state.gare.length;
   document.getElementById('nb-a').textContent = state.aggiudicate.length;
   document.getElementById('nb-o').textContent = state.offerte.length;
+  const db = document.getElementById('nb-d');
+  if(db) db.textContent = (state.dati || []).length;
   const s = state.gare.filter(g=>{const d=daysTo(g.scadenza);return d!==null&&d>=0&&d<=7&&!['PERSA','AGGIUDICATA','SCARTATA'].includes(g.stato);}).length;
   const c = state.calendarEvents.filter(e => e.date && new Date(e.date+'T23:59:59') >= new Date()).length;
   const cb = document.getElementById('nb-c');
   if(cb) cb.textContent = c;
+  updateNotificationUi();
 }
 
 function fillPortSel(id, sel) {
@@ -3750,6 +3963,253 @@ function downloadActivityAttachment(activityId) {
 }
 
 // ═══════════════════════════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════════════════════════
+function getCurrentUserId() {
+  return (authState.session && authState.session.user && authState.session.user.id) || (authState.profile && authState.profile.user_id) || '';
+}
+
+function getCurrentAssignee() {
+  return profileToAssignee(authState.profile) || { user_id:getCurrentUserId(), name:getCurrentUserName(), email:'' };
+}
+
+function getProfileDisplayName(profile) {
+  return (profile && (profile.full_name || profile.username || profile.email)) || 'Utente';
+}
+
+function normalizeAssignees(assignees, fallbackProfile) {
+  const source = Array.isArray(assignees) ? assignees : [];
+  const normalized = source
+    .map(a => ({ user_id:a && a.user_id ? String(a.user_id) : '', name:a && a.name ? String(a.name) : '', email:a && a.email ? String(a.email) : '' }))
+    .filter(a => a.user_id);
+  if(normalized.length) return normalized;
+  const fallback = profileToAssignee(fallbackProfile || authState.profile);
+  return fallback && fallback.user_id ? [fallback] : [];
+}
+
+function fillCalendarAssignees(selectedAssignees=[]) {
+  const el = document.getElementById('xc-assignees');
+  if(!el) return;
+  ensureCurrentProfileInCollaborators();
+  const selectedIds = new Set(normalizeAssignees(selectedAssignees).map(a => a.user_id));
+  if(!selectedIds.size && getCurrentUserId()) selectedIds.add(getCurrentUserId());
+  const profiles = [...workspaceProfiles].filter(profile => !isAssuntaToscanoProfile(profile)).sort((a,b)=>getProfileDisplayName(a).localeCompare(getProfileDisplayName(b),'it'));
+  el.innerHTML = profiles.map(profile => {
+    const name = getProfileDisplayName(profile);
+    return '<option value="'+escHtml(profile.user_id)+'"'+(selectedIds.has(profile.user_id)?' selected':'')+'>'
+      + escHtml(name + (profile.email ? ' · ' + profile.email : ''))
+      + '</option>';
+  }).join('');
+}
+
+function getSelectedCalendarAssignees() {
+  const el = document.getElementById('xc-assignees');
+  const ids = el ? [...el.selectedOptions].map(option => option.value).filter(Boolean) : [];
+  const selected = ids.map(id => {
+    const profile = workspaceProfiles.find(p => p.user_id === id);
+    return profileToAssignee(profile) || { user_id:id, name:id, email:'' };
+  }).filter(a => a && a.user_id);
+  return selected.length ? selected : normalizeAssignees([], authState.profile);
+}
+
+function syncCalendarTaskFields() {
+  const type = (document.getElementById('xc-type') || { value:'' }).value;
+  const wrap = document.getElementById('xc-completed-wrap');
+  if(wrap) wrap.style.display = type === 'TASK' ? '' : 'none';
+}
+
+function dateOnly(value) {
+  const parsed = parseCalendarDate(value);
+  if(!parsed) return null;
+  parsed.setHours(0,0,0,0);
+  return parsed;
+}
+
+function daysUntilDate(value) {
+  const target = dateOnly(value);
+  if(!target) return null;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  return Math.round((target - today) / 86400000);
+}
+
+function getReadNotificationIds() {
+  const userId = getCurrentUserId();
+  if(!userId) return new Set();
+  const reads = state.notificationReads && state.notificationReads[userId];
+  return new Set(Array.isArray(reads) ? reads : []);
+}
+
+function persistReadNotificationIds(readSet) {
+  const userId = getCurrentUserId();
+  if(!userId) return;
+  state.notificationReads = state.notificationReads && typeof state.notificationReads === 'object' ? state.notificationReads : {};
+  state.notificationReads[userId] = [...readSet];
+  save('noti');
+  updateNotificationUi();
+}
+
+function isManualEventVisibleToCurrentUser(event) {
+  const userId = getCurrentUserId();
+  if(!userId) return false;
+  const fallbackProfile = event && event.created_by_user_id === userId ? authState.profile : null;
+  const assignees = normalizeAssignees(event && event.assignees, fallbackProfile);
+  if(!assignees.length && event && !event.created_by_user_id) return true;
+  return assignees.some(a => a.user_id === userId);
+}
+
+function collectNotifications() {
+  const readSet = getReadNotificationIds();
+  const notifications = [];
+  (state.calendarEvents || []).forEach(event => {
+    if(!event || !event.date || !isManualEventVisibleToCurrentUser(event)) return;
+    const isTask = event.type === 'TASK';
+    const assignees = normalizeAssignees(event.assignees, event.created_by_user_id === getCurrentUserId() ? authState.profile : null);
+    const id = 'event:' + event.id + ':' + (event.updated_at || '');
+    if(readSet.has(id)) return;
+    notifications.push({
+      id,
+      source: 'event',
+      event_id: event.id,
+      kind: isTask ? 'Task assegnato' : 'Evento assegnato',
+      icon: isTask ? 'task_alt' : 'event',
+      title: event.title || 'Evento',
+      text: (event.time ? event.time + ' · ' : '') + fmtD(event.date) + (event.notes ? ' · ' + event.notes : ''),
+      date: event.date,
+      time: event.time || '',
+      assignees,
+      unread: true,
+      completed: !!event.completed,
+      group: 'Task/Eventi assegnati a me',
+      sortKey: event.date + 'T' + (event.time || '99:99')
+    });
+  });
+  (state.gare || []).forEach(gara => {
+    if(!gara || !gara.scadenza || gara.stato === 'SCARTATA') return;
+    const split = splitScadenzaValue(gara.scadenza);
+    const dayDiff = daysUntilDate(split.date);
+    if(dayDiff === null || dayDiff < 0 || dayDiff > 3) return;
+    const id = 'deadline:' + gara.id + ':' + split.date;
+    if(readSet.has(id)) return;
+    notifications.push({
+      id,
+      source: 'deadline',
+      gara_id: gara.id,
+      kind: dayDiff === 0 ? 'Scadenza oggi' : 'Scadenza gara',
+      icon: dayDiff === 0 ? 'priority_high' : 'schedule',
+      title: gara.descrizione || 'Scadenza gara',
+      text: (gara.ente || gara.portale || 'Gara') + ' · ' + fmtD(gara.scadenza) + (dayDiff > 0 ? ' · tra ' + dayDiff + ' gg' : ' · oggi'),
+      date: split.date,
+      time: split.time || '',
+      unread: true,
+      group: 'Scadenze gare',
+      sortKey: split.date + 'T' + (split.time || '99:99')
+    });
+  });
+  return notifications.sort((a,b)=>a.sortKey.localeCompare(b.sortKey));
+}
+
+function getUnreadNotificationCount() {
+  return collectNotifications().length;
+}
+
+function updateNotificationUi() {
+  const count = getUnreadNotificationCount();
+  ['noti-badge','mobile-dock-noti-badge','mobile-noti-badge'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.textContent = count > 99 ? '99+' : String(count);
+    el.classList.toggle('on', count > 0);
+    el.style.display = count > 0 ? (id === 'mobile-noti-badge' ? 'inline-flex' : 'flex') : 'none';
+  });
+  const panel = document.getElementById('notification-panel');
+  if(panel && panel.classList.contains('on')) renderNotificationCenter();
+}
+
+function renderNotificationCenter() {
+  const list = document.getElementById('notification-list');
+  const subtitle = document.getElementById('notification-subtitle');
+  if(!list) return;
+  const notifications = collectNotifications();
+  const unread = notifications.length;
+  if(subtitle) subtitle.textContent = unread ? unread + ' notifiche da completare' : 'Nessuna notifica da completare';
+  if(!notifications.length) {
+    list.innerHTML = '<div class="notification-empty">'+icon('notifications_off')+'<h4>Nessuna notifica</h4><p>Task, eventi assegnati e scadenze imminenti compariranno qui finché non saranno completati.</p></div>';
+    return;
+  }
+  const groups = ['Task/Eventi assegnati a me','Scadenze gare'];
+  list.innerHTML = groups.map(group => {
+    const items = notifications.filter(n => n.group === group);
+    if(!items.length) return '';
+    return '<div class="notification-group"><div class="notification-group-title">'+escHtml(group)+'</div>'+items.map(renderNotificationCard).join('')+'</div>';
+  }).join('');
+}
+
+function renderNotificationCard(item) {
+  const assignees = item.assignees && item.assignees.length
+    ? '<span class="notification-assignees">Assegnato a: '+escHtml(item.assignees.map(a => a.name || a.email || 'Utente').join(', '))+'</span>'
+    : '<span></span>';
+  return '<article class="notification-card unread">'
+    + '<div class="notification-top"><span class="notification-kind">'+icon(item.icon)+' '+escHtml(item.kind)+'</span><span class="notification-date">'+escHtml(fmtD(item.date))+'</span></div>'
+    + '<div class="notification-title">'+escHtml(item.title)+'</div>'
+    + '<div class="notification-text">'+escHtml(item.text)+(item.completed?' · completato':'')+'</div>'
+    + '<div class="notification-footer">'+assignees+'<div class="notification-footer-actions"><button class="btn btn-o btn-sm" type="button" onclick="openNotificationTarget(\''+item.id+'\')">Apri</button><button class="btn btn-g btn-sm" type="button" onclick="markNotificationRead(\''+item.id+'\')">'+icon('check','white')+' Completato</button></div></div>'
+    + '</article>';
+}
+
+function toggleNotificationCenter(event) {
+  if(event) event.stopPropagation();
+  const panel = document.getElementById('notification-panel');
+  if(!panel) return;
+  panel.classList.toggle('on');
+  const btn = document.getElementById('notification-btn');
+  if(btn) btn.classList.toggle('on', panel.classList.contains('on'));
+  if(panel.classList.contains('on')) renderNotificationCenter();
+}
+
+function openNotificationCenter() {
+  closeMobileMore();
+  const panel = document.getElementById('notification-panel');
+  if(!panel) return;
+  panel.classList.add('on');
+  const btn = document.getElementById('notification-btn');
+  if(btn) btn.classList.add('on');
+  renderNotificationCenter();
+}
+
+function closeNotificationCenter() {
+  const panel = document.getElementById('notification-panel');
+  if(panel) panel.classList.remove('on');
+  const btn = document.getElementById('notification-btn');
+  if(btn) btn.classList.remove('on');
+}
+
+function markNotificationRead(id) {
+  const readSet = getReadNotificationIds();
+  readSet.add(id);
+  persistReadNotificationIds(readSet);
+  toast('Notifica completata','ok');
+}
+
+function markAllNotificationsRead() {
+  const readSet = getReadNotificationIds();
+  collectNotifications().forEach(n => readSet.add(n.id));
+  persistReadNotificationIds(readSet);
+  toast('Notifiche completate','ok');
+}
+
+function openNotificationTarget(id) {
+  const item = collectNotifications().find(n => n.id === id);
+  if(!item) return;
+  closeNotificationCenter();
+  if(item.source === 'deadline') {
+    showDetail('gara', item.gara_id);
+    return;
+  }
+  openCalendarEventModal('', item.event_id);
+}
+
+// ═══════════════════════════════════════════════════════
 // CALENDAR
 // ═══════════════════════════════════════════════════════
 function getCalendarBaseMonth() {
@@ -3905,7 +4365,7 @@ function collectCalendarItems() {
       subtitle: g.ente || g.portale || '',
       gara_id: g.id
     }));
-  const events = (state.calendarEvents || []).map(e => Object.assign({ source:'manual' }, e));
+  const events = (state.calendarEvents || []).map(e => Object.assign({}, e, { source:'manual', assignees: normalizeAssignees(e.assignees, null) }));
   return deadlines.concat(events).filter(item => item.date);
 }
 
@@ -3921,6 +4381,9 @@ function openCalendarEventModal(dateValue='', eventId='') {
   document.getElementById('xc-type').value = eventType;
   document.getElementById('xc-date').value = ev ? ev.date || '' : (dateValue || calendarDateKey(new Date()));
   document.getElementById('xc-time').value = ev ? ev.time || '' : '';
+  fillCalendarAssignees(ev ? ev.assignees || [] : []);
+  document.getElementById('xc-completed').checked = !!(ev && ev.completed);
+  syncCalendarTaskFields();
   document.getElementById('xc-notes').value = ev ? ev.notes || '' : '';
   document.getElementById('m-cal').classList.add('on');
 }
@@ -3941,6 +4404,9 @@ function saveCalendarEvent() {
     date,
     time: document.getElementById('xc-time').value,
     notes: document.getElementById('xc-notes').value.trim(),
+    assignees: getSelectedCalendarAssignees(),
+    created_by_user_id: editId.cal ? editId.cal.created_by_user_id || getCurrentUserId() : getCurrentUserId(),
+    completed: document.getElementById('xc-type').value === 'TASK' ? !!document.getElementById('xc-completed').checked : false,
     author: editId.cal ? editId.cal.author || getCurrentUserName() : getCurrentUserName(),
     updated_at: new Date().toISOString()
   };
@@ -3993,9 +4459,11 @@ function drawCalendar() {
     const eventHtml = item => {
       const cls = item.source === 'deadline' ? 'deadline' : item.type === 'TASK' ? 'memo' : 'meeting';
       const action = item.source === 'manual' ? ' onclick="openCalendarEventModal(\'\', \''+item.id+'\')"' : ' onclick="showDetail(\'gara\', \''+item.gara_id+'\')"';
+      const assigneeText = item.source === 'manual' && item.assignees && item.assignees.length ? ' · ' + item.assignees.map(a => a.name || a.email || 'Utente').join(', ') : '';
       return '<div class="mobile-cal-event '+cls+'"'+action+'>'
-        +'<strong>'+escHtml((item.time ? item.time+' · ' : '') + item.type)+'</strong>'
+        +'<strong>'+escHtml((item.time ? item.time+' · ' : '') + item.type + (item.completed ? ' · completato' : ''))+'</strong>'
         +'<span>'+escHtml(item.title || 'Evento')+'</span>'
+        +(assigneeText ? '<small>'+escHtml(assigneeText.replace(/^ · /,''))+'</small>' : '')
       +'</div>';
     };
     const weekWindow = 1;
@@ -4052,9 +4520,11 @@ function drawCalendar() {
       +'<div class="calendar-events">'+visibleItems.map(item => {
         const cls = item.source === 'deadline' ? 'deadline' : item.type === 'TASK' ? 'memo' : 'meeting';
         const action = item.source === 'manual' ? ' onclick="openCalendarEventModal(\'\', \''+item.id+'\')"' : ' onclick="showDetail(\'gara\', \''+item.gara_id+'\')"';
+        const assigneeText = item.source === 'manual' && item.assignees && item.assignees.length ? ' · ' + item.assignees.map(a => a.name || a.email || 'Utente').join(', ') : '';
         return '<div class="calendar-event '+cls+'"'+action+'>'
-          +'<strong>'+escHtml((item.time ? item.time+' · ' : '') + item.type)+'</strong>'
+          +'<strong>'+escHtml((item.time ? item.time+' · ' : '') + item.type + (item.completed ? ' · completato' : ''))+'</strong>'
           +'<span>'+escHtml(item.title || 'Evento')+'</span>'
+          +(assigneeText ? '<span>'+escHtml(assigneeText.replace(/^ · /,''))+'</span>' : '')
         +'</div>';
       }).join('')+(isMobileViewport() && dayItems.length>2?'<div class="calendar-more">+'+(dayItems.length-2)+' altri</div>':'')+'</div>'
     +'</div>';
@@ -4096,6 +4566,8 @@ function downloadBlob(blob, filename) {
 // ═══════════════════════════════════════════════════════
 document.addEventListener('click', function(e) {
   if(activeDropdown && !activeDropdown.contains(e.target) && !e.target.closest('.th-click')) closeDropdown();
+  const notiPanel = document.getElementById('notification-panel');
+  if(notiPanel && notiPanel.classList.contains('on') && !notiPanel.contains(e.target) && !e.target.closest('#notification-btn') && !e.target.closest('.mobile-more-card')) closeNotificationCenter();
   const tr = e.target.closest('tr[data-type]');
   if(!tr) return;
   showDetail(tr.dataset.type, tr.dataset.id);
@@ -4491,6 +4963,28 @@ async function copyPortalCredential(el) {
     toast('Copia non riuscita','err');
   }
 }
+async function copyDatoValue(el) {
+  const value = el && el.dataset ? el.dataset.copy : '';
+  if(!value) return;
+  try {
+    if(navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(value);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = value;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    }
+    toast('Dato copiato','ok');
+  } catch(err) {
+    toast('Copia non riuscita','err');
+  }
+}
 function toggleFav(id){
   if(!requireRole('editor')) return;
   const p=state.portali.find(x=>x.id===id);if(!p)return;
@@ -4528,6 +5022,131 @@ function drawPortali() {
     +'<td style="white-space:nowrap">'+(editable?'<button class="btn btn-o btn-ic btn-sm" onclick="event.stopPropagation();editPort(\''+p.id+'\')">'+icon('edit')+'</button> <button class="btn-del" onclick="event.stopPropagation();delItem(\'portali\',\''+p.id+'\')">'+icon('delete')+'</button>':'—')+'</td>'
     +'</tr>'
   ).join(''):'<tr class="empty-row"><td colspan="8"><div class="empty"><div class="ei">'+icon('language')+'</div><h4>Nessun portale</h4></div></td></tr>';
+}
+
+const DATI_TYPE_ORDER = [
+  'Dati Bancari - Vecchi',
+  'Dati Societari',
+  'Dati Pietro',
+  'Dati Bancari - Nuovi',
+  'Fatturati',
+  'Documenti'
+];
+const DATI_NAME_ORDER = {
+  'Dati Societari': [
+    'Nome societa - Ragione sociale',
+    'Nome società - Ragione sociale',
+    'Forma giuridica',
+    'Partita IVA/VAT Number',
+    'Codice fiscale',
+    'Sede legale',
+    'Sede operativa',
+    'Mail',
+    'Pec',
+    'Telefono',
+    'Sito web',
+    'Num. iscrizione al registro delle imprese (CCIAA)',
+    'Sede territoriale competente Registro delle imprese',
+    'Data atto di costituzione',
+    'Data iscrizione/Data inizio attivita',
+    'Data iscrizione/Data inizio attività',
+    'Data termine attivita',
+    'Data termine attività'
+  ],
+  'Documenti': [
+    'Visura camerale',
+    'DURC',
+    'Polizza assicurativa',
+    'Dichiarazione Antimafia',
+    'Carichi pendenti',
+    'DURF',
+    'AS 9120_2016',
+    'Autocertificazione DPR 445/2000 e s.m.i (NTT DATA)'
+  ]
+};
+
+function datiTypeRank(tipo) {
+  const idx = DATI_TYPE_ORDER.findIndex(t => t.toLowerCase() === String(tipo || '').toLowerCase());
+  return idx >= 0 ? idx : DATI_TYPE_ORDER.length;
+}
+
+function datiNameRank(item) {
+  const order = DATI_NAME_ORDER[item.tipo] || [];
+  const idx = order.findIndex(name => name.toLowerCase() === String(item.nome || '').toLowerCase());
+  return idx >= 0 ? idx : 999;
+}
+
+function datiOriginalRank(item) {
+  const match = String(item.id || '').match(/\d+/);
+  return match ? Number(match[0]) : 99999;
+}
+
+function compareDati(a,b) {
+  const typeDiff = datiTypeRank(a.tipo) - datiTypeRank(b.tipo);
+  if(typeDiff) return typeDiff;
+  const nameDiff = datiNameRank(a) - datiNameRank(b);
+  if(nameDiff) return nameDiff;
+  const originalDiff = datiOriginalRank(a) - datiOriginalRank(b);
+  if(originalDiff) return originalDiff;
+  return (a.nome || '').localeCompare(b.nome || '', 'it');
+}
+
+function getDatiTypes() {
+  return [...new Set((state.dati || []).map(d => d.tipo).filter(Boolean))]
+    .sort((a,b)=>datiTypeRank(a) - datiTypeRank(b) || a.localeCompare(b,'it'));
+}
+
+function fillDatiTypeControls() {
+  const types = getDatiTypes();
+  if(uiPrefs.datiTipo && !types.includes(uiPrefs.datiTipo)) {
+    uiPrefs.datiTipo = '';
+    saveUiPrefs();
+  }
+  const filter = document.getElementById('fd-tipi');
+  if(filter) {
+    const active = uiPrefs.datiTipo || '';
+    filter.innerHTML =
+      '<button type="button" class="dati-filter-chip '+(!active?'on':'')+'" onclick="setDatiTypeFilter(\'\')">Tutti</button>'
+      + types.map(t =>
+        '<button type="button" class="dati-filter-chip '+(active===t?'on':'')+'" data-type="'+escHtml(t)+'" onclick="setDatiTypeFilter(this.dataset.type)">'
+        + escHtml(t)
+        + '</button>'
+      ).join('');
+  }
+  const list = document.getElementById('dati-tipi-list');
+  if(list) list.innerHTML = types.map(t => '<option value="'+escHtml(t)+'"></option>').join('');
+}
+
+function setDatiTypeFilter(tipo) {
+  uiPrefs.datiTipo = tipo || '';
+  saveUiPrefs();
+  drawDati();
+}
+
+function drawDati() {
+  const editable = canMutateData();
+  fillDatiTypeControls();
+  const q = (document.getElementById('sd') || { value:'' }).value.toLowerCase().trim();
+  const tipo = uiPrefs.datiTipo || '';
+  const rows = [...(state.dati || [])]
+    .filter(d => {
+      if(tipo && d.tipo !== tipo) return false;
+      const haystack = ((d.tipo || '') + ' ' + (d.nome || '') + ' ' + (d.dato || '')).toLowerCase();
+      return !q || haystack.includes(q);
+    })
+    .sort(compareDati);
+  const tbody = document.getElementById('tb-dati');
+  if(!tbody) return;
+  tbody.innerHTML = rows.length ? rows.map(d =>
+    '<tr>'
+      +'<td><span class="dati-type-chip">'+escHtml(d.tipo || 'Senza tipo')+'</span></td>'
+      +'<td><strong>'+escHtml(d.nome || '—')+'</strong></td>'
+      +'<td>'+(d.dato ? '<button type="button" class="dati-value" data-copy="'+escHtml(d.dato)+'" onclick="event.stopPropagation();copyDatoValue(this)" title="Copia dato">'+escHtml(d.dato)+'</button>' : '<span class="dati-empty">—</span>')+'</td>'
+      +'<td style="white-space:nowrap">'+(editable?'<button class="btn btn-o btn-ic btn-sm" onclick="event.stopPropagation();editDato(\''+d.id+'\')">'+icon('edit')+'</button> <button class="btn-del" onclick="event.stopPropagation();delItem(\'dati\',\''+d.id+'\')">'+icon('delete')+'</button>':'—')+'</td>'
+    +'</tr>'
+  ).join('') : '<tr class="empty-row"><td colspan="4"><div class="empty"><div class="ei">'+icon('database')+'</div><h4>Nessun dato trovato</h4><p>Modifica i filtri o aggiungi un nuovo dato.</p></div></td></tr>';
+  const count = document.getElementById('cnt-d');
+  if(count) count.textContent = rows.length + ' dati visualizzati';
 }
 
 // ═══════════════════════════════════════════════════════
@@ -4604,6 +5223,13 @@ function openM(type) {
       document.getElementById('xp-note').value=ev.note||'';document.getElementById('xp-fav').checked=ev.preferito==='⭐';
     }
   }
+  if(type==='dato') {
+    fillDatiTypeControls();
+    document.getElementById('m-dato-ttl').innerHTML=ev?icon('edit')+' Modifica dato':icon('database')+' Nuovo dato';
+    document.getElementById('xd-tipo').value=ev?ev.tipo||'':'';
+    document.getElementById('xd-nome').value=ev?ev.nome||'':'';
+    document.getElementById('xd-dato').value=ev?ev.dato||'':'';
+  }
   document.getElementById('m-'+type).classList.add('on');
 }
 function closeM(type){
@@ -4616,6 +5242,7 @@ function editGara(id){editId.gara=state.gare.find(x=>x.id===id);openM('gara');}
 function editAgg(id){editId.agg=state.aggiudicate.find(x=>x.id===id);openM('agg');}
 function editOff(id){editId.off=state.offerte.find(x=>x.id===id);openM('off');}
 function editPort(id){editId.port=state.portali.find(x=>x.id===id);openM('port');}
+function editDato(id){editId.dato=state.dati.find(x=>x.id===id);openM('dato');}
 
 // ═══════════════════════════════════════════════════════
 // SAVE / DELETE
@@ -4656,6 +5283,25 @@ function savePort(){
   save('port');closeM('port');drawPortali();toast('Portale salvato','ok');
   fillPortSel('xg-port','');fillPortSel('xa-port','');
 }
+function saveDato(){
+  if(!requireRole('editor')) return;
+  const tipo = document.getElementById('xd-tipo').value.trim();
+  const nome = document.getElementById('xd-nome').value.trim();
+  if(!tipo || !nome){toast('Inserisci tipo e nome del dato','err');return;}
+  const obj = {
+    id: editId.dato ? editId.dato.id : uid('d'),
+    tipo,
+    nome,
+    dato: document.getElementById('xd-dato').value.trim()
+  };
+  if(editId.dato){
+    const i = state.dati.findIndex(x => x.id === obj.id);
+    if(i >= 0) state.dati[i] = obj;
+  } else {
+    state.dati.unshift(obj);
+  }
+  save('dati');closeM('dato');updateBadges();drawDati();toast('Dato salvato','ok');
+}
 function delItem(col,id){
   if(!requireRole('editor')) return;
   if(!confirm('Eliminare questo elemento?')) return;
@@ -4666,7 +5312,7 @@ function delItem(col,id){
     save('activity');
     save('cal');
   }
-  save({gare:'gare',aggiudicate:'agg',offerte:'off',portali:'port'}[col]);
+  save({gare:'gare',aggiudicate:'agg',offerte:'off',portali:'port',dati:'dati'}[col]);
   updateBadges();redrawCurrent();toast('Eliminato','ok');
 }
 
