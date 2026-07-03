@@ -31,6 +31,28 @@ Puoi usare [config.example.js](/Users/gennydericcio/Downloads/Martec%20Tracker%2
 
 Il file `.nojekyll` e gia incluso per evitare trasformazioni indesiderate durante il deploy statico.
 
+## Monitor Gare automatico
+
+La pagina `Monitor Gare` mostra le procedure trovate dallo scanner automatico e permette di importare una singola gara nella Lista Gare.
+
+Lo scanner e predisposto con GitHub Actions:
+
+- workflow: `.github/workflows/monitor-gare.yml`
+- script: `scripts/monitor-gare-scanner.mjs`
+- configurazione esempio: `monitor-gare.config.example.json`
+
+Per abilitarlo:
+
+1. Copia `monitor-gare.config.example.json` in `monitor-gare.config.json`.
+2. Configura i portali da monitorare.
+3. In GitHub vai su `Settings` -> `Secrets and variables` -> `Actions`.
+4. Aggiungi:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - eventuali credenziali portale, ad esempio `FAREAPPALTI_USERNAME` e `FAREAPPALTI_PASSWORD`
+
+Lo scanner gira nelle finestre utili e lavora solo alle 09:00, 11:00 e 13:00 Europe/Rome. Salva solo metadati e link, non allegati, cosi evita consumo inutile di storage Supabase.
+
 ## Nota importante sulla sicurezza
 
 Questa configurazione e pensata per una web app condivisa tramite link senza backend privato dedicato.

@@ -1,0 +1,39 @@
+{
+  "workspaceId": "shared",
+  "timezone": "Europe/Rome",
+  "allowedHours": [9, 11, 13],
+  "minScoreToKeep": 45,
+  "positiveKeywords": [
+    "laboratorio",
+    "strumentazione",
+    "elettronica",
+    "informatica",
+    "sensore",
+    "laser",
+    "ottica",
+    "robot",
+    "scheda",
+    "pc",
+    "computer"
+  ],
+  "negativeKeywords": [
+    "lavori edili",
+    "mensa",
+    "pulizia",
+    "ristorazione",
+    "manutenzione verde"
+  ],
+  "portals": [
+    {
+      "key": "fareappalti",
+      "name": "FARE APPALTI",
+      "enabled": false,
+      "loginRequired": true,
+      "loginUrl": "https://app.fareappalti.it/login",
+      "searchUrl": "https://app.fareappalti.it/search/result",
+      "usernameSecret": "FAREAPPALTI_USERNAME",
+      "passwordSecret": "FAREAPPALTI_PASSWORD",
+      "notes": "Abilitare dopo aver definito il selettore/adapter del portale."
+    }
+  ]
+}

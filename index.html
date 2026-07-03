@@ -280,6 +280,28 @@ textarea{resize:vertical;min-height:65px}
 .dati-value{display:block;width:100%;white-space:pre-wrap;text-align:left;font:inherit;color:inherit;line-height:1.45;max-width:680px;border:1px solid transparent;background:transparent;border-radius:10px;padding:5px 7px;margin:-5px -7px;cursor:pointer;transition:all .15s}
 .dati-value:hover{border-color:#D7E9FF;background:#F6FAFF;color:var(--blue)}
 .dati-empty{color:var(--gray3);font-weight:700}
+.monitor-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.monitor-toolbar .srch{min-width:280px}
+.monitor-filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.monitor-chip{border:1px solid #D7E2F0;background:#fff;color:var(--gray2);border-radius:999px;padding:7px 11px;font-size:11px;font-weight:900;cursor:pointer;transition:all .15s}
+.monitor-chip:hover{border-color:#9CCBFF;color:var(--blue);background:#F5FAFF}
+.monitor-chip.on{border-color:#BBDEFB;background:#EDF4FF;color:var(--blue);box-shadow:0 5px 14px rgba(21,101,192,.1)}
+.monitor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px;padding:14px;background:#F8FBFF;border-top:1px solid #EEF3F8}
+.monitor-card{position:relative;display:grid;gap:10px;background:#fff;border:1px solid #DDE8F4;border-radius:18px;padding:14px;box-shadow:0 10px 28px rgba(13,27,62,.07);overflow:hidden}
+.monitor-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--blue)}
+.monitor-card.imported::before{background:var(--green)}
+.monitor-card.discarded::before{background:#78909C}
+.monitor-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.monitor-source{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;background:#EAF7F8;color:var(--teal);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.5px}
+.monitor-score{display:inline-flex;align-items:center;justify-content:center;min-width:54px;padding:6px 9px;border-radius:14px;background:#EDF4FF;color:var(--blue);font-family:'Outfit',sans-serif;font-size:18px;font-weight:900;line-height:1}
+.monitor-title{font-family:'Outfit',sans-serif;color:var(--navy);font-weight:900;font-size:18px;line-height:1.12;padding-left:4px}
+.monitor-meta{display:grid;grid-template-columns:92px minmax(0,1fr);gap:6px 10px;padding:9px 4px;border-top:1px solid #EEF3F8;border-bottom:1px solid #EEF3F8;font-size:12px;color:var(--gray2)}
+.monitor-meta strong{font-size:10px;text-transform:uppercase;letter-spacing:.75px;color:var(--gray3)}
+.monitor-reasons{display:flex;gap:6px;flex-wrap:wrap;padding-left:4px}
+.monitor-reason{border-radius:999px;background:#F2F6FB;color:var(--gray2);padding:5px 8px;font-size:10px;font-weight:800}
+.monitor-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.monitor-empty{padding:36px 16px;text-align:center;color:var(--gray3)}
+.monitor-empty .mi{font-size:42px;color:#B8C7D8;margin-bottom:8px}
 .pc-note{font-size:11px;color:var(--gray3);margin-bottom:7px;font-style:italic}
 .pc-acts{display:flex;gap:7px;margin-top:8px}
 
@@ -760,20 +782,20 @@ thead th{position:sticky;top:0;z-index:2}
   .tw,.quote-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:16px}
   .tw table{min-width:1080px}
   table td,table th{white-space:nowrap}
-  #v-gare .tc,#v-aggiudicate .tc,#v-offerte .tc,#v-portali .tc,#v-dati .tc{background:transparent;box-shadow:none;border-radius:0;overflow:visible}
-  #v-gare .tc-hdr,#v-aggiudicate .tc-hdr,#v-offerte .tc-hdr,#v-portali .tc-hdr,#v-dati .tc-hdr{
+  #v-gare .tc,#v-aggiudicate .tc,#v-offerte .tc,#v-portali .tc,#v-dati .tc,#v-monitor .tc{background:transparent;box-shadow:none;border-radius:0;overflow:visible}
+  #v-gare .tc-hdr,#v-aggiudicate .tc-hdr,#v-offerte .tc-hdr,#v-portali .tc-hdr,#v-dati .tc-hdr,#v-monitor .tc-hdr{
     position:relative;top:auto;border:1px solid #E1EAF5;border-radius:22px;padding:12px;background:rgba(255,255,255,.74);
     box-shadow:0 10px 24px rgba(13,27,62,.06);margin-bottom:14px;backdrop-filter:blur(12px)
   }
-  #v-gare .tc-hdr h3,#v-aggiudicate .tc-hdr h3,#v-offerte .tc-hdr h3,#v-portali .tc-hdr h3,#v-dati .tc-hdr h3{display:none}
-  #v-gare .srch,#v-aggiudicate .srch,#v-offerte .srch,#v-portali .srch,#v-dati .srch{
+  #v-gare .tc-hdr h3,#v-aggiudicate .tc-hdr h3,#v-offerte .tc-hdr h3,#v-portali .tc-hdr h3,#v-dati .tc-hdr h3,#v-monitor .tc-hdr h3{display:none}
+  #v-gare .srch,#v-aggiudicate .srch,#v-offerte .srch,#v-portali .srch,#v-dati .srch,#v-monitor .srch{
     height:52px;border-radius:999px;background:#fff;border:1px solid #D9E6F5;padding:8px 14px 8px 16px;
     box-shadow:0 8px 20px rgba(13,27,62,.05)
   }
-  #v-gare .srch:focus-within,#v-aggiudicate .srch:focus-within,#v-offerte .srch:focus-within,#v-portali .srch:focus-within,#v-dati .srch:focus-within{border-color:#9CCBFF;box-shadow:0 0 0 4px rgba(25,103,210,.1),0 10px 24px rgba(13,27,62,.07)}
-  #v-gare .srch span,#v-aggiudicate .srch span,#v-offerte .srch span,#v-portali .srch span,#v-dati .srch span{font-size:18px;width:30px;height:30px;border-radius:999px;background:#F1F6FF;display:flex;align-items:center;justify-content:center}
-  #v-gare .srch input,#v-aggiudicate .srch input,#v-offerte .srch input,#v-portali .srch input,#v-dati .srch input{font-size:16px;font-weight:700;color:var(--navy)}
-  #v-gare .srch input::placeholder,#v-aggiudicate .srch input::placeholder,#v-offerte .srch input::placeholder,#v-portali .srch input::placeholder,#v-dati .srch input::placeholder{color:#92A1B2;font-weight:700}
+  #v-gare .srch:focus-within,#v-aggiudicate .srch:focus-within,#v-offerte .srch:focus-within,#v-portali .srch:focus-within,#v-dati .srch:focus-within,#v-monitor .srch:focus-within{border-color:#9CCBFF;box-shadow:0 0 0 4px rgba(25,103,210,.1),0 10px 24px rgba(13,27,62,.07)}
+  #v-gare .srch span,#v-aggiudicate .srch span,#v-offerte .srch span,#v-portali .srch span,#v-dati .srch span,#v-monitor .srch span{font-size:18px;width:30px;height:30px;border-radius:999px;background:#F1F6FF;display:flex;align-items:center;justify-content:center}
+  #v-gare .srch input,#v-aggiudicate .srch input,#v-offerte .srch input,#v-portali .srch input,#v-dati .srch input,#v-monitor .srch input{font-size:16px;font-weight:700;color:var(--navy)}
+  #v-gare .srch input::placeholder,#v-aggiudicate .srch input::placeholder,#v-offerte .srch input::placeholder,#v-portali .srch input::placeholder,#v-dati .srch input::placeholder,#v-monitor .srch input::placeholder{color:#92A1B2;font-weight:700}
   #v-gare .sortbar,#v-aggiudicate .sortbar,#v-offerte .sortbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
   #v-gare .sortbar-label{grid-column:1/-1;margin:0;font-size:10px}
   #v-gare .sortchip,#v-gare .sortdir,#v-aggiudicate .sortchip,#v-aggiudicate .sortdir,#v-offerte .sortchip,#v-offerte .sortdir{width:100%;border-radius:14px;padding:11px 12px;text-align:center}
@@ -956,6 +978,14 @@ thead th{position:sticky;top:0;z-index:2}
   #v-dati tbody td:nth-child(3){padding:10px 3px;border-top:1px solid #EEF3F8;color:var(--gray2);font-size:13px;line-height:1.4}
   #v-dati tbody td:nth-child(4){display:flex!important;gap:8px;justify-content:flex-end;align-items:center;padding-top:12px}
   #v-dati tbody td:nth-child(4) .btn,#v-dati tbody td:nth-child(4) .btn-del{min-width:42px;min-height:38px;border-radius:12px;justify-content:center}
+  #v-monitor .monitor-toolbar{display:grid;grid-template-columns:1fr;gap:10px;width:100%}
+  #v-monitor .monitor-filter-row{gap:8px;flex-wrap:nowrap;overflow-x:auto;padding:2px 0 4px;-webkit-overflow-scrolling:touch}
+  #v-monitor .monitor-chip{flex:0 0 auto;padding:10px 13px;background:#fff;box-shadow:0 8px 20px rgba(13,27,62,.05)}
+  #v-monitor .monitor-grid{grid-template-columns:1fr;gap:10px;padding:0;background:transparent;border-top:0}
+  #v-monitor .monitor-card{border-radius:22px;padding:13px;box-shadow:0 10px 26px rgba(13,27,62,.07)}
+  #v-monitor .monitor-title{font-size:17px}
+  #v-monitor .monitor-actions{justify-content:stretch}
+  #v-monitor .monitor-actions .btn{flex:1;justify-content:center;min-height:38px}
   #v-portali tbody tr.empty-row{padding:0}
   #v-portali tbody tr.empty-row::before{display:none}
   #v-portali tbody tr.empty-row td{position:static!important;display:block!important;margin:0!important;padding:0!important;background:transparent!important}
@@ -1338,6 +1368,7 @@ thead th{position:sticky;top:0;z-index:2}
   <div class="sb-sec">Principale</div>
   <div class="nav on" data-v="dashboard"><span class="mi ic">monitoring</span>Dashboard</div>
   <div class="nav" data-v="calendario"><span class="mi ic">calendar_month</span>Calendario<span class="nb" id="nb-c">0</span></div>
+  <div class="nav" data-v="monitor"><span class="mi ic">radar</span>Monitor Gare<span class="nb" id="nb-m">0</span></div>
   <div class="nav" data-v="gare"><span class="mi ic">assignment</span>Lista Gare<span class="nb" id="nb-g">—</span></div>
   <div class="nav" data-v="aggiudicate"><span class="mi ic">check_circle</span>Aggiudicate<span class="nb" id="nb-a">—</span></div>
   <div class="nav" data-v="quotazioni"><span class="mi ic">receipt_long</span>Quotazioni<span class="nb" id="nb-q">0</span></div>
@@ -1379,6 +1410,7 @@ thead th{position:sticky;top:0;z-index:2}
   </div>
   <div class="mobile-more-grid">
     <button class="mobile-more-card" type="button" onclick="goToView('aggiudicate')"><span class="mi">check_circle</span><span><strong>Aggiudicate</strong><span>Gare vinte e stato procedura</span></span><em>›</em></button>
+    <button class="mobile-more-card" type="button" onclick="goToView('monitor')"><span class="mi">radar</span><span><strong>Monitor Gare</strong><span>Nuove procedure trovate e consigliate</span></span><em>›</em></button>
     <button class="mobile-more-card" type="button" onclick="goToView('quotazioni')"><span class="mi">receipt_long</span><span><strong>Quotazioni</strong><span>Listino, righe ed export Excel</span></span><em>›</em></button>
     <button class="mobile-more-card" type="button" onclick="goToView('offerte')"><span class="mi">outbox</span><span><strong>Offerte</strong><span>Offerte presentate e storico invii</span></span><em>›</em></button>
     <button class="mobile-more-card" type="button" onclick="goToView('portali')"><span class="mi">language</span><span><strong>Portali</strong><span>Credenziali e accessi condivisi</span></span><em>›</em></button>
@@ -1513,6 +1545,26 @@ thead th{position:sticky;top:0;z-index:2}
           </div>
           <div class="quote-body" id="quote-body"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- MONITOR GARE -->
+    <div class="view" id="v-monitor">
+      <div class="tc">
+        <div class="tc-hdr">
+          <h3><span class="mi">radar</span> Monitor Gare</h3>
+          <div class="monitor-toolbar">
+            <div class="srch"><span class="mi">search</span><input id="sm" placeholder="Cerca gare monitorate..." oninput="drawMonitor()"></div>
+            <div class="monitor-filter-row" id="monitor-filters">
+              <button type="button" class="monitor-chip on" data-monitor-filter="all" onclick="setMonitorFilter('all')">Tutte</button>
+              <button type="button" class="monitor-chip" data-monitor-filter="new" onclick="setMonitorFilter('new')">Nuove</button>
+              <button type="button" class="monitor-chip" data-monitor-filter="hot" onclick="setMonitorFilter('hot')">Interessanti</button>
+              <button type="button" class="monitor-chip" data-monitor-filter="imported" onclick="setMonitorFilter('imported')">Importate</button>
+            </div>
+          </div>
+        </div>
+        <div class="monitor-grid" id="monitor-grid"></div>
+        <div class="tc-ftr"><span id="cnt-m"></span></div>
       </div>
     </div>
 
@@ -1854,9 +1906,9 @@ const SEED = {"gare": [{"stato": "PERSA", "portale": "FARE APPALTI", "num_rdo": 
 // ═══════════════════════════════════════════════════════
 // STATE — persistenza locale + sync remoto opzionale
 // ═══════════════════════════════════════════════════════
-const LS = {gare:'mg_gare', agg:'mg_agg', off:'mg_off', port:'mg_port', quote:'mg_quote', activity:'mg_activity', cal:'mg_calendar', dati:'mg_dati', noti:'mg_notification_reads'};
+const LS = {gare:'mg_gare', agg:'mg_agg', off:'mg_off', port:'mg_port', quote:'mg_quote', activity:'mg_activity', cal:'mg_calendar', dati:'mg_dati', noti:'mg_notification_reads', monitor:'mg_monitor_gare'};
 const UI_LS = 'mg_ui_prefs';
-const STATE_MAP = {gare:'gare', agg:'aggiudicate', off:'offerte', port:'portali', quote:'quotazioni', activity:'attivitaGare', cal:'calendarEvents', dati:'dati', noti:'notificationReads'};
+const STATE_MAP = {gare:'gare', agg:'aggiudicate', off:'offerte', port:'portali', quote:'quotazioni', activity:'attivitaGare', cal:'calendarEvents', dati:'dati', noti:'notificationReads', monitor:'monitorGare'};
 const DEFAULT_REMOTE_CONFIG = {
   syncTable: 'app_state',
   syncRowId: 'shared',
@@ -1899,7 +1951,8 @@ const DEFAULT_UI_PREFS = {
   quotePanelCollapsed: false,
   calendarMonth: '',
   calendarDay: '',
-  datiTipo: ''
+  datiTipo: '',
+  monitorFilter: 'all'
 };
 
 function lsLoad(key, seed) {
@@ -1935,6 +1988,7 @@ let state = {
   calendarEvents: lsLoad(LS.cal, []),
   dati: lsLoad(LS.dati, window.MARTEC_DATI_SEED || []),
   notificationReads: lsLoad(LS.noti, {}),
+  monitorGare: lsLoad(LS.monitor, []),
 };
 let uiPrefs = loadUiPrefs();
 let workspaceProfiles = [];
@@ -1984,7 +2038,8 @@ function normalizeStateOperatori() {
       attivitaGare: state.attivitaGare,
       calendarEvents: state.calendarEvents,
       dati: state.dati,
-      notificationReads: state.notificationReads
+      notificationReads: state.notificationReads,
+      monitorGare: state.monitorGare
     };
   }
   return changed;
@@ -2008,7 +2063,8 @@ function serializeRemoteState() {
     attivitaGare: state.attivitaGare,
     calendarEvents: state.calendarEvents,
     dati: state.dati,
-    notificationReads: state.notificationReads || {}
+    notificationReads: state.notificationReads || {},
+    monitorGare: state.monitorGare || []
   };
 }
 
@@ -2161,7 +2217,8 @@ function applyState(nextState) {
     attivitaGare: Array.isArray(nextState.attivitaGare) ? nextState.attivitaGare : [],
     calendarEvents: Array.isArray(nextState.calendarEvents) ? nextState.calendarEvents : [],
     dati: Array.isArray(nextState.dati) ? nextState.dati : (window.MARTEC_DATI_SEED || []),
-    notificationReads: nextState.notificationReads && typeof nextState.notificationReads === 'object' ? nextState.notificationReads : {}
+    notificationReads: nextState.notificationReads && typeof nextState.notificationReads === 'object' ? nextState.notificationReads : {},
+    monitorGare: Array.isArray(nextState.monitorGare) ? nextState.monitorGare : []
   };
   normalizeStateOperatori();
   saveLocalSnapshot();
@@ -2909,6 +2966,7 @@ function toast(msg, type) {
 const viewCfg = {
   dashboard:   {ttl:'Dashboard',           sub:'Analisi in tempo reale', add:''},
   quotazioni:  {ttl:'Quotazioni',          sub:'Listino e export Excel', add:'Nuova Quotazione'},
+  monitor:     {ttl:'Monitor Gare',        sub:'Nuove procedure consigliate', add:''},
   gare:        {ttl:'Lista Gare',           sub:'',                       add:'Nuova Gara'},
   aggiudicate: {ttl:'Gare Aggiudicate',    sub:'',                       add:'Aggiungi'},
   offerte:     {ttl:'Offerte Presentate',  sub:'',                       add:'Nuova Offerta'},
@@ -2948,7 +3006,7 @@ function openAdd() {
 }
 
 function redrawCurrent() {
-  ({dashboard:drawDash,quotazioni:drawQuotePage,gare:drawGare,aggiudicate:drawAgg,offerte:drawOff,portali:drawPortali,dati:drawDati,calendario:drawCalendar}[curView]||drawDash)();
+  ({dashboard:drawDash,quotazioni:drawQuotePage,monitor:drawMonitor,gare:drawGare,aggiudicate:drawAgg,offerte:drawOff,portali:drawPortali,dati:drawDati,calendario:drawCalendar}[curView]||drawDash)();
 }
 
 function updateBadges() {
@@ -2956,6 +3014,8 @@ function updateBadges() {
   document.getElementById('nb-g').textContent = state.gare.length;
   document.getElementById('nb-a').textContent = state.aggiudicate.length;
   document.getElementById('nb-o').textContent = state.offerte.length;
+  const mb = document.getElementById('nb-m');
+  if(mb) mb.textContent = (state.monitorGare || []).filter(g => (g.status || 'NUOVA') !== 'IMPORTATA').length;
   const db = document.getElementById('nb-d');
   if(db) db.textContent = (state.dati || []).length;
   const s = state.gare.filter(g=>{const d=daysTo(g.scadenza);return d!==null&&d>=0&&d<=7&&!['PERSA','AGGIUDICATA','SCARTATA'].includes(g.stato);}).length;
@@ -5022,6 +5082,184 @@ function drawPortali() {
     +'<td style="white-space:nowrap">'+(editable?'<button class="btn btn-o btn-ic btn-sm" onclick="event.stopPropagation();editPort(\''+p.id+'\')">'+icon('edit')+'</button> <button class="btn-del" onclick="event.stopPropagation();delItem(\'portali\',\''+p.id+'\')">'+icon('delete')+'</button>':'—')+'</td>'
     +'</tr>'
   ).join(''):'<tr class="empty-row"><td colspan="8"><div class="empty"><div class="ei">'+icon('language')+'</div><h4>Nessun portale</h4></div></td></tr>';
+}
+
+// ═══════════════════════════════════════════════════════
+// MONITOR GARE
+// ═══════════════════════════════════════════════════════
+function normalizeMonitorStatus(item) {
+  return String(item && item.status ? item.status : 'NUOVA').toUpperCase();
+}
+function monitorScore(item) {
+  const raw = Number(item && (item.score ?? item.punteggio));
+  if(Number.isFinite(raw)) return Math.max(0, Math.min(100, Math.round(raw)));
+  const text = [item && item.titolo, item && item.descrizione, item && item.ente, item && item.tipologia].join(' ').toLowerCase();
+  const good = ['laboratorio','elettronica','informatica','strumentazione','sensore','laser','ottic','scheda','computer','pc','robot','fornitura'];
+  const bad = ['lavori edili','servizi mensa','pulizia','ristorazione','manutenzione verde'];
+  let score = 45;
+  good.forEach(k => { if(text.includes(k)) score += 8; });
+  bad.forEach(k => { if(text.includes(k)) score -= 18; });
+  const amount = Number(item && (item.base_asta ?? item.importo));
+  if(Number.isFinite(amount) && amount >= 3000) score += 8;
+  if(Number.isFinite(amount) && amount >= 15000) score += 8;
+  const d = daysTo(item && item.scadenza);
+  if(d !== null && d >= 0 && d <= 10) score += 7;
+  return Math.max(0, Math.min(100, score));
+}
+function monitorReasons(item) {
+  const list = Array.isArray(item && item.reasons) ? item.reasons : Array.isArray(item && item.motivi) ? item.motivi : [];
+  if(list.length) return list.slice(0,4);
+  const reasons = [];
+  const text = [item && item.titolo, item && item.descrizione, item && item.tipologia].join(' ').toLowerCase();
+  if(/laboratorio|strumentazione|elettronica|informatica|sensore|laser|ottic|robot/.test(text)) reasons.push('Settore compatibile');
+  const amount = Number(item && (item.base_asta ?? item.importo));
+  if(Number.isFinite(amount) && amount > 0) reasons.push('Importo rilevato');
+  if(item && (item.sourceUrl || item.url)) reasons.push('Link procedura disponibile');
+  return reasons.slice(0,4);
+}
+function monitorFingerprint(item) {
+  return [
+    String(item && (item.sourceUrl || item.url || '')).trim().toLowerCase(),
+    String(item && (item.num_rdo || item.cig || '')).trim().toLowerCase(),
+    String(item && (item.titolo || item.descrizione || '')).trim().toLowerCase(),
+    String(item && item.ente || '').trim().toLowerCase()
+  ].filter(Boolean).join('|');
+}
+function getMonitorRows() {
+  const seen = new Set();
+  return (state.monitorGare || []).filter(item => {
+    const key = monitorFingerprint(item) || String(item && item.id || '');
+    if(!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).sort((a,b) => {
+    const statusA = normalizeMonitorStatus(a) === 'NUOVA' ? 0 : normalizeMonitorStatus(a) === 'IMPORTATA' ? 2 : 1;
+    const statusB = normalizeMonitorStatus(b) === 'NUOVA' ? 0 : normalizeMonitorStatus(b) === 'IMPORTATA' ? 2 : 1;
+    return statusA - statusB || monitorScore(b) - monitorScore(a) || String(b.foundAt || '').localeCompare(String(a.foundAt || ''));
+  });
+}
+function setMonitorFilter(filter) {
+  uiPrefs.monitorFilter = filter || 'all';
+  saveUiPrefs();
+  drawMonitor();
+}
+function syncMonitorFilters() {
+  document.querySelectorAll('[data-monitor-filter]').forEach(btn => {
+    btn.classList.toggle('on', btn.dataset.monitorFilter === (uiPrefs.monitorFilter || 'all'));
+  });
+}
+function drawMonitor() {
+  syncMonitorFilters();
+  const q = (document.getElementById('sm')?.value || '').toLowerCase();
+  const filter = uiPrefs.monitorFilter || 'all';
+  const rows = getMonitorRows().filter(item => {
+    const hay = [item.portale, item.portalName, item.titolo, item.descrizione, item.ente, item.tipologia, item.num_rdo].join(' ').toLowerCase();
+    const status = normalizeMonitorStatus(item);
+    if(q && !hay.includes(q)) return false;
+    if(filter === 'new' && status !== 'NUOVA') return false;
+    if(filter === 'hot' && monitorScore(item) < 70) return false;
+    if(filter === 'imported' && status !== 'IMPORTATA') return false;
+    return true;
+  });
+  const grid = document.getElementById('monitor-grid');
+  const count = document.getElementById('cnt-m');
+  if(count) count.textContent = rows.length + ' gare monitorate visualizzate';
+  if(!grid) return;
+  grid.innerHTML = rows.length ? rows.map(renderMonitorCard).join('') : '<div class="monitor-empty"><div class="mi">radar</div><h4>Nessuna gara trovata</h4><p>Lo scanner mostrerà qui le nuove procedure individuate nei portali configurati.</p></div>';
+}
+function renderMonitorCard(item) {
+  const id = escHtml(item.id || '');
+  const status = normalizeMonitorStatus(item);
+  const score = monitorScore(item);
+  const title = item.titolo || item.descrizione || 'Gara senza titolo';
+  const source = item.portale || item.portalName || 'Portale';
+  const amount = Number(item.base_asta ?? item.importo);
+  const url = item.sourceUrl || item.url || '';
+  const reasons = monitorReasons(item);
+  return '<article class="monitor-card '+(status === 'IMPORTATA' ? 'imported' : status === 'SCARTATA' ? 'discarded' : '')+'">'
+    + '<div class="monitor-card-top"><span class="monitor-source">'+icon('language')+' '+escHtml(source)+'</span><span class="monitor-score">'+score+'</span></div>'
+    + '<div class="monitor-title">'+escHtml(title)+'</div>'
+    + '<div class="monitor-meta">'
+      + '<strong>Ente</strong><span>'+escHtml(item.ente || '—')+'</span>'
+      + '<strong>Scadenza</strong><span>'+escHtml(fmtD(item.scadenza || '') || '—')+'</span>'
+      + '<strong>Importo</strong><span>'+(Number.isFinite(amount) && amount > 0 ? euro(amount) : '—')+'</span>'
+      + '<strong>Tipologia</strong><span>'+escHtml(item.tipologia || '—')+'</span>'
+    + '</div>'
+    + '<div class="monitor-reasons">'+(reasons.length ? reasons.map(r => '<span class="monitor-reason">'+escHtml(r)+'</span>').join('') : '<span class="monitor-reason">Da valutare</span>')+'</div>'
+    + '<div class="monitor-actions">'
+      + (url ? '<button class="btn btn-o btn-sm" type="button" onclick="openMonitorSource(\''+id+'\')">'+icon('open_in_new')+' Apri procedura</button>' : '')
+      + (status === 'IMPORTATA' ? '<button class="btn btn-g btn-sm" type="button" onclick="goToImportedGara(\''+id+'\')">'+icon('check','white')+' Importata</button>' : '<button class="btn btn-p btn-sm" type="button" onclick="importMonitorGara(\''+id+'\')">'+icon('add','white')+' Importa in Lista Gare</button>')
+    + '</div>'
+    + '</article>';
+}
+function findMonitorItem(id) {
+  return (state.monitorGare || []).find(item => String(item.id) === String(id));
+}
+function openMonitorSource(id) {
+  const item = findMonitorItem(id);
+  const url = item && (item.sourceUrl || item.url);
+  if(!url) { toast('Link procedura non disponibile', 'err'); return; }
+  window.open(url, '_blank', 'noopener');
+}
+function monitorAlreadyInGare(item) {
+  const source = String(item.sourceUrl || item.url || '').trim().toLowerCase();
+  const rdo = String(item.num_rdo || item.cig || '').trim().toLowerCase();
+  const title = String(item.titolo || item.descrizione || '').trim().toLowerCase();
+  const ente = String(item.ente || '').trim().toLowerCase();
+  return (state.gare || []).find(g => {
+    const note = String(g.note || '').toLowerCase();
+    if(source && note.includes(source)) return true;
+    if(rdo && String(g.num_rdo || '').trim().toLowerCase() === rdo) return true;
+    return title && ente && String(g.descrizione || '').trim().toLowerCase() === title && String(g.ente || '').trim().toLowerCase() === ente;
+  });
+}
+function importMonitorGara(id) {
+  if(!requireRole('editor')) return;
+  const item = findMonitorItem(id);
+  if(!item) return;
+  const existing = monitorAlreadyInGare(item);
+  if(existing) {
+    item.status = 'IMPORTATA';
+    item.importedGaraId = existing.id;
+    save('monitor');
+    updateBadges();
+    drawMonitor();
+    toast('Gara già presente in Lista Gare', 'ok');
+    return;
+  }
+  const url = item.sourceUrl || item.url || '';
+  const obj = {
+    id: uid('g'),
+    stato: 'DA LAVORARE',
+    portale: up(item.portale || item.portalName || ''),
+    num_rdo: up(item.num_rdo || item.cig || ''),
+    tipologia: item.tipologia || '',
+    descrizione: up(item.titolo || item.descrizione || ''),
+    ente: up(item.ente || ''),
+    base_asta: parseFloat(item.base_asta ?? item.importo) || 0,
+    operatore: '',
+    data_creazione: new Date().toISOString().slice(0,10),
+    scadenza: item.scadenza || '',
+    note: up(['IMPORTATA DA MONITOR GARE', url ? 'LINK PROCEDURA: '+url : '', item.note || ''].filter(Boolean).join('\n'))
+  };
+  state.gare.unshift(obj);
+  item.status = 'IMPORTATA';
+  item.importedGaraId = obj.id;
+  save('gare');
+  save('monitor');
+  updateBadges();
+  drawMonitor();
+  toast('Gara importata in Lista Gare', 'ok');
+}
+function goToImportedGara(id) {
+  const item = findMonitorItem(id);
+  const garaId = item && item.importedGaraId;
+  if(garaId && state.gare.some(g => g.id === garaId)) {
+    goToView('gare');
+    setTimeout(() => openDetail('gara', garaId), 50);
+    return;
+  }
+  goToView('gare');
 }
 
 const DATI_TYPE_ORDER = [
