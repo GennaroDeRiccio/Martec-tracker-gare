@@ -165,11 +165,18 @@ async function collectFareAppalti(portal) {
 
     const emailInput = page.locator('input[type="email"], input[name*="email" i], input[placeholder*="email" i]').first();
     const passwordInput = page.locator('input[type="password"]').first();
+    const visibleInputs = page.locator('input:visible');
+    const visibleInputCount = await visibleInputs.count().catch(() => 0);
+    if (visibleInputCount >= 2) {
+      await visibleInputs.nth(0).fill(username).catch(() => null);
+      await visibleInputs.nth(1).fill(password).catch(() => null);
+    }
     if (await emailInput.count()) await emailInput.fill(username);
     if (await passwordInput.count()) await passwordInput.fill(password);
 
     const loginButton = page.getByRole('button', { name: /accedi/i }).first();
     const loginTextButton = page.getByText(/^Accedi$/i).first();
+    console.log(`FareAppalti login: input visibili=${visibleInputCount}, button=${await loginButton.count()}, testo Accedi=${await loginTextButton.count()}`);
     if (await loginButton.count()) {
       await Promise.all([
         page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null),
@@ -186,6 +193,7 @@ async function collectFareAppalti(portal) {
         passwordInput.press('Enter')
       ]);
     }
+    await page.waitForURL(url => !url.href.includes('/login'), { timeout: 15000 }).catch(() => null);
 
     let hasTenderCards = await pageHasTenderCards();
     if (!hasTenderCards) {
