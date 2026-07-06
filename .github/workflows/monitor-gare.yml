@@ -1,0 +1,28 @@
+name: Monitor Gare
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Finestra UTC ampia: lo script esegue davvero solo alle 09:00, 11:00, 13:00 Europe/Rome.
+    - cron: "0 7,8,9,10,11,12 * * *"
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run monitor scanner
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          FAREAPPALTI_USERNAME: ${{ secrets.FAREAPPALTI_USERNAME }}
+          FAREAPPALTI_PASSWORD: ${{ secrets.FAREAPPALTI_PASSWORD }}
+        run: node scripts/monitor-gare-scanner.mjs
