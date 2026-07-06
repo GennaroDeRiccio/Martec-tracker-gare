@@ -124,7 +124,40 @@ async function collectFareAppalti(portal) {
     timezoneId: timezone,
     viewport: { width: 1440, height: 1000 }
   });
-  const page = await context.newPage();
+  let page = await context.newPage();
+
+  const pageHasTenderCards = async () => page.waitForFunction(() => /COD\.\s*[A-Z0-9-]+/i.test(document.body?.innerText || ''), null, { timeout: 12000 })
+    .then(() => true)
+    .catch(() => false);
+
+  const clickAndFollow = async target => {
+    const popupPromise = context.waitForEvent('page', { timeout: 5000 }).catch(() => null);
+    await Promise.all([
+      page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null),
+      target.click({ timeout: 8000 }).catch(() => null)
+    ]);
+    const popup = await popupPromise;
+    if (popup) {
+      page = popup;
+      await page.waitForLoadState('domcontentloaded', { timeout: 30000 }).catch(() => null);
+      await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null);
+    }
+  };
+
+  const tryOpenTenderListFromVisibleLinks = async () => {
+    const fallbackTargets = [
+      page.getByText(/\d+\s+Bandi/i).first(),
+      page.getByText(/Nuovi Bandi/i).first(),
+      page.getByText(/Mail giornaliere/i).first(),
+      page.getByText(/Ricerca/i).first()
+    ];
+    for (const target of fallbackTargets) {
+      if (!(await target.count())) continue;
+      await clickAndFollow(target);
+      if (await pageHasTenderCards()) return true;
+    }
+    return false;
+  };
 
   try {
     const loginUrl = portal.loginUrl || 'https://app.fareappalti.it/login';
@@ -148,31 +181,20 @@ async function collectFareAppalti(portal) {
       ]);
     }
 
+    let hasTenderCards = await pageHasTenderCards();
+    if (!hasTenderCards) {
+      hasTenderCards = await tryOpenTenderListFromVisibleLinks();
+    }
+
     const listUrl = portal.mailUrl || portal.searchUrl || 'https://mail.fareappalti.it';
-    await page.goto(listUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null);
-    let hasTenderCards = await page.waitForFunction(() => /COD\.\s*[A-Z0-9-]+/i.test(document.body?.innerText || ''), null, { timeout: 20000 })
-      .then(() => true)
-      .catch(() => false);
+    if (!hasTenderCards) {
+      await page.goto(listUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null);
+      hasTenderCards = await pageHasTenderCards();
+    }
 
     if (!hasTenderCards) {
-      const fallbackTargets = [
-        page.getByText(/Nuovi Bandi/i).first(),
-        page.getByText(/\d+\s+Bandi/i).first(),
-        page.getByText(/Mail giornaliere/i).first(),
-        page.getByText(/Ricerca/i).first()
-      ];
-      for (const target of fallbackTargets) {
-        if (!(await target.count())) continue;
-        await Promise.all([
-          page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null),
-          target.click({ timeout: 5000 }).catch(() => null)
-        ]);
-        hasTenderCards = await page.waitForFunction(() => /COD\.\s*[A-Z0-9-]+/i.test(document.body?.innerText || ''), null, { timeout: 12000 })
-          .then(() => true)
-          .catch(() => false);
-        if (hasTenderCards) break;
-      }
+      hasTenderCards = await tryOpenTenderListFromVisibleLinks();
     }
 
     if (!hasTenderCards) {
