@@ -27,13 +27,15 @@
     {
       "key": "fareappalti",
       "name": "FARE APPALTI",
-      "enabled": false,
+      "enabled": true,
       "loginRequired": true,
       "loginUrl": "https://app.fareappalti.it/login",
+      "mailUrl": "https://mail.fareappalti.it",
       "searchUrl": "https://app.fareappalti.it/search/result",
+      "maxResults": 25,
       "usernameSecret": "FAREAPPALTI_USERNAME",
       "passwordSecret": "FAREAPPALTI_PASSWORD",
-      "notes": "Abilitare dopo aver definito il selettore/adapter del portale."
+      "notes": "Legge la pagina Nuovi Bandi e salva solo metadati e link, senza scaricare allegati."
     }
   ]
 }
