@@ -30,4 +30,5 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           FAREAPPALTI_USERNAME: ${{ secrets.FAREAPPALTI_USERNAME }}
           FAREAPPALTI_PASSWORD: ${{ secrets.FAREAPPALTI_PASSWORD }}
+          SCANNER_FORCE: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
         run: node scripts/monitor-gare-scanner.mjs
