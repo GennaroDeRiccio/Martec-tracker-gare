@@ -1,0 +1,41 @@
+{
+  "workspaceId": "shared",
+  "timezone": "Europe/Rome",
+  "allowedHours": [9, 11, 13],
+  "minScoreToKeep": 45,
+  "positiveKeywords": [
+    "laboratorio",
+    "strumentazione",
+    "elettronica",
+    "informatica",
+    "sensore",
+    "laser",
+    "ottica",
+    "robot",
+    "scheda",
+    "pc",
+    "computer"
+  ],
+  "negativeKeywords": [
+    "lavori edili",
+    "mensa",
+    "pulizia",
+    "ristorazione",
+    "manutenzione verde"
+  ],
+  "portals": [
+    {
+      "key": "fareappalti",
+      "name": "FARE APPALTI",
+      "enabled": true,
+      "loginRequired": true,
+      "loginUrl": "https://app.fareappalti.it/login",
+      "mailUrl": "https://mail.fareappalti.it",
+      "searchUrl": "https://app.fareappalti.it/search/result",
+      "maxResults": 25,
+      "usernameSecret": "FAREAPPALTI_USERNAME",
+      "passwordSecret": "FAREAPPALTI_PASSWORD",
+      "notes": "Legge la pagina Nuovi Bandi e salva solo metadati e link, senza scaricare allegati."
+    }
+  ]
+}
