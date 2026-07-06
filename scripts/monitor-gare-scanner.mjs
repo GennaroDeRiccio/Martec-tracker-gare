@@ -169,10 +169,16 @@ async function collectFareAppalti(portal) {
     if (await passwordInput.count()) await passwordInput.fill(password);
 
     const loginButton = page.getByRole('button', { name: /accedi/i }).first();
+    const loginTextButton = page.getByText(/^Accedi$/i).first();
     if (await loginButton.count()) {
       await Promise.all([
         page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null),
         loginButton.click()
+      ]);
+    } else if (await loginTextButton.count()) {
+      await Promise.all([
+        page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null),
+        loginTextButton.click({ timeout: 8000 }).catch(() => null)
       ]);
     } else if (await passwordInput.count()) {
       await Promise.all([
@@ -188,6 +194,14 @@ async function collectFareAppalti(portal) {
 
     const listUrl = portal.mailUrl || portal.searchUrl || 'https://mail.fareappalti.it';
     if (!hasTenderCards) {
+      const postLoginDiagnostics = await page.evaluate(() => ({
+        url: window.location.href,
+        title: document.title,
+        text: (document.body?.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 500)
+      })).catch(error => ({ url: page.url(), title: '', text: error.message }));
+      console.log(`FareAppalti post-login: URL=${postLoginDiagnostics.url}`);
+      console.log(`FareAppalti post-login: titolo="${postLoginDiagnostics.title}"`);
+      console.log(`FareAppalti post-login: testo="${postLoginDiagnostics.text}"`);
       await page.goto(listUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
       await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null);
       hasTenderCards = await pageHasTenderCards();
