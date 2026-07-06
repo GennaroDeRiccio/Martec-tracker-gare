@@ -122,7 +122,11 @@ async function collectFareAppalti(portal) {
   const context = await browser.newContext({
     locale: 'it-IT',
     timezoneId: timezone,
-    viewport: { width: 1440, height: 1000 }
+    viewport: { width: 1440, height: 1000 },
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+  });
+  await context.addInitScript(() => {
+    Object.defineProperty(navigator, 'webdriver', { get: () => false });
   });
   let page = await context.newPage();
 
@@ -159,40 +163,97 @@ async function collectFareAppalti(portal) {
     return false;
   };
 
+  const frameLabel = target => target === page ? `page:${page.url()}` : `frame:${target.url()}`;
+  const loginSurfaces = () => [page, ...page.frames().filter(frame => frame !== page.mainFrame())];
+
+  const logLoginSurfaces = async () => {
+    for (const surface of loginSurfaces()) {
+      const inputCount = await surface.locator('input').count().catch(() => 0);
+      const controlCount = await surface.locator('button, input[type="submit"], [role="button"]').count().catch(() => 0);
+      const accediCount = await surface.getByText(/Accedi/i).count().catch(() => 0);
+      console.log(`FareAppalti login surface: ${frameLabel(surface)} input=${inputCount} controls=${controlCount} accedi=${accediCount}`);
+    }
+  };
+
+  const fillLoginInSurface = async surface => {
+    const emailCandidates = surface.locator([
+      'input[type="email"]',
+      'input[name*="email" i]',
+      'input[id*="email" i]',
+      'input[placeholder*="email" i]',
+      'input[autocomplete*="email" i]',
+      'input[type="text"]'
+    ].join(', '));
+    const passwordCandidates = surface.locator('input[type="password"], input[name*="password" i], input[id*="password" i]');
+    const allInputs = surface.locator('input');
+
+    const emailCount = await emailCandidates.count().catch(() => 0);
+    const passwordCount = await passwordCandidates.count().catch(() => 0);
+    const allInputCount = await allInputs.count().catch(() => 0);
+
+    if (emailCount) await emailCandidates.first().fill(username, { timeout: 8000 }).catch(() => null);
+    if (passwordCount) await passwordCandidates.first().fill(password, { timeout: 8000 }).catch(() => null);
+
+    if ((!emailCount || !passwordCount) && allInputCount >= 2) {
+      await allInputs.nth(0).fill(username, { timeout: 8000 }).catch(() => null);
+      await allInputs.nth(1).fill(password, { timeout: 8000 }).catch(() => null);
+    }
+
+    const filled = (emailCount && passwordCount) || allInputCount >= 2;
+    if (!filled) return false;
+
+    const submitCandidates = [
+      surface.getByRole('button', { name: /accedi/i }).first(),
+      surface.locator('button:has-text("Accedi"), input[type="submit"], [role="button"]:has-text("Accedi")').first(),
+      surface.getByText(/^Accedi$/i).first()
+    ];
+    for (const submit of submitCandidates) {
+      if (!(await submit.count().catch(() => 0))) continue;
+      await Promise.all([
+        page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null),
+        submit.click({ timeout: 8000 }).catch(() => null)
+      ]);
+      return true;
+    }
+
+    if (passwordCount) {
+      await Promise.all([
+        page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null),
+        passwordCandidates.first().press('Enter', { timeout: 8000 }).catch(() => null)
+      ]);
+      return true;
+    }
+    return false;
+  };
+
+  const performFareAppaltiLogin = async () => {
+    await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null);
+    await page.waitForTimeout(5000);
+    await logLoginSurfaces();
+
+    for (const surface of loginSurfaces()) {
+      if (await fillLoginInSurface(surface)) return true;
+    }
+
+    const diagnostics = await page.evaluate(() => ({
+      url: window.location.href,
+      title: document.title,
+      forms: document.forms?.length || 0,
+      inputs: document.querySelectorAll('input').length,
+      buttons: document.querySelectorAll('button, input[type="submit"], [role="button"]').length,
+      text: (document.body?.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 700)
+    })).catch(error => ({ url: page.url(), title: '', forms: 0, inputs: 0, buttons: 0, text: error.message }));
+    console.log(`FareAppalti login not filled: URL=${diagnostics.url}`);
+    console.log(`FareAppalti login not filled: title="${diagnostics.title}" forms=${diagnostics.forms} inputs=${diagnostics.inputs} buttons=${diagnostics.buttons}`);
+    console.log(`FareAppalti login not filled: text="${diagnostics.text}"`);
+    return false;
+  };
+
   try {
     const loginUrl = portal.loginUrl || 'https://app.fareappalti.it/login';
     await page.goto(loginUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
-    const emailInput = page.locator('input[type="email"], input[name*="email" i], input[placeholder*="email" i]').first();
-    const passwordInput = page.locator('input[type="password"]').first();
-    const visibleInputs = page.locator('input:visible');
-    const visibleInputCount = await visibleInputs.count().catch(() => 0);
-    if (visibleInputCount >= 2) {
-      await visibleInputs.nth(0).fill(username).catch(() => null);
-      await visibleInputs.nth(1).fill(password).catch(() => null);
-    }
-    if (await emailInput.count()) await emailInput.fill(username);
-    if (await passwordInput.count()) await passwordInput.fill(password);
-
-    const loginButton = page.getByRole('button', { name: /accedi/i }).first();
-    const loginTextButton = page.getByText(/^Accedi$/i).first();
-    console.log(`FareAppalti login: input visibili=${visibleInputCount}, button=${await loginButton.count()}, testo Accedi=${await loginTextButton.count()}`);
-    if (await loginButton.count()) {
-      await Promise.all([
-        page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null),
-        loginButton.click()
-      ]);
-    } else if (await loginTextButton.count()) {
-      await Promise.all([
-        page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null),
-        loginTextButton.click({ timeout: 8000 }).catch(() => null)
-      ]);
-    } else if (await passwordInput.count()) {
-      await Promise.all([
-        page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null),
-        passwordInput.press('Enter')
-      ]);
-    }
+    await performFareAppaltiLogin();
     await page.waitForURL(url => !url.href.includes('/login'), { timeout: 15000 }).catch(() => null);
 
     let hasTenderCards = await pageHasTenderCards();
