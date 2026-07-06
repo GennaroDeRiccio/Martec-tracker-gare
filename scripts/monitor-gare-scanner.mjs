@@ -162,6 +162,24 @@ async function collectFareAppalti(portal) {
       console.log(`FareAppalti clickable candidates: ${JSON.stringify(clickableDiagnostics)}`);
     }
 
+    const routeDiagnostics = await page.evaluate(() => {
+      const html = document.documentElement.outerHTML || '';
+      const text = document.body?.innerText || '';
+      const marker = text.toLowerCase().indexOf('nuovi bandi');
+      const hrefs = [...new Set([...document.querySelectorAll('[href]')]
+        .map(element => element.href || element.getAttribute('href') || '')
+        .filter(Boolean))]
+        .filter(href => /bandi|bando|ricerca|search|mail|nuov/i.test(href))
+        .slice(0, 20);
+      const htmlMarker = html.toLowerCase().indexOf('nuovi bandi');
+      const htmlSnippet = htmlMarker >= 0 ? html.slice(Math.max(0, htmlMarker - 500), htmlMarker + 1200).replace(/\s+/g, ' ').trim() : '';
+      const textSnippet = marker >= 0 ? text.slice(Math.max(0, marker - 200), marker + 600).replace(/\s+/g, ' ').trim() : '';
+      return { hrefs, textSnippet, htmlSnippet };
+    }).catch(() => ({ hrefs: [], textSnippet: '', htmlSnippet: '' }));
+    if (routeDiagnostics.hrefs.length) console.log(`FareAppalti href candidates: ${JSON.stringify(routeDiagnostics.hrefs)}`);
+    if (routeDiagnostics.textSnippet) console.log(`FareAppalti nuovi bandi text: "${routeDiagnostics.textSnippet}"`);
+    if (routeDiagnostics.htmlSnippet) console.log(`FareAppalti nuovi bandi html: "${routeDiagnostics.htmlSnippet.slice(0, 900)}"`);
+
     const fallbackTargets = [
       page.locator('a:has-text("Nuovi Bandi"), button:has-text("Nuovi Bandi"), [role="button"]:has-text("Nuovi Bandi")').first(),
       page.locator('a:has-text("Bandi"), button:has-text("Bandi"), [role="button"]:has-text("Bandi")').first(),
