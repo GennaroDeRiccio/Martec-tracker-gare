@@ -136,24 +136,38 @@ async function collectFareAppalti(portal) {
 
   const clickAndFollow = async target => {
     const popupPromise = context.waitForEvent('page', { timeout: 5000 }).catch(() => null);
-    await Promise.all([
-      page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null),
-      target.click({ timeout: 8000 }).catch(() => null)
-    ]);
+    const beforeUrl = page.url();
+    await target.click({ timeout: 8000 }).catch(() => null);
     const popup = await popupPromise;
     if (popup) {
       page = popup;
       await page.waitForLoadState('domcontentloaded', { timeout: 30000 }).catch(() => null);
       await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null);
+    } else {
+      await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null);
+      await page.waitForURL(url => url.href !== beforeUrl, { timeout: 8000 }).catch(() => null);
+      await page.waitForTimeout(2500);
     }
   };
 
   const tryOpenTenderListFromVisibleLinks = async () => {
+    const clickableDiagnostics = await page.evaluate(() => [...document.querySelectorAll('a, button, [role="button"]')]
+      .map(element => ({
+        text: (element.innerText || element.textContent || element.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim(),
+        href: element.href || element.getAttribute('href') || ''
+      }))
+      .filter(item => /bandi|nuovi|mail|ricerca/i.test(`${item.text} ${item.href}`))
+      .slice(0, 12)).catch(() => []);
+    if (clickableDiagnostics.length) {
+      console.log(`FareAppalti clickable candidates: ${JSON.stringify(clickableDiagnostics)}`);
+    }
+
     const fallbackTargets = [
-      page.getByText(/\d+\s+Bandi/i).first(),
-      page.getByText(/Nuovi Bandi/i).first(),
-      page.getByText(/Mail giornaliere/i).first(),
-      page.getByText(/Ricerca/i).first()
+      page.locator('a:has-text("Nuovi Bandi"), button:has-text("Nuovi Bandi"), [role="button"]:has-text("Nuovi Bandi")').first(),
+      page.locator('a:has-text("Bandi"), button:has-text("Bandi"), [role="button"]:has-text("Bandi")').first(),
+      page.locator('a:has-text("Mail giornaliere"), button:has-text("Mail giornaliere"), [role="button"]:has-text("Mail giornaliere")').first(),
+      page.locator('a:has-text("Ricerca"), button:has-text("Ricerca"), [role="button"]:has-text("Ricerca")').first(),
+      page.getByText(/\d+\s+Bandi/i).first()
     ];
     for (const target of fallbackTargets) {
       if (!(await target.count())) continue;
