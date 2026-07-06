@@ -19,6 +19,11 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Install scanner browser
+        run: |
+          npm install playwright --no-save
+          npx playwright install --with-deps chromium
+
       - name: Run monitor scanner
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
