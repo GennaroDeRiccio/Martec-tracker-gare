@@ -141,12 +141,51 @@ async function collectFareAppalti(portal) {
         page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null),
         loginButton.click()
       ]);
+    } else if (await passwordInput.count()) {
+      await Promise.all([
+        page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null),
+        passwordInput.press('Enter')
+      ]);
     }
 
     const listUrl = portal.mailUrl || portal.searchUrl || 'https://mail.fareappalti.it';
     await page.goto(listUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null);
-    await page.waitForFunction(() => /COD\.\s*[A-Z0-9-]+/i.test(document.body?.innerText || ''), null, { timeout: 45000 });
+    let hasTenderCards = await page.waitForFunction(() => /COD\.\s*[A-Z0-9-]+/i.test(document.body?.innerText || ''), null, { timeout: 20000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (!hasTenderCards) {
+      const fallbackTargets = [
+        page.getByText(/Nuovi Bandi/i).first(),
+        page.getByText(/\d+\s+Bandi/i).first(),
+        page.getByText(/Mail giornaliere/i).first(),
+        page.getByText(/Ricerca/i).first()
+      ];
+      for (const target of fallbackTargets) {
+        if (!(await target.count())) continue;
+        await Promise.all([
+          page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => null),
+          target.click({ timeout: 5000 }).catch(() => null)
+        ]);
+        hasTenderCards = await page.waitForFunction(() => /COD\.\s*[A-Z0-9-]+/i.test(document.body?.innerText || ''), null, { timeout: 12000 })
+          .then(() => true)
+          .catch(() => false);
+        if (hasTenderCards) break;
+      }
+    }
+
+    if (!hasTenderCards) {
+      const diagnostics = await page.evaluate(() => ({
+        url: window.location.href,
+        title: document.title,
+        text: (document.body?.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 800)
+      })).catch(error => ({ url: page.url(), title: '', text: error.message }));
+      console.log(`FareAppalti: nessuna card COD trovata. URL=${diagnostics.url}`);
+      console.log(`FareAppalti: titolo pagina="${diagnostics.title}"`);
+      console.log(`FareAppalti: testo pagina="${diagnostics.text}"`);
+      return [];
+    }
 
     const maxResults = Number(portal.maxResults || 25);
     const tenders = await page.evaluate(({ maxResults }) => {
