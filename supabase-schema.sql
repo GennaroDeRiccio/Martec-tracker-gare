@@ -229,6 +229,11 @@ alter table public.app_workspaces enable row level security;
 alter table public.profiles enable row level security;
 alter table public.app_state enable row level security;
 
+drop policy if exists anon_insert_app_state on public.app_state;
+drop policy if exists anon_read_app_state on public.app_state;
+drop policy if exists anon_update_app_state on public.app_state;
+revoke all on table public.app_state from anon;
+
 drop policy if exists "workspace members can read workspace" on public.app_workspaces;
 create policy "workspace members can read workspace"
 on public.app_workspaces

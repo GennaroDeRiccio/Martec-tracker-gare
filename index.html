@@ -64,6 +64,7 @@ body{font-family:'Manrope',sans-serif;background:var(--gray6);color:var(--gray1)
 .mobile-more-screen{display:none}
 .mobile-dock-btn{position:relative}
 #sync-status{font-size:11px;color:var(--gray3);display:flex;align-items:center;gap:4px}
+#sync-retry[hidden]{display:none}
 .notif-btn{position:relative;width:40px;height:40px;border:1px solid #D7E2F0;border-radius:14px;background:#fff;color:var(--navy);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 20px rgba(13,27,62,.06);transition:all .15s}
 .notif-btn:hover,.notif-btn.on{border-color:#B8D8FF;background:#F5FAFF;color:var(--blue)}
 .notif-btn .mi{font-size:22px}
@@ -1436,6 +1437,7 @@ thead th{position:sticky;top:0;z-index:2}
     <span class="tb-sub" id="tb-sub"></span>
     <div class="tb-right">
       <span id="sync-status"><span class="mi">sync</span> Connessione...</span>
+      <button class="notif-btn" id="sync-retry" type="button" onclick="retryRemoteSync()" title="Riprova sincronizzazione" aria-label="Riprova sincronizzazione" hidden><span class="mi">sync</span></button>
       <button class="notif-btn" id="notification-btn" type="button" onclick="toggleNotificationCenter(event)" title="Centro notifiche" aria-label="Centro notifiche"><span class="mi">notifications</span><span class="notif-badge" id="noti-badge">0</span></button>
       <button class="btn btn-p" id="btn-add" type="button" onclick="openAdd()" style="display:none"><span class="mi white">add</span> Nuova Gara</button>
     </div>
@@ -1927,6 +1929,14 @@ const remoteSync = {
   client: null,
   enabled: false,
   lastHash: '',
+  pending: false,
+  revision: 0,
+  pushPromise: null,
+  recovering: false,
+  conflict: false,
+  baseline: '',
+  localSnapshotOk: true,
+  recoveryIncomplete: false,
   pollingId: null,
   initialized: false,
   channel: null,
@@ -1962,7 +1972,8 @@ function lsLoad(key, seed) {
   } catch(e) { return seed; }
 }
 function lsSave(key, data) {
-  try { localStorage.setItem(key, JSON.stringify(data)); } catch(e) {}
+  try { localStorage.setItem(key, JSON.stringify(data)); return true; }
+  catch(error) { console.error('Errore salvataggio locale', error); return false; }
 }
 
 function loadUiPrefs() {
@@ -2047,10 +2058,16 @@ function normalizeStateOperatori() {
 
 normalizeStateOperatori();
 
-function hashState(data) { return JSON.stringify(data); }
+function hashState(data) {
+  // JSONB can reorder object keys; compare canonical snapshots, not transport order.
+  return JSON.stringify(data, (key, value) => {
+    if(!value || typeof value !== 'object' || Array.isArray(value)) return value;
+    return Object.fromEntries(Object.keys(value).sort().map(name => [name, value[name]]));
+  });
+}
 
 function saveLocalSnapshot() {
-  Object.entries(STATE_MAP).forEach(([key, col]) => lsSave(LS[key], state[col]));
+  remoteSync.localSnapshotOk = Object.entries(STATE_MAP).map(([key, col]) => lsSave(LS[key], state[col])).every(Boolean);
 }
 
 function serializeRemoteState() {
@@ -2225,6 +2242,7 @@ function applyState(nextState) {
 }
 
 function setSyncStatus(label, tone='neutral') {
+  if(remoteSync.pending && !remoteSync.localSnapshotOk) label += ' · memoria locale piena: non chiudere';
   const colors = {
     neutral: '#78909C',
     ok: '#2E7D32',
@@ -2233,29 +2251,98 @@ function setSyncStatus(label, tone='neutral') {
   };
   document.getElementById('sync-status').innerHTML =
     '<span style="color:'+colors[tone]+';font-weight:600">●</span> ' + label;
+  const retry = document.getElementById('sync-retry');
+  retry.hidden = !remoteSync.pending;
+  retry.disabled = label.startsWith('Sincronizzazione cloud');
 }
 
-async function pushRemoteState(reason='manual') {
-  if(!remoteSync.enabled || !remoteSync.client || !authState.session) return false;
-  const payload = serializeRemoteState();
-  const payloadHash = hashState(payload);
-  if(reason !== 'force' && payloadHash === remoteSync.lastHash) return true;
-  setSyncStatus('Sincronizzazione cloud...', 'warn');
-  const { error } = await remoteSync.client
-    .from(remoteCfg.syncTable)
-    .upsert({ workspace_id: getCurrentWorkspaceId(), payload, updated_by: authState.session.user.id }, { onConflict: 'workspace_id' });
-  if(error) {
-    console.error('Errore sync remoto', error);
-    setSyncStatus('Cloud non raggiungibile, uso locale', 'err');
+function syncFingerprint(value) {
+  let hash = 2166136261;
+  for(let i=0; i<value.length; i++) hash = Math.imul(hash ^ value.charCodeAt(i), 16777619);
+  return value.length + ':' + (hash >>> 0);
+}
+
+function pendingSyncKey() {
+  return 'mg_pending_sync:' + getCurrentWorkspaceId() + ':' + authState.session.user.id;
+}
+
+function markSyncPending() {
+  if(!authState.session) return;
+  if(!remoteSync.pending) remoteSync.baseline = syncFingerprint(remoteSync.lastHash);
+  remoteSync.pending = true;
+  remoteSync.revision++;
+  // Store only metadata; the collections already have their local snapshots.
+  try { localStorage.setItem(pendingSyncKey(), JSON.stringify({baseline:remoteSync.baseline, durable:remoteSync.localSnapshotOk})); }
+  catch(error) { console.error('Impossibile conservare lo stato di sincronizzazione', error); }
+}
+
+function syncErrorStatus(error) {
+  error = error || {};
+  if(error.code === '57014') return 'Timeout cloud · modifiche da sincronizzare';
+  if(error.code === '42501' || error.status === 403) return 'Permessi cloud insufficienti · uso locale';
+  if(error.status === 401 || error.code === 'PGRST301') return 'Sessione cloud scaduta · accedi nuovamente';
+  return 'Salvataggio cloud fallito · modifiche da sincronizzare';
+}
+
+async function retryRemoteSync() {
+  if(remoteSync.recoveryIncomplete) {
+    setSyncStatus('Copia locale incompleta · recupero manuale necessario', 'err');
     return false;
   }
-  remoteSync.lastHash = payloadHash;
-  setSyncStatus('Cloud attivo · workspace sincronizzato', 'ok');
-  return true;
+  if(remoteSync.pushPromise) return remoteSync.pushPromise;
+  if(remoteSync.pending) {
+    remoteSync.recovering = true;
+    remoteSync.conflict = false;
+  }
+  return pullRemoteState();
+}
+
+function pushRemoteState(reason='manual') {
+  if(!remoteSync.enabled || !remoteSync.client || !authState.session || remoteSync.recovering || remoteSync.conflict) return Promise.resolve(false);
+  if(!remoteSync.pending && (reason === 'force' || hashState(serializeRemoteState()) !== remoteSync.lastHash)) markSyncPending();
+  if(remoteSync.pushPromise) return remoteSync.pushPromise;
+  const workspaceId = getCurrentWorkspaceId();
+  const userId = authState.session.user.id;
+  const pendingKey = pendingSyncKey();
+  remoteSync.pushPromise = (async () => {
+    while(remoteSync.pending) {
+      const revision = remoteSync.revision;
+      const payloadHash = hashState(serializeRemoteState());
+      setSyncStatus('Sincronizzazione cloud...', 'warn');
+      try {
+        const {error} = await remoteSync.client.from(remoteCfg.syncTable).upsert({
+          workspace_id:workspaceId, payload:JSON.parse(payloadHash), updated_by:userId
+        }, {onConflict:'workspace_id'});
+        if(error) throw error;
+      } catch(error) {
+        console.error('Errore sync remoto', error);
+        setSyncStatus(syncErrorStatus(error), 'err');
+        return false;
+      }
+      if(!authState.session || authState.session.user.id !== userId || getCurrentWorkspaceId() !== workspaceId) return false;
+      remoteSync.lastHash = payloadHash;
+      remoteSync.baseline = syncFingerprint(payloadHash);
+      if(revision === remoteSync.revision) {
+        remoteSync.pending = false;
+        try { localStorage.removeItem(pendingKey); }
+        catch(error) { console.error('Errore pulizia stato sync locale', error); }
+      } else {
+        try { localStorage.setItem(pendingKey, JSON.stringify({baseline:remoteSync.baseline, durable:remoteSync.localSnapshotOk})); }
+        catch(error) { console.error('Errore stato sync locale', error); }
+      }
+    }
+    setSyncStatus('Cloud attivo · workspace sincronizzato', 'ok');
+    return true;
+  })().finally(() => { remoteSync.pushPromise = null; });
+  return remoteSync.pushPromise;
 }
 
 async function pullRemoteState(silent=false) {
   if(!remoteSync.enabled || !remoteSync.client || !authState.session) return false;
+  if(remoteSync.pending && !remoteSync.recovering) return false;
+  const revision = remoteSync.revision;
+  const workspaceId = getCurrentWorkspaceId();
+  const userId = authState.session.user.id;
   const { data, error } = await remoteSync.client
     .from(remoteCfg.syncTable)
     .select('payload')
@@ -2267,6 +2354,20 @@ async function pullRemoteState(silent=false) {
     if(!silent) setSyncStatus('Cloud non raggiungibile, uso locale', 'err');
     return false;
   }
+  // A save may have started while this read was in flight.
+  if(!authState.session || authState.session.user.id !== userId || getCurrentWorkspaceId() !== workspaceId) return false;
+  if(revision !== remoteSync.revision || (remoteSync.pending && !remoteSync.recovering)) return false;
+  if(remoteSync.recovering) {
+    const cloudHash = data && data.payload ? hashState(data.payload) : '';
+    if(syncFingerprint(cloudHash) !== remoteSync.baseline && cloudHash !== hashState(serializeRemoteState())) {
+      remoteSync.conflict = true;
+      setSyncStatus('Modifiche locali pendenti · verificare conflitto cloud', 'err');
+      return false;
+    }
+    remoteSync.recovering = false;
+    remoteSync.lastHash = cloudHash;
+    return pushRemoteState();
+  }
 
   const hasRemoteCollections = data && data.payload && (
     Array.isArray(data.payload.gare) ||
@@ -2276,13 +2377,12 @@ async function pullRemoteState(silent=false) {
   );
 
   if(!hasRemoteCollections) {
-    await pushRemoteState('force');
-    return true;
+    return pushRemoteState('force');
   }
 
   const incomingHash = hashState(data.payload);
   if(incomingHash === remoteSync.lastHash) {
-    if(!silent) setSyncStatus('Cloud attivo · workspace sincronizzato', 'ok');
+    setSyncStatus('Cloud attivo · workspace sincronizzato', 'ok');
     return true;
   }
 
@@ -2302,7 +2402,7 @@ async function pullRemoteState(silent=false) {
     redrawCurrent();
     toast('Dati aggiornati dal cloud','ok');
   }
-  if(!silent) setSyncStatus('Cloud attivo · workspace sincronizzato', 'ok');
+  if(!remoteSync.pending) setSyncStatus('Cloud attivo · workspace sincronizzato', 'ok');
   return true;
 }
 
@@ -2325,6 +2425,7 @@ function setupRemoteRealtime() {
       filter: 'workspace_id=eq.' + getCurrentWorkspaceId()
     }, payload => {
       if(payload && payload.new && payload.new.payload) {
+        if(remoteSync.pending || remoteSync.pushPromise || remoteSync.recovering || remoteSync.conflict) return;
         const incomingHash = hashState(payload.new.payload);
         if(incomingHash === remoteSync.lastHash) return;
         applyState(payload.new.payload);
@@ -2476,6 +2577,19 @@ async function loadWorkspaceProfiles() {
 async function completeAuthenticatedBootstrap() {
   await loadCurrentProfile();
   await loadWorkspaceProfiles();
+  if(!remoteSync.pending) {
+    try {
+      const pending = JSON.parse(localStorage.getItem(pendingSyncKey()) || 'null');
+      if(pending) {
+        remoteSync.pending = true;
+        remoteSync.recovering = pending.durable !== false;
+        remoteSync.conflict = pending.durable === false;
+        remoteSync.recoveryIncomplete = pending.durable === false;
+        remoteSync.baseline = pending.baseline;
+        if(remoteSync.conflict) setSyncStatus('Copia locale incompleta · recupero manuale necessario', 'err');
+      }
+    } catch(error) { console.error('Errore recupero sync locale', error); }
+  }
   await remoteInitWithTimeout(5000);
   if(normalizeStateOperatori()) {
     saveLocalSnapshot();
@@ -2491,7 +2605,7 @@ async function completeAuthenticatedBootstrap() {
   authState.bootstrapped = true;
   authState.logoutReason = '';
   unlockAppAfterAuth();
-  setSyncStatus(remoteSync.enabled ? 'Cloud attivo · workspace sincronizzato' : 'Sessione attiva · uso locale', remoteSync.enabled ? 'ok' : 'warn');
+  if(!remoteSync.enabled) setSyncStatus('Sessione attiva · uso locale', 'warn');
 }
 
 async function bootstrapSession(session, modeOnFail='login') {
@@ -2505,6 +2619,11 @@ async function bootstrapSession(session, modeOnFail='login') {
     remoteSync.enabled = false;
     remoteSync.initialized = false;
     remoteSync.lastHash = '';
+    remoteSync.pending = false;
+    remoteSync.recovering = false;
+    remoteSync.conflict = false;
+    remoteSync.recoveryIncomplete = false;
+    remoteSync.revision++;
     remoteSync.profilesLoaded = false;
     workspaceProfiles = [];
     syncAuthUserUi();
@@ -2663,7 +2782,8 @@ async function handleLogout() {
 }
 
 function save(key) {
-  lsSave(LS[key], state[STATE_MAP[key]]);
+  if(!lsSave(LS[key], state[STATE_MAP[key]])) remoteSync.localSnapshotOk = false;
+  markSyncPending();
   if(remoteSync.enabled) void pushRemoteState();
 }
 

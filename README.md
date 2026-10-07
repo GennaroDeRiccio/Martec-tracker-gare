@@ -57,6 +57,14 @@ Lo scanner gira nelle finestre utili e lavora solo alle 09:00, 11:00 e 13:00 Eur
 
 Questa configurazione e pensata per una web app condivisa tramite link senza backend privato dedicato.
 
-- Chiunque abbia accesso al sito condiviso puo leggere e modificare i dati sincronizzati nel database.
+- I dati condivisi richiedono un utente autenticato e autorizzato nel workspace. Le vecchie policy anonime vengono rimosse dallo schema.
 - Per questo motivo le password dei portali non vengono sincronizzate.
-- Se vuoi una gestione utenti sicura, bisognera aggiungere autenticazione e regole di accesso piu restrittive.
+- Non inserire mai una chiave `service_role` nel frontend. Lo scanner la usa solo nei secret di GitHub Actions.
+
+## Verifica sincronizzazione
+
+Esegui `node tests/cloud-sync.test.cjs` per verificare coda dei salvataggi, snapshot immutabili, timeout, errori di rete, recupero e conflitti.
+
+`supabase-sync-hardening.sql` documenta il timeout di 30 secondi e la rimozione dell'accesso anonimo applicati il 7 ottobre 2026. Non modifica i dati del workspace. Non e necessario rieseguirlo durante un normale deploy del sito.
+
+Il pulsante di sincronizzazione permette di riprovare una richiesta fallita. Se il cloud e cambiato rispetto alla copia locale, il recupero viene bloccato per evitare sovrascritture. Le quote del piano gratuito restano in vigore; gli allegati incorporati nel JSON devono essere separati dai dati per ridurre ulteriormente traffico e carico.
