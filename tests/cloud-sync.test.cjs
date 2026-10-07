@@ -3,13 +3,41 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const source = html.slice(html.indexOf('function syncFingerprint('), html.indexOf('function teardownRemoteRealtime('));
+const source = html.slice(html.indexOf('function openSyncCache('), html.indexOf('function teardownRemoteRealtime('));
 const hashSource = html.slice(html.indexOf('function hashState('), html.indexOf('function saveLocalSnapshot('));
+const bootstrapSource = html.slice(html.indexOf('async function completeAuthenticatedBootstrap('), html.indexOf('async function bootstrapSession('));
+
+function fakeIndexedDB() {
+  const records = new Map();
+  const db = {
+    createObjectStore:()=>{},
+    transaction:()=> {
+      const transaction = {objectStore:()=>({
+        get:key=> {
+          const request = {};
+          queueMicrotask(()=>{request.result=records.get(key); request.onsuccess();});
+          return request;
+        },
+        put:(record,key)=>queueMicrotask(()=>{
+          records.set(key, JSON.parse(JSON.stringify(record)));
+          transaction.oncomplete();
+        })
+      })};
+      return transaction;
+    }
+  };
+  return {open:()=>{
+    const request = {result:db};
+    queueMicrotask(()=>{request.onupgradeneeded(); request.onsuccess();});
+    return request;
+  }};
+}
 
 function fixture() {
   const storage = new Map();
   const context = {
-    remoteSync:{enabled:true, lastHash:'', pending:false, revision:0, pushPromise:null, localSnapshotOk:true},
+    remoteSync:{enabled:true, loaded:true, lastHash:'', pending:false, revision:0, pushPromise:null, localSnapshotOk:true, localStorageSnapshotOk:true},
+    window:{indexedDB:fakeIndexedDB()},
     authState:{session:{user:{id:'user'}}}, remoteCfg:{syncTable:'app_state'},
     localStorage:{setItem:(k,v)=>storage.set(k,v), getItem:k=>storage.get(k), removeItem:k=>storage.delete(k)},
     hashState:JSON.stringify, serializeRemoteState:()=>context.payload,
@@ -45,6 +73,8 @@ function fixture() {
   releases.shift()({error:null});
   assert.equal(await first, true);
   assert.equal(c.remoteSync.pending, false);
+  await c.remoteSync.cachePromise;
+  assert.equal((await c.readSyncCache(c.pendingSyncKey())).pending, false);
 
   c.remoteSync.client = {from:()=>({upsert:async()=>({error:{code:'57014'}})})};
   c.payload.gare.push({id:3});
@@ -94,5 +124,54 @@ function fixture() {
   retry.remoteSync.recoveryIncomplete = true;
   assert.equal(await retry.retryRemoteSync(), false);
   assert.equal(recoveredWrites, 1);
-  console.log('Cloud sync: queue, immutable snapshots, timeout, stale read, recovery conflict, canonical JSON, network errors and safe retry passed');
+
+  const full = fixture();
+  full.remoteSync.localStorageSnapshotOk = false;
+  full.remoteSync.localSnapshotOk = false;
+  full.markSyncPending();
+  assert.equal(await full.remoteSync.cachePromise, true);
+  assert.equal(full.remoteSync.localSnapshotOk, true);
+  const cached = await full.readSyncCache(full.pendingSyncKey());
+  assert.equal(cached.pending, true);
+  assert.equal(cached.payload.gare.length, 1);
+  full.payload.gare.push({id:2});
+  full.markSyncPending();
+  await full.remoteSync.cachePromise;
+  assert.equal((await full.readSyncCache(full.pendingSyncKey())).payload.gare.length, 2);
+
+  function prepareBootstrap(context) {
+    Object.assign(context, {
+      loadCurrentProfile:async()=>{}, loadWorkspaceProfiles:async()=>{},
+      remoteInitWithTimeout:async ms=>assert.equal(ms, 35000),
+      normalizeStateOperatori:()=>false, syncUiControls:()=>{}, updateBadges:()=>{},
+      fillPortSel:()=>{}, fillCalendarAssignees:()=>{}, redrawCurrent:()=>{}, unlockAppAfterAuth:()=>{},
+      applyState:payload=>{context.payload=payload; context.restored=true;}
+    });
+    vm.runInContext(bootstrapSource, context);
+  }
+  const reload = fixture();
+  reload.window.indexedDB = full.window.indexedDB;
+  const latestCache = await full.readSyncCache(full.pendingSyncKey());
+  reload.localStorage.setItem(reload.pendingSyncKey(), JSON.stringify({baseline:latestCache.baseline, snapshotId:latestCache.snapshotId, durable:false}));
+  prepareBootstrap(reload);
+  await reload.completeAuthenticatedBootstrap();
+  assert.equal(reload.payload.gare.length, 2);
+  assert.equal(reload.remoteSync.recovering, true);
+  assert.equal(reload.remoteSync.recoveryIncomplete, undefined);
+
+  const stale = fixture();
+  stale.window.indexedDB = full.window.indexedDB;
+  stale.payload.gare.push({id:2},{id:3});
+  stale.localStorage.setItem(stale.pendingSyncKey(), JSON.stringify({baseline:latestCache.baseline, snapshotId:'newer-than-cache', durable:true}));
+  prepareBootstrap(stale);
+  await stale.completeAuthenticatedBootstrap();
+  assert.equal(stale.restored, undefined);
+  assert.equal(stale.payload.gare.length, 3);
+  assert.equal(stale.remoteSync.recovering, true);
+
+  const unloaded = fixture();
+  unloaded.remoteSync.loaded = false;
+  unloaded.markSyncPending();
+  assert.equal(await unloaded.pushRemoteState(), false);
+  console.log('Cloud sync: queue, immutable snapshots, timeout, stale read, recovery conflict, canonical JSON, network errors, safe retry, IndexedDB persistence/reload, stale-cache protection and initial-load guard passed');
 })().catch(error=>{console.error(error); process.exitCode=1;});

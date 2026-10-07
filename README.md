@@ -68,3 +68,5 @@ Esegui `node tests/cloud-sync.test.cjs` per verificare coda dei salvataggi, snap
 `supabase-sync-hardening.sql` documenta il timeout di 30 secondi e la rimozione dell'accesso anonimo applicati il 7 ottobre 2026. Non modifica i dati del workspace. Non e necessario rieseguirlo durante un normale deploy del sito.
 
 Il pulsante di sincronizzazione permette di riprovare una richiesta fallita. Se il cloud e cambiato rispetto alla copia locale, il recupero viene bloccato per evitare sovrascritture. Le quote del piano gratuito restano in vigore; gli allegati incorporati nel JSON devono essere separati dai dati per ridurre ulteriormente traffico e carico.
+
+La cache IndexedDB conserva gli snapshot completi, inclusi gli allegati, anche quando localStorage e pieno. Gli snapshot sono separati per workspace e utente. Una cache piu vecchia delle modifiche pendenti non viene applicata; se nessuna copia completa e disponibile, il recupero automatico si ferma. Inizialmente i salvataggi restano bloccati finche non e stata verificata la copia cloud.
