@@ -1939,6 +1939,7 @@ const remoteSync = {
   localStorageSnapshotOk: true,
   cachePromise: null,
   cacheDbPromise: null,
+  cacheSaving: false,
   snapshotId: '',
   loaded: false,
   statusLabel: '',
@@ -2253,7 +2254,7 @@ function applyState(nextState) {
 function setSyncStatus(label, tone='neutral') {
   remoteSync.statusLabel = label;
   remoteSync.statusTone = tone;
-  if(remoteSync.pending && !remoteSync.localSnapshotOk) label += ' · memoria locale piena: non chiudere';
+  if(remoteSync.pending && !remoteSync.localSnapshotOk && !remoteSync.cacheSaving) label += ' · memoria locale piena: non chiudere';
   const colors = {
     neutral: '#78909C',
     ok: '#2E7D32',
@@ -2293,6 +2294,7 @@ function persistSyncCache() {
   if(!authState.session) return Promise.resolve(false);
   const key = pendingSyncKey();
   const revision = remoteSync.revision;
+  remoteSync.cacheSaving = true;
   const record = {
     payload:JSON.parse(hashState(serializeRemoteState())),
     pending:remoteSync.pending,
@@ -2310,14 +2312,16 @@ function persistSyncCache() {
       transaction.onabort = () => reject(transaction.error || new Error('Cache locale interrotta'));
     });
     if(authState.session && key === pendingSyncKey() && revision === remoteSync.revision) {
+      remoteSync.cacheSaving = false;
       remoteSync.localSnapshotOk = true;
       if(remoteSync.statusLabel) setSyncStatus(remoteSync.statusLabel, remoteSync.statusTone);
     }
     return true;
   }).catch(error => {
     console.error('Errore cache locale', error);
-    if(authState.session && key === pendingSyncKey() && revision === remoteSync.revision && remoteSync.pending && !remoteSync.localSnapshotOk) {
-      setSyncStatus(remoteSync.statusLabel || 'Modifiche da sincronizzare', 'err');
+    if(authState.session && key === pendingSyncKey() && revision === remoteSync.revision) {
+      remoteSync.cacheSaving = false;
+      if(remoteSync.pending && !remoteSync.localSnapshotOk) setSyncStatus(remoteSync.statusLabel || 'Modifiche da sincronizzare', 'err');
     }
     return false;
   });
@@ -2496,8 +2500,13 @@ function setupRemoteRealtime() {
       table: remoteCfg.syncTable,
       filter: 'workspace_id=eq.' + getCurrentWorkspaceId()
     }, payload => {
+      if(remoteSync.pending || remoteSync.pushPromise || remoteSync.recovering || remoteSync.conflict) return;
+      // Oversized JSONB columns may be omitted from Postgres Changes events.
+      if(payload && payload.new && !payload.new.payload) {
+        void pullRemoteState(true).catch(error => console.error('Errore refresh realtime', error));
+        return;
+      }
       if(payload && payload.new && payload.new.payload) {
-        if(remoteSync.pending || remoteSync.pushPromise || remoteSync.recovering || remoteSync.conflict) return;
         const incomingHash = hashState(payload.new.payload);
         if(incomingHash === remoteSync.lastHash) return;
         applyState(payload.new.payload);
@@ -2708,6 +2717,7 @@ async function bootstrapSession(session, modeOnFail='login') {
     remoteSync.recovering = false;
     remoteSync.conflict = false;
     remoteSync.recoveryIncomplete = false;
+    remoteSync.cacheSaving = false;
     remoteSync.revision++;
     remoteSync.profilesLoaded = false;
     workspaceProfiles = [];

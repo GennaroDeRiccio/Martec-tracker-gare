@@ -220,6 +220,10 @@ $$;
 revoke all on function public.current_workspace_id() from public;
 revoke all on function public.has_workspace_role(text, public.app_role[]) from public;
 revoke all on function public.login_email_for_identifier(text) from public;
+revoke execute on function public.current_workspace_id() from anon;
+revoke execute on function public.has_workspace_role(text, public.app_role[]) from anon;
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
+alter function public.set_updated_at() set search_path = pg_catalog;
 
 grant execute on function public.current_workspace_id() to authenticated;
 grant execute on function public.has_workspace_role(text, public.app_role[]) to authenticated;

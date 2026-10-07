@@ -6,6 +6,7 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const source = html.slice(html.indexOf('function openSyncCache('), html.indexOf('function teardownRemoteRealtime('));
 const hashSource = html.slice(html.indexOf('function hashState('), html.indexOf('function saveLocalSnapshot('));
 const bootstrapSource = html.slice(html.indexOf('async function completeAuthenticatedBootstrap('), html.indexOf('async function bootstrapSession('));
+const realtimeSource = html.slice(html.indexOf('function setupRemoteRealtime('), html.indexOf('async function setupRemoteSync('));
 
 function fakeIndexedDB() {
   const records = new Map();
@@ -130,6 +131,7 @@ function fixture() {
   full.remoteSync.localSnapshotOk = false;
   full.markSyncPending();
   assert.equal(await full.remoteSync.cachePromise, true);
+  assert.equal(full.remoteSync.cacheSaving, false);
   assert.equal(full.remoteSync.localSnapshotOk, true);
   const cached = await full.readSyncCache(full.pendingSyncKey());
   assert.equal(cached.pending, true);
@@ -173,5 +175,22 @@ function fixture() {
   unloaded.remoteSync.loaded = false;
   unloaded.markSyncPending();
   assert.equal(await unloaded.pushRemoteState(), false);
-  console.log('Cloud sync: queue, immutable snapshots, timeout, stale read, recovery conflict, canonical JSON, network errors, safe retry, IndexedDB persistence/reload, stale-cache protection and initial-load guard passed');
+
+  const realtime = fixture();
+  let refreshes = 0;
+  const channel = {
+    on:(kind, filter, callback)=>{realtime.onChange=callback; return channel;},
+    subscribe:()=>channel
+  };
+  realtime.remoteSync.client = {channel:()=>channel};
+  realtime.teardownRemoteRealtime = ()=>{};
+  realtime.pullRemoteState = async()=>{refreshes++; return true;};
+  vm.runInContext(realtimeSource, realtime);
+  realtime.setupRemoteRealtime();
+  realtime.onChange({new:{workspace_id:'workspace',updated_at:'2026-10-07T12:00:00Z'}});
+  assert.equal(refreshes, 1);
+  realtime.remoteSync.pending = true;
+  realtime.onChange({new:{workspace_id:'workspace'}});
+  assert.equal(refreshes, 1);
+  console.log('Cloud sync: queue, immutable snapshots, timeout, stale read, recovery conflict, canonical JSON, network errors, safe retry, IndexedDB persistence/reload, stale-cache protection, initial-load guard and oversized Realtime fallback passed');
 })().catch(error=>{console.error(error); process.exitCode=1;});

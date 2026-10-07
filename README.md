@@ -7,7 +7,7 @@ Applicazione statica pronta per essere pubblicata come sito e sincronizzata tra 
 - Il file principale della web app ora e `index.html`, cosi GitHub Pages puo pubblicarlo direttamente.
 - L'app continua a funzionare in locale anche senza database esterno.
 - Se configuri Supabase, i dati di `gare`, `aggiudicate`, `offerte` e i metadati dei `portali` vengono sincronizzati tra tutti gli utenti che aprono il link.
-- Le credenziali sensibili dei portali (`username` e `password`) restano solo nel browser locale e non vengono inviate al database condiviso.
+- Le credenziali dei portali (`username` e `password`) sono condivise nel workspace autenticato e non devono essere accessibili senza login.
 
 ## Configurazione Supabase
 
@@ -58,7 +58,7 @@ Lo scanner gira nelle finestre utili e lavora solo alle 09:00, 11:00 e 13:00 Eur
 Questa configurazione e pensata per una web app condivisa tramite link senza backend privato dedicato.
 
 - I dati condivisi richiedono un utente autenticato e autorizzato nel workspace. Le vecchie policy anonime vengono rimosse dallo schema.
-- Per questo motivo le password dei portali non vengono sincronizzate.
+- Le password dei portali fanno parte dei dati condivisi: trattare backup e cache come informazioni riservate.
 - Non inserire mai una chiave `service_role` nel frontend. Lo scanner la usa solo nei secret di GitHub Actions.
 
 ## Verifica sincronizzazione
@@ -70,3 +70,5 @@ Esegui `node tests/cloud-sync.test.cjs` per verificare coda dei salvataggi, snap
 Il pulsante di sincronizzazione permette di riprovare una richiesta fallita. Se il cloud e cambiato rispetto alla copia locale, il recupero viene bloccato per evitare sovrascritture. Le quote del piano gratuito restano in vigore; gli allegati incorporati nel JSON devono essere separati dai dati per ridurre ulteriormente traffico e carico.
 
 La cache IndexedDB conserva gli snapshot completi, inclusi gli allegati, anche quando localStorage e pieno. Gli snapshot sono separati per workspace e utente. Una cache piu vecchia delle modifiche pendenti non viene applicata; se nessuna copia completa e disponibile, il recupero automatico si ferma. Inizialmente i salvataggi restano bloccati finche non e stata verificata la copia cloud.
+
+Le registrazioni pubbliche sono disabilitate in Supabase. Gli amministratori possono invitare nuovi utenti dal dashboard. I backup locali in `.local-backups/` non devono essere pubblicati.
